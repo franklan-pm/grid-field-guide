@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Distributed Energy Playground</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#0B1E33; --panel-navy:#12314F; --panel-navy-2:#0F2946;
+    --line-cyan:#8FE0EC; --line-cyan-dim:#4C7C8C; --paper:#EAF2F5; --muted:#7E9BB4;
+    --signal-amber:#F5A623; --copper:#D98457; --good:#6FCF97; --bad:#EB5B5B; --violet:#B9A9F2;
+    --edge:#1D4266; --edge-2:#2A5478; --radius:10px;
+    --c-gas:#D98457; --c-wind:#8FE0EC; --c-solar:#F5C542; --c-batt:#6FCF97; --c-charge:#B9A9F2;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink-navy:#0B1E33; --paper:#EAF2F5; } }
+  :root[data-theme="dark"]{ --ink-navy:#0B1E33; --paper:#EAF2F5; }
+  :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  html{ scroll-padding-top:env(safe-area-inset-top,0px); background:var(--ink-navy); }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    background: radial-gradient(ellipse at 20% -10%, #163a5c 0%, transparent 55%), var(--ink-navy);
+    color:var(--paper); font-family:'IBM Plex Sans', system-ui, sans-serif;
+    min-height:100vh; padding:28px 18px 60px;
+  }
+  .wrap{max-width:1020px;margin:0 auto;}
+  .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:14px;letter-spacing:.14em;color:var(--signal-amber);text-transform:uppercase;margin-bottom:8px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);margin:0 0 6px;letter-spacing:-0.01em;}
+  .sub{color:var(--muted);font-size:17px;max-width:680px;line-height:1.5;margin-bottom:26px;}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+
+  .tabs{display:flex;gap:2px;background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:var(--radius);padding:4px;margin-bottom:22px;flex-wrap:wrap;}
+  .tab{flex:1 1 auto;min-width:120px;text-align:center;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.03em;color:var(--muted);background:transparent;border:none;border-radius:6px;cursor:pointer;}
+  .tab:hover{color:var(--paper);}
+  .tab.active{background:var(--signal-amber);color:#1A1102;font-weight:600;}
+  button:focus-visible, input:focus-visible{outline:2px solid var(--line-cyan);outline-offset:2px;}
+
+  .panel{background:var(--panel-navy);border:1px solid var(--edge);border-radius:var(--radius);padding:22px;display:none;}
+  .panel.active{display:block;}
+  .head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .head h2{font-family:'Space Grotesk';font-size:20px;margin:0;}
+  .hint{font-family:'IBM Plex Mono';font-size:14px;color:var(--muted);margin-bottom:12px;}
+  .intro{font-size:16px;color:var(--muted);margin:0 0 16px;line-height:1.5;max-width:760px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-family:'IBM Plex Mono';font-size:13.5px;color:var(--muted);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:14px;height:10px;border-radius:2px;display:inline-block;}
+
+  /* presets + time bar */
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+  .presets .lbl{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--muted);margin-right:4px;}
+  .chip{font-family:'IBM Plex Mono';font-size:14px;padding:6px 12px;border-radius:20px;border:1px solid var(--edge-2);color:var(--muted);cursor:pointer;background:transparent;}
+  .chip:hover{color:var(--paper);border-color:var(--line-cyan);}
+  .chip.active{background:var(--line-cyan);color:#0B1E33;border-color:var(--line-cyan);font-weight:600;}
+  .timebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 14px;margin-bottom:14px;}
+  .timebar .clock{font-family:'Space Grotesk';font-size:22px;font-weight:600;min-width:104px;color:var(--signal-amber);}
+  .timebar input[type=range]{flex:1 1 240px;}
+  .btn{font-family:'IBM Plex Mono';font-size:14.5px;letter-spacing:.03em;padding:8px 14px;border-radius:7px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;}
+  .btn:hover{border-color:var(--line-cyan);}
+  .btn.primary{background:var(--signal-amber);color:#1A1102;border-color:var(--signal-amber);font-weight:600;}
+  input[type=range]{accent-color:var(--signal-amber);width:100%;}
+
+  /* controls */
+  .ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin-bottom:10px;}
+  .ctl{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;border-left:3px solid var(--edge-2);}
+  .ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+  .ctl b{font-family:'Space Grotesk';font-size:15.5px;}
+  .ctl .val{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--paper);text-align:right;}
+  .ctl .note{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.4;min-height:1.4em;}
+  .ctl .row{display:flex;align-items:center;gap:6px;margin-top:6px;}
+  .step{width:30px;height:28px;flex:0 0 auto;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;font-family:'IBM Plex Mono';font-size:16px;line-height:1;}
+  .step:hover{border-color:var(--line-cyan);}
+  .seg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .seg button{flex:1 1 auto;font-family:'IBM Plex Mono';font-size:13px;padding:6px 8px;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--muted);cursor:pointer;}
+  .seg button.on{background:var(--line-cyan);border-color:var(--line-cyan);color:#0B1E33;font-weight:600;}
+  details.adv{margin:4px 0 14px;}
+  details.adv summary{cursor:pointer;font-family:'IBM Plex Mono';font-size:14px;color:var(--paper);padding:8px 12px;border:1px dashed var(--edge-2);border-radius:7px;display:inline-block;}
+  .linkbtn{font:inherit;color:var(--signal-amber);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
+  @keyframes flash{0%,100%{box-shadow:none;}30%{box-shadow:0 0 0 3px var(--signal-amber);}}
+  .ctl.flash{animation:flash 1.2s ease-in-out 2;}
+  details.adv summary:hover{color:var(--paper);}
+  .group-title{font-family:'Space Grotesk';font-size:16px;margin:14px 0 8px;color:var(--paper);}
+
+  /* pills */
+  .pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin:6px 0 10px;}
+  .pill{background:var(--panel-navy-2);border:1px solid var(--edge);border-top:3px solid var(--signal-amber);border-radius:8px;padding:10px 12px;}
+  .pill .v{font-family:'Space Grotesk';font-size:23px;font-weight:600;line-height:1.15;}
+  .pill .v small{font-size:14px;color:var(--muted);font-weight:500;}
+  .pill .l{font-family:'IBM Plex Mono';font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
+  .pill .s{font-size:13px;color:var(--muted);margin-top:3px;}
+  .splitbar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:#0A2038;border:1px solid var(--edge);margin:4px 0 4px;}
+  .splitbar div{height:100%;transition:width .12s;}
+  .splitlegend{display:flex;flex-wrap:wrap;gap:12px;font-family:'IBM Plex Mono';font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+
+  .story{background:var(--panel-navy-2);border:1px solid var(--edge);border-left:3px solid var(--line-cyan);border-radius:8px;padding:13px 16px;font-size:16px;line-height:1.6;margin:8px 0 16px;}
+  .story.warn{border-left-color:var(--bad);}
+  .story b{color:var(--paper);}
+
+  svg.chart{width:100%;height:auto;display:block;touch-action:none;cursor:ew-resize;}
+  .chart-wrap{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 10px 4px;margin-bottom:10px;}
+  .chart-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 4px 6px;}
+  .chart-top h3{font-family:'Space Grotesk';font-size:16px;margin:0;}
+  .chk{font-family:'IBM Plex Mono';font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer;}
+
+  /* diagram */
+  #dgSvg{width:100%;height:auto;display:block;margin:6px 0 4px;}
+  .node{cursor:pointer;}
+  .node:hover rect.box{filter:brightness(1.35);}
+  .node.selected rect.box{stroke:var(--signal-amber);stroke-width:3;}
+  .node text{pointer-events:none;}
+  .flow{stroke-dasharray:9 11;animation:flow 0.9s linear infinite;}
+  .flow.rev{animation-direction:reverse;}
+  @keyframes flow{to{stroke-dashoffset:-20;}}
+  #infoCard{background:var(--panel-navy-2);border:1px solid var(--edge);border-left:3px solid var(--signal-amber);border-radius:8px;padding:16px 18px;min-height:96px;}
+  #infoCard .placeholder{color:var(--muted);font-size:16px;}
+  .info-title{font-family:'Space Grotesk';font-weight:600;font-size:19px;margin:0 0 3px;}
+  .info-tag{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--signal-amber);text-transform:uppercase;letter-spacing:.06em;}
+  .info-body{font-size:16px;line-height:1.6;margin-top:8px;}
+  .info-body p{margin:0 0 8px;}
+  .info-note{font-size:15px;color:var(--muted);margin-top:10px;border-top:1px dashed #26496b;padding-top:9px;}
+  .read-head{font-family:'Space Grotesk';font-size:18px;margin:26px 0 4px;}
+  .read-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
+  .read-card{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:14px 16px;}
+  .read-card h4{font-family:'Space Grotesk';font-size:16.5px;margin:0 0 6px;}
+  .read-card p{font-size:15.5px;line-height:1.55;margin:0 0 8px;opacity:.93;}
+  .read-card p:last-child{margin-bottom:0;}
+
+  /* math */
+  .m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
+  .m-card{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:14px 16px;}
+  .m-card h3{font-family:'Space Grotesk';font-weight:600;font-size:17.5px;color:var(--signal-amber);margin:0 0 6px;}
+  .m-card p{font-size:15.5px;line-height:1.55;margin:6px 0;opacity:.93;}
+  .f{font-family:'IBM Plex Mono';font-size:14px;color:var(--line-cyan);background:#0A2038;border:1px solid var(--edge);border-radius:6px;padding:8px 10px;margin:8px 0;line-height:1.6;overflow-x:auto;overflow-wrap:anywhere;}
+  .f .live{color:var(--signal-amber);}
+  .m-card svg{width:100%;height:auto;display:block;margin-top:6px;}
+  .span2{grid-column:1/-1;}
+
+  footer{text-align:center;color:var(--muted);font-family:'IBM Plex Mono';font-size:13.5px;margin-top:24px;line-height:1.6;}
+  @media (prefers-reduced-motion: reduce){ .flow{animation:none;} *{transition:none !important;} }
+  @media (max-width:560px){ .panel{padding:14px;} .pill .v{font-size:20px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Field guide — distributed energy resources</div>
+  <h1>Distributed Energy Playground</h1>
+  <p class="sub">A small town runs on one natural-gas plant. Add wind turbines, solar farms and a battery, then scrub through a 24-hour day to see who supplies each megawatt, when the battery charges or discharges, and how much of the demand renewables actually cover.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="diagram">◇ Diagram</button>
+    <button class="tab" data-tab="playground">⚡ Playground</button>
+    <button class="tab" data-tab="math">∑ How the math works</button>
+  </div>
+
+  <!-- DIAGRAM -->
+  <section class="panel active" id="panel-diagram">
+    <div class="head">
+      <h2>One-line diagram: live power flows</h2>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--c-gas)"></i>gas</span>
+        <span><i class="sw" style="background:var(--c-wind)"></i>wind</span>
+        <span><i class="sw" style="background:var(--c-solar)"></i>solar</span>
+        <span><i class="sw" style="background:var(--c-batt)"></i>battery out</span>
+        <span><i class="sw" style="background:var(--c-charge)"></i>battery in</span>
+      </div>
+    </div>
+    <div class="hint">Line thickness = megawatts flowing right now · moving dashes show direction. Click any box.</div>
+    <div class="presets" data-presets></div>
+    <div class="timebar" data-timebar></div>
+    <svg id="dgSvg" viewBox="0 0 1000 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One-line diagram of the town's power system"></svg>
+    <div id="infoCard"><div class="placeholder">Select a piece of equipment above to see what it does and what it's doing at this moment.</div></div>
+
+    <h3 class="read-head">How to read this diagram</h3>
+    <div class="read-grid">
+      <div class="read-card"><h4>The bus always balances</h4><p>The vertical bar is the town's substation bus. At every instant, power flowing in must equal power flowing out: <strong>gas + wind + solar + battery discharge = town demand + battery charging</strong>. The grid has almost no storage of its own, so something has to adjust second by second. In this model, that's the battery first and the gas plant second.</p></div>
+      <div class="read-card"><h4>The double circles are transformers</h4><p>Each plant produces power at a lower voltage and a step-up transformer lifts it onto the bus. That's the same symbol you learned in the distribution one-line, just used at the generation end.</p></div>
+      <div class="read-card"><h4>DC vs. AC</h4><p>Solar panels and batteries are DC devices. The box labeled <strong>DC/AC</strong> is an inverter, which converts their output into grid-synchronized AC. The battery's inverter works in both directions (it's often called a PCS, power conversion system), which is why the battery line can reverse.</p></div>
+      <div class="read-card"><h4>Nameplate vs. right now</h4><p>Each box shows its <strong>nameplate</strong> (the most it can ever make) and its <strong>output right now</strong>. The gap between the two is the whole story of capacity factor. Try scrubbing to 3 AM, noon, and 7 PM.</p></div>
+    </div>
+  </section>
+
+  <!-- PLAYGROUND -->
+  <section class="panel" id="panel-playground">
+    <div class="head"><h2>Playground: build the mix, run the day</h2></div>
+    <p class="intro">Start with a scenario, then change one thing at a time. Drag across the chart or use the time slider to move through the day; everything below the slider describes that moment.</p>
+    <div class="presets" data-presets></div>
+
+    <div class="group-title">Resources you build</div>
+    <div class="ctl-grid" id="ctlResources"></div>
+    <div class="group-title">Conditions and strategy</div>
+    <div class="ctl-grid" id="ctlConditions"></div>
+    <details class="adv" id="advDetails"><summary>Advanced settings: inverter sizing, battery efficiency, gas limits</summary>
+      <div class="ctl-grid" id="ctlAdvanced" style="margin-top:8px"></div>
+    </details>
+
+    <div class="timebar" data-timebar></div>
+    <div class="pills" id="nowPills"></div>
+    <div class="splitbar" id="splitBar"></div>
+    <div class="splitlegend" id="splitLegend"></div>
+    <div class="story" id="story"></div>
+
+    <div class="chart-wrap">
+      <div class="chart-top">
+        <h3>Who supplies the town, hour by hour</h3>
+        <label class="chk"><input type="checkbox" id="showNoBatt" checked> gas without a battery</label>
+      </div>
+      <div class="legend" style="margin:0 4px 6px">
+        <span><i class="sw" style="background:var(--c-gas)"></i>gas</span>
+        <span><i class="sw" style="background:var(--c-wind)"></i>wind</span>
+        <span><i class="sw" style="background:var(--c-solar)"></i>solar</span>
+        <span><i class="sw" style="background:var(--c-batt)"></i>battery discharging</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--c-charge) 0 3px,transparent 3px 6px)"></i>battery charging</span>
+        <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--bad) 0 3px,transparent 3px 6px)"></i>curtailed</span>
+        <span><i class="sw" style="background:var(--paper);height:3px"></i>demand</span>
+      </div>
+      <svg class="chart" id="mainChart" viewBox="0 0 960 330"></svg>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-top"><h3>Battery state of charge</h3><span class="chk" id="socNote"></span></div>
+      <svg class="chart" id="socChart" viewBox="0 0 960 130"></svg>
+    </div>
+
+    <div class="group-title">Over the whole day</div>
+    <div class="pills" id="dayPills"></div>
+  </section>
+
+  <!-- MATH -->
+  <section class="panel" id="panel-math">
+    <div class="head"><h2>How the math works</h2></div>
+    <p class="intro">Every number in the playground comes from the formulas below. The orange values are live: they update with your current settings and the time on the slider.</p>
+    <div class="timebar" data-timebar></div>
+    <div class="m-grid" id="mathGrid"></div>
+  </section>
+
+  <footer>Simplified teaching model: 15-minute steps, one weather pattern per day, a single gas unit, and perfect forecasts for the battery.<br>Numbers are realistic in scale, not engineering-grade.</footer>
+</div>
+
+<script>
+/* ============================ STATE ============================ */
+const N = 96, DT = 0.25;
+const S = {
+  wind:0, solar:0, bessMW:0, bessMWh:0,
+  gasCap:50, gasMinPct:20, season:'summer', sky:'clear', windy:'typical', mode:'flatten',
+  ilr:1.25, rte:88, hour:18, showNoBatt:true
+};
+const $ = id => document.getElementById(id);
+const f1 = v => (Math.abs(v) < 0.05 ? 0 : v).toFixed(1);
+const f0 = v => Math.round(v).toLocaleString();
+const pct = v => Math.round(v * 100) + '%';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function fmtTime(h){
+  h = ((h % 24) + 24) % 24; let hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  if (mm === 60){ hh++; mm = 0; }
+  const ap = (hh % 24) < 12 ? 'AM' : 'PM'; const h12 = ((hh % 12) + 11) % 12 + 1;
+  return `${h12}:${String(mm).padStart(2,'0')} ${ap}`;
+}
+
+/* ============================ PHYSICAL MODEL ============================ */
+// Demand shape, fraction of daily peak, hour 0..23
+const SHAPE = {
+  summer:[.62,.58,.56,.55,.56,.60,.68,.76,.80,.81,.82,.83,.84,.85,.87,.89,.93,.98,1.0,.99,.95,.88,.78,.69],
+  winter:[.66,.62,.60,.60,.63,.72,.86,.94,.92,.86,.82,.80,.78,.77,.77,.80,.88,.98,1.0,.97,.92,.86,.78,.71]
+};
+SHAPE.spring = SHAPE.summer.map((v,i) => (v + SHAPE.winter[i]) / 2);
+const PEAK = { summer:40, winter:38, spring:31 };
+const SUN = {
+  summer:{ rise:5.25, set:20.75, peak:1.00 },
+  spring:{ rise:6.5,  set:19.25, peak:0.88 },
+  winter:{ rise:7.6,  set:16.1,  peak:0.52 }
+};
+const SKY = { clear:{ f:1, v:0 }, partly:{ f:0.72, v:0.32 }, overcast:{ f:0.22, v:0.06 } };
+const WINDMEAN = { calm:4.6, typical:7.6, windy:11 };
+const TURB = { rated:3, cutIn:3, ratedV:12.5, cutOut:25 };
+const SOLAR_DERATE = 0.86, INV_EFF = 0.975;
+const SOC_MIN = 0.05, SOC_MAX = 0.95;
+
+function catmull(arr, h){
+  const i = Math.floor(h), f = h - i, p = k => arr[((k % 24) + 24) % 24];
+  const p0=p(i-1), p1=p(i), p2=p(i+1), p3=p(i+2);
+  return 0.5*((2*p1)+(-p0+p2)*f+(2*p0-5*p1+4*p2-p3)*f*f+(-p0+3*p1-3*p2+p3)*f*f*f);
+}
+const demandAt = t => PEAK[S.season] * catmull(SHAPE[S.season], t);
+function sunShape(t){
+  const s = SUN[S.season]; if (t <= s.rise || t >= s.set) return 0;
+  const x = (t - s.rise) / (s.set - s.rise);
+  return s.peak * Math.pow(Math.sin(Math.PI * x), 1.35);
+}
+function skyFactor(t){
+  const k = SKY[S.sky];
+  return clamp(k.f * (1 + k.v * (0.6*Math.sin(2.9*t + 1) + 0.4*Math.sin(7.3*t + 2))), 0, 1);
+}
+// per 1-MWac installation with DC array of ILR MW
+function solarUnit(t){
+  const dcPerMW = sunShape(t) * SOLAR_DERATE * skyFactor(t);   // MW DC per MW of panels
+  const dc = dcPerMW * S.ilr;                                  // array DC output
+  const acPossible = dc * INV_EFF;
+  const ac = Math.min(acPossible, 1);
+  return { dc, ac, clipped: Math.max(0, acPossible - 1) };
+}
+function windSpeed(t){
+  const m = WINDMEAN[S.windy];
+  const v = m*(1 + 0.2*Math.cos(2*Math.PI*(t - 3)/24))
+          + 0.9*Math.sin(2*Math.PI*t/5.3 + 0.7) + 0.55*Math.sin(2*Math.PI*t/2.2 + 2.1) + 0.3*Math.sin(2*Math.PI*t/0.9 + 0.3);
+  return Math.max(0, v);
+}
+function turbinePU(v){
+  if (v < TURB.cutIn || v >= TURB.cutOut) return 0;
+  if (v >= TURB.ratedV) return 1;
+  return (v**3 - TURB.cutIn**3) / (TURB.ratedV**3 - TURB.cutIn**3);
+}
+
+/* ============================ DISPATCH ============================ */
+function baseSeries(){
+  const b = { t:[], D:[], W:[], Sol:[], V:[], clip:[], dcUnit:[], acUnit:[] };
+  for (let i = 0; i < N; i++){
+    const t = i * DT, su = solarUnit(t), v = windSpeed(t);
+    b.t.push(t); b.D.push(demandAt(t)); b.V.push(v);
+    b.W.push(S.wind * TURB.rated * turbinePU(v));
+    b.Sol.push(S.solar * su.ac); b.clip.push(S.solar * su.clipped);
+    b.dcUnit.push(su.dc); b.acUnit.push(su.ac);
+  }
+  return b;
+}
+
+function bisect(fn, lo, hi, target, decreasing){
+  for (let k = 0; k < 60; k++){
+    const mid = (lo + hi) / 2, v = fn(mid);
+    if ((v > target) === decreasing) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
+
+function dispatch(b, useBattery){
+  const gasCap = S.gasCap, gasMin = S.gasCap * S.gasMinPct / 100;
+  const P = useBattery ? S.bessMW : 0, E = useBattery ? S.bessMWh : 0;
+  const on = useBattery && S.mode !== 'off' && P > 0 && E > 0;
+  const eta = S.rte / 100, effC = Math.sqrt(eta), effD = Math.sqrt(eta);
+  const Emin = SOC_MIN * E, Emax = SOC_MAX * E, Eu = Emax - Emin;
+  const net = b.D.map((d,i) => d - b.W[i] - b.Sol[i]);
+  const nmin = Math.min(...net), nmax = Math.max(...net);
+  const above = H => net.reduce((s,n) => s + Math.min(Math.max(n - H, 0), P) * DT, 0);
+  const below = L => net.reduce((s,n) => s + Math.min(Math.max(L - n, 0), P) * DT, 0);
+  const surplusBelowMin = net.reduce((s,n) => s + Math.min(Math.max(gasMin - n, 0), P) * DT, 0);
+
+  let H = Infinity, L = -Infinity;
+  if (on && S.mode === 'flatten'){
+    const lo = nmin - 1, hi = nmax + 1;
+    H = above(lo) <= Eu * effD ? lo : bisect(above, lo, hi, Eu * effD, true);
+    L = below(hi) * effC <= Eu ? hi : bisect(x => below(x) * effC, lo, hi, Eu, false);
+    if (L > H){ // battery can fully flatten: find balance level
+      const F = bisect(x => above(x) / effD - below(x) * effC, lo, hi, 0, true);
+      H = L = F;
+    }
+  } else if (on && S.mode === 'surplus'){
+    const stored = Math.min(Eu, surplusBelowMin * effC);
+    if (stored > 0.01){
+      const lo = nmin - 1, hi = nmax + 1;
+      H = above(lo) <= stored * effD ? lo : bisect(above, lo, hi, stored * effD, true);
+    }
+  }
+
+  let soc = Emin + 0.5 * Eu, green = 0;
+  let out = null;
+  for (let day = 0; day < 4; day++){   // repeat the day so the battery settles into a daily rhythm
+    const r = { g:[], p:[], curt:[], uns:[], soc:[], socPct:[], windUsed:[], solarUsed:[], dischGreen:[], chargeR:[], renewShare:[], net, H, L, gasMin, belowMin:[] };
+    for (let i = 0; i < N; i++){
+      const n = net[i], R = b.W[i] + b.Sol[i];
+      const dMax = on ? Math.min(P, Math.max(0, soc - Emin) * effD / DT) : 0;
+      const cMax = on ? Math.min(P, Math.max(0, Emax - soc) / (effC * DT)) : 0;
+      let p = 0;
+      if (on){
+        if (n > H) p = n - H;
+        else if (S.mode === 'flatten' && n < L) p = -(L - n);
+      }
+      p = clamp(p, -cMax, dMax);
+      let g = n - p, curt = 0, uns = 0, belowMin = false;
+      if (g < gasMin){
+        p = Math.max(p - (gasMin - g), -cMax); g = n - p;
+        if (g < gasMin){ curt = gasMin - g; g = gasMin;
+          if (curt > R){ g += (curt - R); curt = R; belowMin = true; } }
+      }
+      if (g > gasCap){
+        p = Math.min(p + (g - gasCap), dMax); g = n - p;
+        if (g > gasCap){ uns = g - gasCap; g = gasCap; }
+      }
+      // battery energy + "green" bookkeeping
+      let chargeR = 0, dischGreen = 0;
+      if (p < 0){
+        const c = -p; chargeR = Math.min(c, R - curt);
+        soc += c * DT * effC; green += chargeR * DT * effC;
+      } else if (p > 0){
+        const drawn = p * DT / effD, gf = soc > 1e-9 ? clamp(green / soc, 0, 1) : 0;
+        dischGreen = p * gf; soc -= drawn; green -= drawn * gf;
+      }
+      soc = clamp(soc, 0, E); green = clamp(green, 0, soc);
+      const wc = R > 0 ? curt * b.W[i] / R : 0, sc = R > 0 ? curt * b.Sol[i] / R : 0;
+      const d = b.D[i];
+      r.g.push(g); r.p.push(p); r.curt.push(curt); r.uns.push(uns);
+      r.soc.push(soc); r.socPct.push(E > 0 ? soc / E : 0);
+      r.windUsed.push(b.W[i] - wc); r.solarUsed.push(b.Sol[i] - sc);
+      r.dischGreen.push(dischGreen); r.chargeR.push(chargeR); r.belowMin.push(belowMin);
+      r.renewShare.push(d > 0 ? clamp((R - curt - chargeR + dischGreen) / d, 0, 1) : 0);
+    }
+    out = r;
+  }
+  return out;
+}
+
+function summarize(b, r){
+  const sum = a => a.reduce((s,v) => s + v, 0) * DT;
+  const D = sum(b.D), W = sum(b.W), So = sum(b.Sol);
+  const renewToLoad = b.D.reduce((s,d,i) => s + r.renewShare[i] * d, 0) * DT;
+  const discharged = sum(r.p.map(p => Math.max(p,0))), charged = sum(r.p.map(p => Math.max(-p,0)));
+  let ramp = 0; for (let i = 0; i < N; i++){ const j = (i + 4) % N; ramp = Math.max(ramp, r.g[j] - r.g[i]); }
+  return {
+    D, W, So, gas: sum(r.g), curt: sum(r.curt), uns: sum(r.uns), clip: sum(b.clip),
+    renewShare: D > 0 ? renewToLoad / D : 0, renewToLoad,
+    gasPeak: Math.max(...r.g), gasLow: Math.min(...r.g), ramp,
+    windCF: S.wind > 0 ? W / (S.wind * 3 * 24) : null,
+    solarCF: S.solar > 0 ? So / (S.solar * 24) : null,
+    discharged, charged, cycles: S.bessMWh > 0 ? discharged / S.bessMWh : 0,
+    avgD: D / 24, peakD: Math.max(...b.D)
+  };
+}
+
+/* ============================ RUN ============================ */
+let B, R, R0, SUM, SUM0;
+function run(){
+  B = baseSeries(); R = dispatch(B, true); R0 = dispatch(B, false);
+  SUM = summarize(B, R); SUM0 = summarize(B, R0);
+  renderAll();
+}
+const idx = () => Math.round(S.hour / DT) % N;
+
+/* ============================ CONTROLS ============================ */
+const RES_CTLS = [
+  { key:'wind', label:'Wind turbines', min:0, max:12, step:1, color:'var(--c-wind)',
+    val: v => `${v} × 3 MW = ${v*3} MW`, note: () => 'Onshore, ~130 m tall. Output follows wind speed, day and night.' },
+  { key:'solar', label:'Solar PV installations', min:0, max:30, step:1, color:'var(--c-solar)',
+    val: v => `${v} × 1 MW = ${v} MW`, note: () => `Each: ${S.ilr.toFixed(2)} MW of panels (DC) behind a 1 MW inverter (AC), about 5 acres.` },
+  { key:'bessMW', label:'Battery power', min:0, max:30, step:1, color:'var(--c-batt)',
+    val: v => `${v} MW`, note: () => 'How fast it can charge or discharge (the size of the pipe).' },
+  { key:'bessMWh', label:'Battery energy', min:0, max:120, step:4, color:'var(--c-batt)',
+    val: v => `${v} MWh`, note: () => S.bessMW > 0 && S.bessMWh > 0 ? `How much it holds (the size of the tank): ${(S.bessMWh/S.bessMW).toFixed(1)} hours at full power.` : 'How much it holds (the size of the tank).' },
+];
+const ADV_CTLS = [
+  { key:'gasCap', label:'Gas plant capacity', min:20, max:60, step:1, color:'var(--c-gas)',
+    val: v => `${v} MW`, note: () => `Town peak today: ${f1(SUM ? SUM.peakD : 40)} MW. Below that and some demand goes unserved.` },
+  { key:'gasMinPct', label:'Gas minimum stable output', min:0, max:50, step:5, color:'var(--c-gas)',
+    val: v => `${v}% = ${f1(S.gasCap*v/100)} MW`, note: () => "Most gas units can't throttle below a floor without shutting down." },
+  { key:'ilr', label:'Solar DC/AC ratio', min:1, max:1.5, step:0.05, color:'var(--c-solar)',
+    val: v => `${v.toFixed(2)}`, note: () => 'Panels (DC) per inverter (AC). Above ~1.2 the inverter clips at midday.' },
+  { key:'rte', label:'Battery round-trip efficiency', min:75, max:95, step:1, color:'var(--c-batt)',
+    val: v => `${v}%`, note: () => `Put 10 MWh in, get ${(10*S.rte/100).toFixed(1)} MWh back out.` },
+];
+const SEGS = [
+  { key:'season', label:'Season', opts:[['summer','Summer'],['spring','Spring / fall'],['winter','Winter']],
+    note: () => ({summer:'Long days, AC-driven evening peak.', spring:'Mild demand, medium days.', winter:'Short, weak sun; morning and evening peaks.'})[S.season] },
+  { key:'sky', label:'Sky', opts:[['clear','Clear'],['partly','Partly cloudy'],['overcast','Overcast']],
+    note: () => ({clear:'Full sun.', partly:'Clouds cut output and make it bumpy.', overcast:'Diffuse light only, ~20% of clear-sky output.'})[S.sky] },
+  { key:'windy', label:'Wind', opts:[['calm','Calm'],['typical','Typical'],['windy','Windy']],
+    note: () => `Average hub-height wind ≈ ${WINDMEAN[S.windy]} m/s, a bit stronger at night.` },
+  { key:'mode', label:'Battery strategy', opts:[['off','Off'],['flatten','Flatten gas'],['surplus','Store surplus only']],
+    note: () => ({off:'Battery sits idle.', flatten:'Charges in low-demand hours, discharges at the peak so the gas plant runs flatter.', surplus:'Only charges from renewable energy that would otherwise be wasted.'})[S.mode] },
+];
+
+function buildSlider(host, c){
+  const el = document.createElement('div'); el.className = 'ctl'; el.style.borderLeftColor = c.color;
+  el.innerHTML = `<div class="top"><b>${c.label}</b><span class="val"></span></div>
+    <div class="row"><button class="step" aria-label="decrease">−</button><input type="range" min="${c.min}" max="${c.max}" step="${c.step}"><button class="step" aria-label="increase">+</button></div>
+    <div class="note"></div>`;
+  const inp = el.querySelector('input'), [dn, up] = el.querySelectorAll('.step');
+  const set = v => { S[c.key] = +clamp(+v, c.min, c.max).toFixed(2); clearPresetActive(); run(); };
+  inp.addEventListener('input', () => set(inp.value));
+  dn.onclick = () => set(S[c.key] - c.step); up.onclick = () => set(S[c.key] + c.step);
+  c.el = el; c.inp = inp; host.appendChild(el);
+}
+function buildSeg(host, c){
+  const el = document.createElement('div'); el.className = 'ctl';
+  el.innerHTML = `<div class="top"><b>${c.label}</b></div><div class="seg"></div><div class="note"></div>`;
+  const seg = el.querySelector('.seg');
+  c.opts.forEach(([v, l]) => {
+    const bt = document.createElement('button'); bt.textContent = l; bt.dataset.v = v;
+    bt.onclick = () => { S[c.key] = v; if (c.key !== 'season' && c.key !== 'sky' && c.key !== 'windy') clearPresetActive(); run(); };
+    seg.appendChild(bt);
+  });
+  c.el = el; host.appendChild(el);
+}
+RES_CTLS.forEach(c => buildSlider($('ctlResources'), c));
+SEGS.forEach(c => buildSeg($('ctlConditions'), c));
+ADV_CTLS.forEach(c => buildSlider($('ctlAdvanced'), c));
+function syncControls(){
+  [...RES_CTLS, ...ADV_CTLS].forEach(c => {
+    c.inp.value = S[c.key]; c.el.querySelector('.val').textContent = c.val(S[c.key]);
+    c.el.querySelector('.note').textContent = c.note();
+  });
+  SEGS.forEach(c => {
+    c.el.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.v === S[c.key]));
+    c.el.querySelector('.note').textContent = c.note();
+  });
+}
+
+/* presets */
+const PRESETS = [
+  { id:'gas', label:'Gas only', set:{ wind:0, solar:0, bessMW:0, bessMWh:0, mode:'flatten', gasMinPct:20 } },
+  { id:'wind', label:'+ Wind', set:{ wind:5, solar:0, bessMW:0, bessMWh:0, mode:'flatten', gasMinPct:20 } },
+  { id:'solar', label:'Solar-heavy (duck curve)', set:{ wind:0, solar:25, bessMW:0, bessMWh:0, mode:'flatten', gasMinPct:30 } },
+  { id:'solarbatt', label:'Solar + battery', set:{ wind:0, solar:25, bessMW:12, bessMWh:48, mode:'surplus', gasMinPct:30 } },
+  { id:'mix', label:'Balanced mix', set:{ wind:5, solar:15, bessMW:10, bessMWh:40, mode:'flatten', gasMinPct:20 } },
+  { id:'high', label:'High renewables', set:{ wind:10, solar:30, bessMW:25, bessMWh:100, mode:'flatten', gasMinPct:10 } },
+];
+let activePreset = 'gas';
+document.querySelectorAll('[data-presets]').forEach(host => {
+  host.innerHTML = '<span class="lbl">Scenarios:</span>';
+  PRESETS.forEach(p => {
+    const b = document.createElement('button'); b.className = 'chip'; b.textContent = p.label; b.dataset.id = p.id;
+    b.onclick = () => { Object.assign(S, p.set); activePreset = p.id; run(); };
+    host.appendChild(b);
+  });
+});
+function clearPresetActive(){ activePreset = null; }
+function syncPresets(){ document.querySelectorAll('[data-presets] .chip').forEach(b => b.classList.toggle('active', b.dataset.id === activePreset)); }
+
+/* time bars */
+let playing = null;
+document.querySelectorAll('[data-timebar]').forEach(host => {
+  host.innerHTML = `<span class="clock"></span><input type="range" min="0" max="23.75" step="0.25" aria-label="Time of day"><button class="btn primary play">▶ Play day</button>`;
+  const inp = host.querySelector('input');
+  inp.addEventListener('input', () => { S.hour = +inp.value; renderTime(); });
+  host.querySelector('.play').onclick = togglePlay;
+});
+function togglePlay(){
+  if (playing){ clearInterval(playing); playing = null; }
+  else playing = setInterval(() => { S.hour = (S.hour + DT) % 24; renderTime(); }, 110);
+  document.querySelectorAll('.play').forEach(b => b.textContent = playing ? '❚❚ Pause' : '▶ Play day');
+}
+function syncTimebars(){
+  document.querySelectorAll('[data-timebar]').forEach(h => {
+    h.querySelector('.clock').textContent = fmtTime(S.hour); h.querySelector('input').value = S.hour;
+  });
+}
+
+/* tabs */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + t.dataset.tab));
+});
+$('showNoBatt').onchange = e => { S.showNoBatt = e.target.checked; drawMain(); };
+
+/* ============================ NOW (instant) ============================ */
+function nowData(){
+  const i = idx(), p = R.p[i], d = B.D[i];
+  return { i, t:B.t[i], d, w:R.windUsed[i], s:R.solarUsed[i], wAvail:B.W[i], sAvail:B.Sol[i], g:R.g[i], p,
+    curt:R.curt[i], uns:R.uns[i], soc:R.soc[i], socPct:R.socPct[i], share:R.renewShare[i], v:B.V[i],
+    chargeR:R.chargeR[i], dischGreen:R.dischGreen[i], g0:R0.g[i], net:R.net[i], clip:B.clip[i], belowMin:R.belowMin[i] };
+}
+function battStatus(n){
+  if (S.bessMWh === 0 || S.bessMW === 0) return { word:'None', mw:0 };
+  if (n.p > 0.05) return { word:'Discharging', mw:n.p };
+  if (n.p < -0.05) return { word:'Charging', mw:-n.p };
+  return { word:'Idle', mw:0 };
+}
+function renderNow(){
+  const n = nowData(), bs = battStatus(n), gen = n.g + n.w + n.s;
+  const pill = (v, l, s, c) => `<div class="pill" style="border-top-color:${c}"><div class="v">${v}</div><div class="l">${l}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+  $('nowPills').innerHTML =
+    pill(`${f1(n.d)} <small>MW</small>`, 'Town demand', '', 'var(--paper)') +
+    pill(`${f1(gen)} <small>MW</small>`, 'Total generation', bs.word === 'Charging' ? `incl. ${f1(bs.mw)} MW into battery` : bs.word === 'Discharging' ? `+ ${f1(bs.mw)} MW from battery` : '', 'var(--muted)') +
+    pill(`${f1(n.g)} <small>MW</small>`, 'Gas', `${pct(n.g / S.gasCap)} of its ${S.gasCap} MW`, 'var(--c-gas)') +
+    pill(`${f1(n.w + n.s)} <small>MW</small>`, 'Wind + solar', `wind ${f1(n.w)} · solar ${f1(n.s)}`, 'var(--c-wind)') +
+    pill(`${pct(n.share)}`, 'Demand met by renewables', 'incl. stored renewable energy', 'var(--good)') +
+    pill(bs.word === 'None' ? '—' : `${bs.word === 'Idle' ? 'Idle' : f1(bs.mw) + ' <small>MW</small>'}`, bs.word === 'None' ? 'Battery' : `Battery ${bs.word === 'Idle' ? '' : bs.word.toLowerCase()}`, bs.word === 'None' ? 'none installed' : `limit ${S.bessMW} MW`, bs.word === 'Charging' ? 'var(--c-charge)' : 'var(--c-batt)') +
+    pill(S.bessMWh ? `${pct(n.socPct)}` : '—', 'Battery charge', S.bessMWh ? `${f1(n.soc)} of ${S.bessMWh} MWh` : '', 'var(--c-batt)') +
+    (n.curt > 0.05 ? pill(`${f1(n.curt)} <small>MW</small>`, 'Curtailed', 'renewables turned down', 'var(--bad)') : '') +
+    (n.uns > 0.05 ? pill(`${f1(n.uns)} <small>MW</small>`, 'Unserved', 'not enough supply', 'var(--bad)') : '');
+
+  // split of demand by source
+  const gf = n.p > 0 && n.p > 0 ? 1 - n.dischGreen / n.p : 0;
+  const parts = [
+    ['Gas', Math.max(0, n.g - (n.p < 0 ? (-n.p - n.chargeR) : 0)), 'var(--c-gas)'],
+    ['Wind', n.w * (n.w + n.s > 0 ? (n.w + n.s - n.chargeR) / (n.w + n.s) : 0), 'var(--c-wind)'],
+    ['Solar', n.s * (n.w + n.s > 0 ? (n.w + n.s - n.chargeR) / (n.w + n.s) : 0), 'var(--c-solar)'],
+    ['Battery (stored renewable)', n.dischGreen, 'var(--c-batt)'],
+    ['Battery (stored gas)', Math.max(0, n.p) * gf, '#3F8F63'],
+    ['Unserved', n.uns, 'var(--bad)'],
+  ];
+  $('splitBar').innerHTML = parts.map(([l, v, c]) => `<div title="${l}: ${f1(v)} MW" style="width:${100 * v / n.d}%;background:${c}"></div>`).join('');
+  $('splitLegend').innerHTML = '<span>Where this moment\'s demand comes from:</span>' + parts.filter(p => p[1] > 0.05).map(([l, v, c]) => `<span><i class="sw" style="background:${c}"></i>${l} ${pct(v / n.d)}</span>`).join('');
+
+  $('story').innerHTML = storyText(n, bs);
+  $('story').classList.toggle('warn', n.uns > 0.05 || n.curt > 0.05);
+  $('socNote').textContent = S.bessMWh ? `usable window ${SOC_MIN*100}–${SOC_MAX*100}% · ${S.bessMWh} MWh · ${S.bessMW} MW` : 'no battery installed';
+}
+
+function storyText(n, bs){
+  const T = `<b>${fmtTime(n.t)}.</b> `;
+  const out = [];
+  out.push(`The town needs <b>${f1(n.d)} MW</b>.`);
+  if (S.wind + S.solar === 0) out.push(`With no renewables, the gas plant follows demand on its own, ramping up and down all day.`);
+  else {
+    const bits = [];
+    if (S.wind) bits.push(`${S.wind} turbines see ${n.v.toFixed(1)} m/s wind and make ${f1(n.wAvail)} MW (${pct(n.wAvail / (S.wind*3))} of nameplate)`);
+    if (S.solar) bits.push(n.sAvail > 0.05 ? `solar makes ${f1(n.sAvail)} MW (${pct(n.sAvail / S.solar)} of nameplate)${n.clip > 0.05 ? `, with ${f1(n.clip)} MW clipped by the inverters` : ''}` : `solar is producing nothing (${sunShape(n.t) === 0 ? 'the sun is down' : 'very low light'})`);
+    out.push(bits.join('; ').replace(/^./, c => c.toUpperCase()) + '.');
+  }
+  if (bs.word === 'Discharging'){
+    const why = n.g0 > n.g + 0.05 ? `so gas only has to make ${f1(n.g)} MW instead of ${f1(n.g0)} MW` : '';
+    out.push(`The battery is <b>discharging ${f1(bs.mw)} MW</b> ${why}. It's at ${pct(n.socPct)}.`);
+  } else if (bs.word === 'Charging'){
+    const src = n.chargeR >= bs.mw - 0.05 ? 'all of it surplus wind and solar' : n.chargeR > 0.05 ? `${f1(n.chargeR)} MW from renewables, the rest from gas` : 'from the gas plant, while demand is low and cheap';
+    out.push(`The battery is <b>charging ${f1(bs.mw)} MW</b>, ${src}. It's at ${pct(n.socPct)}.`);
+  } else if (bs.word === 'Idle'){
+    const reason = n.socPct >= SOC_MAX - 0.01 ? 'it is full' : n.socPct <= SOC_MIN + 0.01 ? 'it is empty' : 'demand is in the middle band where it waits';
+    out.push(`The battery is idle because ${reason} (${pct(n.socPct)}).`);
+  }
+  const gasMin = S.gasCap * S.gasMinPct / 100;
+  if (n.curt > 0.05) out.push(`Gas is already at its minimum stable output (${f1(gasMin)} MW)${S.bessMWh ? ' and the battery can\'t absorb more' : ''}, so <b>${f1(n.curt)} MW of renewables is curtailed</b> (wasted).`);
+  else if (n.belowMin) out.push(`Demand has dropped below the gas plant's minimum; in reality it would have to shut down a unit.`);
+  else if (Math.abs(n.g - gasMin) < 0.05 && gasMin > 0) out.push(`Gas is pinned at its minimum stable output of ${f1(gasMin)} MW.`);
+  else out.push(`Gas fills the rest: <b>${f1(n.g)} MW</b>.`);
+  if (n.uns > 0.05) out.push(`Even with everything running, <b>${f1(n.uns)} MW of demand is unserved</b>. The gas plant is too small for this peak without more storage.`);
+  out.push(`Renewables are covering <b>${pct(n.share)}</b> of demand right now.`);
+  return T + out.join(' ');
+}
+
+function renderDay(){
+  const s = SUM, s0 = SUM0;
+  const pill = (v, l, sub, c) => `<div class="pill" style="border-top-color:${c}"><div class="v">${v}</div><div class="l">${l}</div>${sub ? `<div class="s">${sub}</div>` : ''}</div>`;
+  const hasB = S.bessMWh > 0 && S.bessMW > 0 && S.mode !== 'off';
+  $('dayPills').innerHTML =
+    pill(`${f0(s.D)} <small>MWh</small>`, 'Energy demand', `avg ${f1(s.avgD)} MW, peak ${f1(s.peakD)} MW`, 'var(--paper)') +
+    pill(pct(s.renewShare), 'Renewable share', hasB ? `${pct(s0.renewShare)} without battery` : `${f0(s.renewToLoad)} MWh`, 'var(--good)') +
+    pill(`${f1(s.gasPeak)} <small>MW</small>`, 'Gas peak', hasB ? `${f1(s0.gasPeak)} MW without battery` : `lowest ${f1(s.gasLow)} MW`, 'var(--c-gas)') +
+    pill(`${f1(s.ramp)} <small>MW/h</small>`, 'Steepest gas ramp', hasB ? `${f1(s0.ramp)} without battery` : 'fastest 1-hour climb', 'var(--c-gas)') +
+    pill(s.windCF == null ? '—' : pct(s.windCF), 'Wind capacity factor', s.windCF == null ? 'no turbines' : `${f0(s.W)} MWh today`, 'var(--c-wind)') +
+    pill(s.solarCF == null ? '—' : pct(s.solarCF), 'Solar capacity factor', s.solarCF == null ? 'no solar' : `${f0(s.So)} MWh today`, 'var(--c-solar)') +
+    pill(`${f1(s.curt)} <small>MWh</small>`, 'Curtailed', hasB ? `${f1(s0.curt)} without battery` : 'renewables wasted', 'var(--bad)') +
+    pill(hasB ? s.cycles.toFixed(2) : '—', 'Battery cycles', hasB ? `${f0(s.discharged)} MWh delivered` : 'no battery', 'var(--c-batt)') +
+    (s.uns > 0.05 ? pill(`${f1(s.uns)} <small>MWh</small>`, 'Unserved', 'not enough capacity', 'var(--bad)') : '');
+}
+
+/* ============================ CHARTS ============================ */
+const NS = 'http://www.w3.org/2000/svg';
+const CH = { W:960, H:330, l:46, r:12, t:12, b:28 };
+function defs(svg){
+  return `<defs>
+    <pattern id="${svg}-hc" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(185,169,242,.18)"/><rect width="3" height="7" fill="#B9A9F2"/></pattern>
+    <pattern id="${svg}-hx" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(235,91,91,.15)"/><rect width="3" height="7" fill="#EB5B5B"/></pattern>
+  </defs>`;
+}
+function drawMain(){
+  const svg = $('mainChart'), {W,H,l,r,t,b} = CH, pw = W-l-r, ph = H-t-b;
+  const top = R.g.map((g,i) => g + R.windUsed[i] + R.solarUsed[i] + Math.max(R.p[i],0));
+  const maxY = Math.ceil(Math.max(...top.map((v,i) => v + R.curt[i]), ...B.D, ...R0.g, S.gasCap * 0.6) * 1.08 / 10) * 10;
+  const X = i => l + pw * (i / N), Y = v => t + ph * (1 - v / maxY);
+  const area = (lo, hi) => {
+    let d = ''; for (let i = 0; i <= N; i++){ const k = i % N; d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(hi[k]).toFixed(1); }
+    for (let i = N; i >= 0; i--){ const k = i % N; d += 'L' + X(i).toFixed(1) + ',' + Y(lo[k]).toFixed(1); }
+    return d + 'Z';
+  };
+  const line = a => { let d=''; for (let i = 0; i <= N; i++) d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(a[i % N]).toFixed(1); return d; };
+  const z = Array(N).fill(0);
+  const s1 = R.g, s2 = s1.map((v,i) => v + R.windUsed[i]), s3 = s2.map((v,i) => v + R.solarUsed[i]), s4 = s3.map((v,i) => v + Math.max(R.p[i],0));
+  const chargeHi = B.D.map((d,i) => d + Math.max(-R.p[i], 0));
+  const curtHi = s4.map((v,i) => v + R.curt[i]);
+  let g = defs('m');
+  for (let v = 0; v <= maxY; v += 10){ g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1D4266" stroke-width="1"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${v}</text>`; }
+  g += `<text x="12" y="${t+ph/2}" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12" transform="rotate(-90 12 ${t+ph/2})" text-anchor="middle">MW</text>`;
+  for (let h = 0; h <= 24; h += 3){ g += `<text x="${X(h/DT)}" y="${H-8}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`; }
+  g += `<path d="${area(z, s1)}" fill="#D98457" opacity=".85"/>`;
+  g += `<path d="${area(s1, s2)}" fill="#8FE0EC" opacity=".85"/>`;
+  g += `<path d="${area(s2, s3)}" fill="#F5C542" opacity=".88"/>`;
+  g += `<path d="${area(s3, s4)}" fill="#6FCF97" opacity=".9"/>`;
+  g += `<path d="${area(B.D, chargeHi)}" fill="url(#m-hc)"/>`;
+  g += `<path d="${area(s4, curtHi)}" fill="url(#m-hx)"/>`;
+  if (S.showNoBatt && S.bessMWh > 0 && S.mode !== 'off') g += `<path d="${line(R0.g)}" fill="none" stroke="#D98457" stroke-width="2" stroke-dasharray="6 5"/>`;
+  const gm = S.gasCap * S.gasMinPct / 100;
+  g += `<line x1="${l}" x2="${W-r}" y1="${Y(S.gasCap)}" y2="${Y(S.gasCap)}" stroke="#EB5B5B" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${W-r-4}" y="${Y(S.gasCap)-5}" text-anchor="end" fill="#EB5B5B" font-family="IBM Plex Mono" font-size="11.5">gas max ${S.gasCap} MW</text>`;
+  if (gm > 0) g += `<line x1="${l}" x2="${W-r}" y1="${Y(gm)}" y2="${Y(gm)}" stroke="#1A1102" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${l+6}" y="${Y(gm)-5}" fill="#1A1102" font-family="IBM Plex Mono" font-size="11.5" opacity=".85">gas minimum ${f1(gm)} MW</text>`;
+  g += `<path d="${line(B.D)}" fill="none" stroke="#EAF2F5" stroke-width="2.6"/>`;
+  const cx = X(idx());
+  g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="#F5A623" stroke-width="2"/><circle cx="${cx}" cy="${Y(B.D[idx()])}" r="5" fill="#EAF2F5" stroke="#F5A623" stroke-width="2"/>`;
+  svg.innerHTML = g;
+}
+function drawSoc(){
+  const svg = $('socChart'), W = 960, H = 130, l = 46, r = 12, t = 10, b = 22, pw = W-l-r, ph = H-t-b;
+  const X = i => l + pw * (i / N), Y = v => t + ph * (1 - v);
+  let g = '';
+  [0, .5, 1].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1D4266"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${v*100}%</text>`);
+  for (let h = 0; h <= 24; h += 3) g += `<text x="${X(h/DT)}" y="${H-5}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`;
+  if (S.bessMWh > 0 && S.bessMW > 0){
+    [SOC_MIN, SOC_MAX].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#6FCF97" stroke-dasharray="3 4" opacity=".6"/>`);
+    let d = `M${X(0)},${Y(0)}`; for (let i = 0; i <= N; i++) d += `L${X(i).toFixed(1)},${Y(R.socPct[i % N]).toFixed(1)}`; d += `L${X(N)},${Y(0)}Z`;
+    g += `<path d="${d}" fill="rgba(111,207,151,.25)" stroke="#6FCF97" stroke-width="2"/>`;
+    // bars for charge/discharge
+    for (let i = 0; i < N; i++){ const p = R.p[i]; if (Math.abs(p) < .05) continue;
+      const hgt = Math.min(ph * .45, Math.abs(p) / S.bessMW * ph * .45);
+      g += `<rect x="${X(i)+1}" y="${p > 0 ? Y(0) - hgt : Y(0) - hgt}" width="${pw/N - 2}" height="${hgt}" fill="${p > 0 ? '#6FCF97' : '#B9A9F2'}" opacity=".35"/>`; }
+  } else g += `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13">Add battery power and energy to see it charge and discharge</text>`;
+  const cx = X(idx()); g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="#F5A623" stroke-width="2"/>`;
+  svg.innerHTML = g;
+}
+function chartScrub(svgId, left, width){
+  const svg = $(svgId); let down = false;
+  const go = e => { const rect = svg.getBoundingClientRect(); const x = (e.clientX - rect.left) / rect.width * width;
+    S.hour = clamp(Math.round((x - left) / (width - left - 12) * 24 / DT) * DT, 0, 23.75); renderTime(); };
+  svg.addEventListener('pointerdown', e => { down = true; svg.setPointerCapture(e.pointerId); go(e); });
+  svg.addEventListener('pointermove', e => { if (down) go(e); });
+  svg.addEventListener('pointerup', () => down = false);
+}
+chartScrub('mainChart', 46, 960); chartScrub('socChart', 46, 960);
+
+/* ============================ DIAGRAM ============================ */
+const BUSX = 560;
+const DG = {
+  gas:  { x:30,  y:40,  w:200, h:74, y0:77,  color:'#D98457', name:'Gas plant' },
+  wind: { x:30,  y:162, w:200, h:90, y0:207, color:'#8FE0EC', name:'Wind farm' },
+  solar:{ x:30,  y:312, w:200, h:90, y0:357, color:'#F5C542', name:'Solar PV' },
+  inv:  { x:292, y:334, w:66,  h:46, y0:357, color:'#F5C542', name:'DC/AC' },
+  load: { x:780, y:90,  w:190, h:90, y0:135, color:'#EAF2F5', name:'Town' },
+  pcs:  { x:652, y:310, w:66,  h:46, y0:333, color:'#6FCF97', name:'DC/AC' },
+  bess: { x:780, y:296, w:190, h:74, y0:333, color:'#6FCF97', name:'Battery' },
+};
+function buildDiagram(){
+  const svg = $('dgSvg');
+  let g = `<text x="${BUSX}" y="28" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12.5">substation bus</text>
+    <rect x="${BUSX-6}" y="38" width="12" height="360" rx="3" fill="#9FC0D6"/>
+    <text id="dg-bal" x="${BUSX}" y="425" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13"></text>
+    <text id="dg-bal2" x="${BUSX}" y="446" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13"></text>`;
+  const xf = (x, y, c) => `<circle cx="${x-7}" cy="${y}" r="10" fill="#12314F" stroke="${c}" stroke-width="2"/><circle cx="${x+7}" cy="${y}" r="10" fill="#12314F" fill-opacity=".6" stroke="${c}" stroke-width="2"/>`;
+  const seg = (id, x1, x2, y, c) => `<line x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="#274b6d" stroke-width="3"/><line id="${id}" class="flow" x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="${c}" stroke-linecap="round"/>`;
+  // lines
+  g += seg('fl-gas', 230, BUSX, 77, '#D98457') + seg('fl-wind', 230, BUSX, 207, '#8FE0EC');
+  g += seg('fl-sdc', 230, 292, 357, '#F5C542') + seg('fl-sac', 358, BUSX, 357, '#F5C542');
+  g += seg('fl-load', BUSX, 780, 135, '#EAF2F5');
+  g += seg('fl-bac', BUSX, 652, 333, '#6FCF97') + seg('fl-bdc', 718, 780, 333, '#6FCF97');
+  g += xf(420, 77, '#D98457') + xf(420, 207, '#8FE0EC') + xf(450, 357, '#F5C542') + xf(600, 333, '#6FCF97');
+  ['gas','wind','sac','load','bac'].forEach(k => g += `<text id="lb-${k}" text-anchor="middle" fill="#EAF2F5" font-family="IBM Plex Mono" font-size="13.5" font-weight="600"></text>`);
+  g += `<text x="261" y="344" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="11">DC</text><text x="749" y="320" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="11">DC</text>`;
+  // nodes
+  Object.entries(DG).forEach(([k, n]) => {
+    const small = k === 'inv' || k === 'pcs';
+    g += `<g class="node" data-k="${k}" tabindex="0" role="button" aria-label="${n.name}">
+      <rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="8" fill="#0F2946" stroke="${n.color}" stroke-width="1.6"/>
+      ${small ? `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" fill="${n.color}" font-family="Space Grotesk" font-size="15" font-weight="600">DC/AC</text>` :
+      `<text x="${n.x+14}" y="${n.y+24}" fill="${n.color}" font-family="Space Grotesk" font-size="16.5" font-weight="600">${n.name}</text>
+       <text id="nd-${k}-a" x="${n.x+14}" y="${n.y+45}" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12.5"></text>
+       <text id="nd-${k}-b" x="${n.x+14}" y="${n.y+63}" fill="#EAF2F5" font-family="IBM Plex Mono" font-size="12.5"></text>
+       ${k === 'load' ? `<text id="nd-load-c" x="${n.x+14}" y="${n.y+81}" fill="#6FCF97" font-family="IBM Plex Mono" font-size="12.5"></text>` : ''}
+       ${k === 'wind' || k === 'solar' ? `<text id="nd-${k}-c" x="${n.x+14}" y="${n.y+81}" font-family="IBM Plex Mono" font-size="12.5"></text>` : ''}`}
+    </g>`;
+  });
+  // battery fill gauge
+  g += `<rect x="930" y="306" width="28" height="54" rx="4" fill="none" stroke="#6FCF97" stroke-width="1.5"/><rect id="bess-fill" x="933" width="22" rx="2" fill="#6FCF97" opacity=".8"/>`;
+  svg.innerHTML = g;
+  svg.querySelectorAll('.node').forEach(el => {
+    const pick = () => { selNode = el.dataset.k; svg.querySelectorAll('.node').forEach(x => x.classList.toggle('selected', x === el)); renderInfo(); };
+    el.addEventListener('click', pick); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(); } });
+  });
+}
+let selNode = null;
+function setFlow(id, mw, rev, dim){
+  const el = $(id); const w = mw > 0.05 ? clamp(2 + mw * 0.34, 2.5, 15) : 0;
+  el.setAttribute('stroke-width', w); el.style.opacity = w ? 1 : 0; el.classList.toggle('rev', !!rev);
+}
+function label(id, x, y, txt){ const el = $(id); el.setAttribute('x', x); el.setAttribute('y', y); el.textContent = txt; }
+function curtLine(id, built, mw, calm){
+  const el = $(id); if (!el) return;
+  if (!built){ el.textContent = ''; return; }
+  const on = mw > 0.05;
+  el.textContent = on ? `${f1(mw)} MW curtailed` : calm;
+  el.setAttribute('fill', on ? '#EB5B5B' : '#7E9BB4');
+}
+function fitNodeText(){
+  document.querySelectorAll('#dgSvg .node').forEach(g => {
+    const box = g.querySelector('rect.box'); if (!box) return;
+    const maxW = +box.getAttribute('width') - 24;
+    g.querySelectorAll('text').forEach(t => {
+      t.removeAttribute('textLength'); t.removeAttribute('lengthAdjust');
+      try { if (t.getComputedTextLength() > maxW){ t.setAttribute('textLength', maxW); t.setAttribute('lengthAdjust', 'spacingAndGlyphs'); } } catch(e){}
+    });
+  });
+}
+function renderDiagram(){
+  const n = nowData(), su = solarUnit(n.t);
+  const set = (id, s) => $(id) && ($(id).textContent = s);
+  setFlow('fl-gas', n.g); setFlow('fl-wind', n.w); setFlow('fl-sac', n.s);
+  setFlow('fl-sdc', S.solar * su.dc * (n.sAvail > 0.05 ? n.s / n.sAvail : 0)); setFlow('fl-load', n.d - n.uns);
+  const bp = Math.abs(n.p) > 0.05 ? Math.abs(n.p) : 0;
+  setFlow('fl-bac', bp, n.p < 0); setFlow('fl-bdc', bp, n.p < 0);
+  ['fl-bac','fl-bdc'].forEach(id => $(id).setAttribute('stroke', n.p < 0 ? '#B9A9F2' : '#6FCF97'));
+  label('lb-gas', 330, 62, `${f1(n.g)} MW`); label('lb-wind', 330, 192, `${f1(n.w)} MW`);
+  label('lb-sac', 505, 342, `${f1(n.s)} MW`); label('lb-load', 672, 120, `${f1(n.d)} MW`);
+  $('lb-bac').setAttribute('text-anchor','start');
+  label('lb-bac', 572, 305, bp ? `${f1(bp)} MW ${n.p < 0 ? 'in' : 'out'}` : 'idle');
+  set('nd-gas-a', `${S.gasCap} MW nameplate`); set('nd-gas-b', `now ${f1(n.g)} MW · ${pct(n.g / S.gasCap)}`);
+  set('nd-wind-a', S.wind ? `${S.wind} × 3 MW = ${S.wind*3} MW` : 'none built');
+  const wc = n.wAvail - n.w, sc = n.sAvail - n.s;
+  set('nd-wind-b', S.wind ? `${f1(n.w)} of ${f1(n.wAvail)} MW sent` : 'add in Playground');
+  curtLine('nd-wind-c', S.wind, wc, `${n.v.toFixed(1)} m/s wind`);
+  set('nd-solar-a', S.solar ? `${S.solar} × 1 MW = ${S.solar} MW` : 'none built');
+  set('nd-solar-b', S.solar ? `${f1(n.s)} of ${f1(n.sAvail)} MW sent` : 'add in Playground');
+  curtLine('nd-solar-c', S.solar, sc, n.sAvail > 0.05 ? 'nothing curtailed' : 'sun is down');
+  set('nd-load-a', `peak ${f1(SUM.peakD)} MW today`); set('nd-load-b', `now ${f1(n.d)} MW`);
+  set('nd-load-c', `${pct(n.share)} renewable now`);
+  set('nd-bess-a', S.bessMWh && S.bessMW ? `${S.bessMW} MW / ${S.bessMWh} MWh` : 'none built');
+  set('nd-bess-b', S.bessMWh && S.bessMW ? `${pct(n.socPct)} · ${f1(n.soc)} MWh` : 'add in Playground');
+  const fill = $('bess-fill'), fh = 48 * (S.bessMWh ? n.socPct : 0); fill.setAttribute('y', 309 + 48 - fh); fill.setAttribute('height', fh);
+  ['wind','solar','inv','bess','pcs'].forEach(k => {
+    const none = (k === 'wind' && !S.wind) || ((k === 'solar' || k === 'inv') && !S.solar) || ((k === 'bess' || k === 'pcs') && !(S.bessMW && S.bessMWh));
+    document.querySelector(`.node[data-k="${k}"]`).style.opacity = none ? .4 : 1;
+  });
+  fitNodeText();
+  const inTot = n.g + n.w + n.s + Math.max(n.p, 0), outTot = n.d - n.uns + Math.max(-n.p, 0);
+  $('dg-bal').textContent = `in: gas ${f1(n.g)} + wind ${f1(n.w)} + solar ${f1(n.s)} + battery ${f1(Math.max(n.p,0))} = ${f1(inTot)} MW`;
+  $('dg-bal2').textContent = `out: town ${f1(n.d - n.uns)} + battery charging ${f1(Math.max(-n.p,0))} = ${f1(outTot)} MW`;
+  renderInfo();
+}
+function goToSetting(key){
+  document.querySelector('.tab[data-tab="playground"]').click();
+  const c = ADV_CTLS.find(x => x.key === key) || RES_CTLS.find(x => x.key === key);
+  if (ADV_CTLS.includes(c)) $('advDetails').open = true;
+  c.el.scrollIntoView({ behavior:'smooth', block:'center' });
+  c.el.classList.remove('flash'); void c.el.offsetWidth; c.el.classList.add('flash');
+  c.inp.focus({ preventScroll:true });
+}
+function curtPara(avail, sent, gm, s, kind){
+  const c = avail - sent;
+  if (c > 0.05) return `<p style="color:#ffb3b3">Right now it could make <strong>${f1(avail)} MW</strong> but only <strong>${f1(sent)} MW</strong> is sent to the grid. The other <strong>${f1(c)} MW is curtailed</strong>: the gas plant is already at its ${f1(gm)} MW minimum${S.bessMWh && S.bessMW && S.mode !== 'off' ? ' and the battery is full or at its charging limit' : ' and there is no battery to absorb it'}, so the inverters are told to back off.</p>`;
+  if (s.curt > 0.05) return `<p>Nothing is curtailed at this moment, but ${f1(s.curt)} MWh of wind and solar is curtailed across the whole day. Scrub to midday to see it.</p>`;
+  return '';
+}
+function renderInfo(){
+  if (!selNode) return;
+  const n = nowData(), su = solarUnit(n.t), s = SUM, gm = S.gasCap * S.gasMinPct / 100;
+  const I = {
+    gas: ['Natural-gas plant', 'dispatchable · fills the gap',
+      `<p>The gas plant is the only resource here that can be turned up or down on command. Whatever demand wind, solar and the battery don't cover, gas makes up: <strong>gas = demand − wind − solar − battery</strong>.</p>
+       <p>Right now it's making <strong>${f1(n.g)} MW</strong>, ${pct(n.g / S.gasCap)} of its ${S.gasCap} MW nameplate. Today it swings between ${f1(s.gasLow)} and ${f1(s.gasPeak)} MW and burns fuel for ${f0(s.gas)} MWh.</p>`,
+      `It has a floor: below ${f1(gm)} MW (${S.gasMinPct}%) it can't run stably. When renewables push it to that floor, the surplus has to go into the battery or be curtailed.`],
+    wind: ['Onshore wind farm', 'variable · weather-driven',
+      S.wind ? `<p>${S.wind} turbines × 3 MW = <strong>${S.wind*3} MW nameplate</strong>. Wind at hub height is ${n.v.toFixed(1)} m/s, so each turbine makes ${f1(n.wAvail / S.wind)} MW, or ${pct(n.wAvail / (S.wind*3))} of its rating.</p>
+       <p>Today's capacity factor is <strong>${pct(s.windCF)}</strong>: the farm produced ${f0(s.W)} MWh, compared with ${f0(S.wind*3*24)} MWh if it had run flat out all day.</p>${curtPara(n.wAvail, n.w, gm, s, 'wind')}` : '<p>No turbines built yet. Add some in the Playground tab.</p>',
+      'Power rises with the cube of wind speed: 10% more wind means about 33% more power, until the turbine reaches its rated 3 MW around 12.5 m/s.'],
+    solar: ['Solar PV installations', 'variable · daytime only',
+      S.solar ? `<p>${S.solar} installations, each with ${S.ilr.toFixed(2)} MW of panels (DC) feeding a 1 MW inverter (AC). In this sunlight the panels can produce ${f1(S.solar * su.dc)} MW of DC, which the inverters can turn into <strong>${f1(n.sAvail)} MW AC</strong>.</p>
+       ${curtPara(n.sAvail, n.s, gm, s, 'solar')}<p>Today's capacity factor is <strong>${pct(s.solarCF)}</strong> (${f0(s.So)} MWh possible). Even on a perfect day it can't top ~45% because it's dark for half of it.</p>` : '<p>No solar built yet. Add some in the Playground tab.</p>',
+      'Solar output peaks around midday, but the town peaks around 6–7 PM. That mismatch is exactly what a battery is for.'],
+    inv: ['Solar inverter', 'DC → AC · sets the AC nameplate',
+      `<p>Panels make direct current; the grid runs on alternating current. The inverter converts it at about ${INV_EFF*100}% efficiency, and it has a hard limit: <strong>1 MW AC per installation</strong>.</p>
+       <p>Developers deliberately put more panels than inverter behind each one (DC/AC ratio ${S.ilr.toFixed(2)} here). Mornings and evenings get more output; at midday the extra is <strong>clipped</strong>. Right now: ${f1(n.clip)} MW clipped; ${f1(s.clip)} MWh all day.</p>`,
+      `The DC/AC ratio slider lives in the Playground tab, inside the collapsed <strong>Advanced settings</strong> section. <button class="linkbtn" onclick="goToSetting('ilr')">Open the DC/AC ratio slider</button> and try it on a clear summer day to watch the solar curve go flat-topped.`],
+    load: ['The town', 'demand · the daily load curve',
+      `<p>About 15,000 homes plus shops, schools and a hospital. Demand bottoms out around 3–4 AM, climbs through the morning, and peaks in the early evening when people get home, cook, and run AC or heat.</p>
+       <p>Right now it needs <strong>${f1(n.d)} MW</strong>. Today it uses ${f0(s.D)} MWh, averaging ${f1(s.avgD)} MW with a ${f1(s.peakD)} MW peak.</p>`,
+      `${pct(n.share)} of this moment's demand is being met by renewables, counting renewable energy the battery stored earlier.`],
+    bess: ['Battery energy storage (BESS)', 'MW = how fast · MWh = how much',
+      S.bessMW && S.bessMWh ? `<p><strong>${S.bessMW} MW / ${S.bessMWh} MWh</strong>: it can push or absorb up to ${S.bessMW} MW, and hold ${S.bessMWh} MWh, which is ${(S.bessMWh/S.bessMW).toFixed(1)} hours at full power.</p>
+       <p>Right now it's ${battStatus(n).word.toLowerCase()}${battStatus(n).mw ? ` at ${f1(battStatus(n).mw)} MW` : ''} and ${pct(n.socPct)} full (${f1(n.soc)} MWh). Today it delivered ${f0(s.discharged)} MWh, ${s.cycles.toFixed(2)} full cycles.</p>` : '<p>No battery built yet. Set both battery power (MW) and battery energy (MWh) in the Playground tab.</p>',
+      `Round-trip efficiency is ${S.rte}%: about ${100 - S.rte}% of what goes in is lost as heat. The model keeps charge between 5% and 95% to protect the cells.`],
+    pcs: ['Battery inverter (PCS)', 'bidirectional DC ↔ AC',
+      `<p>The power conversion system is what sets the battery's MW rating. It converts grid AC to DC to charge the cells, and DC back to AC to discharge. The cells set the MWh.</p>
+       <p>That's why power and energy are priced and sized separately: more inverter buys a faster battery, more cells buy a longer one.</p>`,
+      'A 4-hour battery (MWh = 4 × MW) is the most common size being built today.'],
+  };
+  const [title, tag, body, note] = I[selNode];
+  $('infoCard').innerHTML = `<div class="info-tag">${tag}</div><div class="info-title">${title}</div><div class="info-body">${body}</div><div class="info-note">${note}</div>`;
+}
+
+/* ============================ MATH TAB ============================ */
+function renderMath(){
+  const n = nowData(), s = SUM, su = solarUnit(n.t), gm = S.gasCap * S.gasMinPct / 100;
+  const L = v => `<span class="live">${v}</span>`;
+  const eta = S.rte / 100, sq = Math.sqrt(eta);
+  const H = R.H, Lw = R.L, hasB = S.bessMW && S.bessMWh && S.mode !== 'off';
+  $('mathGrid').innerHTML = `
+  <div class="m-card"><h3>Power vs. energy</h3>
+    <p><strong>MW</strong> is a rate, like speed. <strong>MWh</strong> is an amount, like distance. Run 1 MW for 1 hour and you've made 1 MWh.</p>
+    <div class="f">energy (MWh) = power (MW) × time (h)<br>town today: ${L(f1(s.avgD))} MW avg × 24 h = ${L(f0(s.D))} MWh</div>
+    <p>The model steps through the day in 15-minute slices, so each slice adds power × 0.25 h.</p></div>
+
+  <div class="m-card"><h3>Nameplate and capacity factor</h3>
+    <p><strong>Nameplate</strong> is the most a unit can ever produce. <strong>Capacity factor</strong> is how much it actually produced compared with running at nameplate the whole time.</p>
+    <div class="f">CF = energy produced ÷ (nameplate × hours)<br>wind today: ${S.wind ? `${L(f0(s.W))} ÷ (${L(S.wind*3)} × 24) = ${L(pct(s.windCF))}` : L('no turbines')}<br>solar today: ${S.solar ? `${L(f0(s.So))} ÷ (${L(S.solar)} × 24) = ${L(pct(s.solarCF))}` : L('no solar')}</div>
+    <p>Over a full year, US onshore wind typically lands around 30–45% and utility solar around 20–30%. That's why a 3 MW turbine at 35% makes roughly 3 × 0.35 × 8,760 h ≈ 9,200 MWh a year, not 26,280.</p></div>
+
+  <div class="m-card"><h3>Wind: the cube law</h3>
+    <p>The power in moving air rises with the <em>cube</em> of wind speed, so doubling the wind gives about 8× the power. A turbine starts at the cut-in speed, reaches its 3 MW rating around 12.5 m/s, and shuts down above 25 m/s for safety.</p>
+    <div class="f">P = 3 MW × (v³ − 3³) ÷ (12.5³ − 3³)<br>now: v = ${L(n.v.toFixed(1))} m/s → ${L(f1(3 * turbinePU(n.v)))} MW per turbine</div>
+    <svg id="windCurve" viewBox="0 0 320 150"></svg></div>
+
+  <div class="m-card"><h3>Solar: panels, inverter, clipping</h3>
+    <p>Output follows the sun's arc from sunrise to sunset, reduced by heat, dust and wiring (≈${Math.round(SOLAR_DERATE*100)}% derate) and by clouds. The inverter converts DC to AC and caps it at 1 MW.</p>
+    <div class="f">DC = ${L(S.ilr.toFixed(2))} MW panels × sun(${L(fmtTime(n.t))}) ${L(sunShape(n.t).toFixed(2))} × ${SOLAR_DERATE} × sky ${L(skyFactor(n.t).toFixed(2))} = ${L(su.dc.toFixed(2))} MW<br>AC = min(DC × ${INV_EFF}, 1 MW) = ${L(su.ac.toFixed(2))} MW per installation</div>
+    <svg id="solarCurve" viewBox="0 0 320 150"></svg></div>
+
+  <div class="m-card"><h3>Battery: the pipe and the tank</h3>
+    <p><strong>Power (MW)</strong> is the width of the pipe: how fast energy moves in or out. <strong>Energy (MWh)</strong> is the size of the tank. Duration is one divided by the other.</p>
+    <div class="f">duration = ${L(S.bessMWh)} MWh ÷ ${L(S.bessMW || 0)} MW = ${L(S.bessMW ? (S.bessMWh/S.bessMW).toFixed(1) + ' h' : '—')}<br>charging: stored += P × 0.25 h × √${eta.toFixed(2)} (${L(sq.toFixed(3))})<br>discharging: stored −= P × 0.25 h ÷ ${L(sq.toFixed(3))}</div>
+    <p>Losses are split evenly between the way in and the way out, so ${S.rte}% round-trip means ${(sq*100).toFixed(1)}% each way. A tall-and-skinny battery (big MW, small MWh) can hit a short peak hard but runs dry fast; a short-and-wide one can't cover the peak's height but lasts for hours.</p></div>
+
+  <div class="m-card"><h3>Who runs when: dispatch order</h3>
+    <p>Each 15-minute slice is solved in the same order, which mirrors how grid operators rank resources by running cost:</p>
+    <div class="f">1. wind + solar: take all of it (no fuel cost)<br>2. net load = demand − wind − solar = ${L(f1(n.net))} MW<br>3. battery charges or discharges (strategy below): ${L(f1(n.p))} MW<br>4. gas = net load − battery = ${L(f1(n.g))} MW</div>
+    <p>Two limits kick in last. If gas would fall below its ${f1(gm)} MW minimum, the battery charges harder; if it's full, renewables get <strong>curtailed</strong>. If gas would exceed ${S.gasCap} MW, the battery discharges harder; if it's empty, demand goes <strong>unserved</strong>.</p></div>
+
+  <div class="m-card"><h3>Battery strategies</h3>
+    <p><strong>Flatten gas</strong> picks two thresholds for the day. Above the upper one, the battery discharges to shave the peak; below the lower one, it charges to fill the valley. The thresholds are set so the battery just empties and just refills, using the full tank without running out early.</p>
+    <div class="f">${hasB && S.mode === 'flatten' ? `discharge when net load > ${L(f1(H))} MW<br>charge when net load < ${L(f1(Lw))} MW` : hasB && S.mode === 'surplus' ? `charge only when gas would drop below ${L(f1(gm))} MW<br>discharge when net load > ${L(isFinite(H) ? f1(H) : '—')} MW` : L('battery off or not built')}</div>
+    <p><strong>Store surplus only</strong> never charges from gas. It soaks up renewable energy that would otherwise be curtailed and releases it at the evening peak, so everything it delivers counts as renewable.</p>
+    <p>The model replays the day four times so the battery starts each day where the previous one left it. Real operators use forecasts, which are never this perfect.</p></div>
+
+  <div class="m-card"><h3>Counting the renewable percentage</h3>
+    <p>At any instant: renewables reaching the town directly, plus the renewable portion of whatever the battery is discharging, divided by demand.</p>
+    <div class="f">share = (wind + solar − curtailed − charging from renewables + green battery output) ÷ demand<br>now: (${L(f1(n.wAvail + n.sAvail))} − ${L(f1(n.curt))} − ${L(f1(n.chargeR))} + ${L(f1(n.dischGreen))}) ÷ ${L(f1(n.d))} = ${L(pct(n.share))}</div>
+    <p>The battery tracks how much of its stored energy came from renewables vs. gas, and discharges in that same ratio. Charging energy counts toward the share later, when it comes back out, not while it goes in.</p></div>
+
+  <div class="m-card"><h3>Net load and the duck curve</h3>
+    <p><strong>Net load</strong> is demand minus wind and solar: the part the gas plant and battery must cover. Add lots of solar and net load sags at midday and then shoots up at sunset, when solar disappears just as people get home. Plotted, the shape looks like a duck, a term coined by California's grid operator.</p>
+    <div class="f">steepest 1-hour gas ramp today: ${L(f1(s.ramp))} MW/h${hasB ? ` (${L(f1(SUM0.ramp))} without battery)` : ''}</div>
+    <p>Steep ramps are hard and expensive for thermal plants. Batteries are fast enough to cover them, which is one of their most valuable jobs.</p></div>
+  `;
+  drawWindCurve(n.v); drawSolarCurve(n.i);
+}
+function drawWindCurve(vNow){
+  const svg = $('windCurve'), W = 320, H = 150, l = 34, r = 8, t = 10, b = 26, pw = W-l-r, ph = H-t-b;
+  const X = v => l + pw * v / 26, Y = p => t + ph * (1 - p / 3.2);
+  let d = ''; for (let v = 0; v <= 26; v += 0.1) d += (v ? 'L' : 'M') + X(v).toFixed(1) + ',' + Y(3 * turbinePU(v)).toFixed(1);
+  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2A5478"/><line x1="${l}" x2="${l}" y1="${t}" y2="${Y(0)}" stroke="#2A5478"/>`;
+  [0,1,2,3].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${p}</text>`);
+  [0,5,10,15,20,25].forEach(v => g += `<text x="${X(v)}" y="${H-12}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${v}</text>`);
+  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">wind speed (m/s) → MW per turbine</text>`;
+  g += `<path d="${d}" fill="none" stroke="#8FE0EC" stroke-width="2.2"/>`;
+  g += `<line x1="${X(vNow)}" x2="${X(vNow)}" y1="${t}" y2="${Y(0)}" stroke="#F5A623" stroke-dasharray="3 3"/><circle cx="${X(vNow)}" cy="${Y(3*turbinePU(vNow))}" r="5" fill="#F5A623"/>`;
+  svg.innerHTML = g;
+}
+function drawSolarCurve(iNow){
+  const svg = $('solarCurve'), W = 320, H = 150, l = 34, r = 8, t = 10, b = 26, pw = W-l-r, ph = H-t-b;
+  const maxY = Math.max(1.2, ...B.dcUnit) * 1.05;
+  const X = i => l + pw * i / N, Y = p => t + ph * (1 - p / maxY);
+  const ln = a => a.map((v,i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('');
+  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2A5478"/>`;
+  [0, 0.5, 1].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${p}</text>`);
+  [0,6,12,18].forEach(h => g += `<text x="${X(h/DT)}" y="${H-12}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${['12a','6a','12p','6p'][h/6]}</text>`);
+  g += `<line x1="${l}" x2="${W-r}" y1="${Y(1)}" y2="${Y(1)}" stroke="#EB5B5B" stroke-dasharray="3 3" opacity=".7"/><text x="${W-r}" y="${Y(1)-4}" text-anchor="end" fill="#EB5B5B" font-family="IBM Plex Mono" font-size="10">inverter limit 1 MW</text>`;
+  g += `<path d="${ln(B.dcUnit)}" fill="none" stroke="#F5C542" stroke-width="1.6" stroke-dasharray="4 3" opacity=".8"/>`;
+  g += `<path d="${ln(B.acUnit)}" fill="none" stroke="#F5C542" stroke-width="2.4"/>`;
+  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">dashed = panels (DC) · solid = grid (AC), MW</text>`;
+  g += `<line x1="${X(iNow)}" x2="${X(iNow)}" y1="${t}" y2="${Y(0)}" stroke="#F5A623" stroke-dasharray="3 3"/>`;
+  svg.innerHTML = g;
+}
+
+/* ============================ RENDER ============================ */
+function renderTime(){ syncTimebars(); renderNow(); drawMain(); drawSoc(); renderDiagram(); renderMath(); }
+function renderAll(){ syncControls(); syncPresets(); renderDay(); renderTime(); }
+buildDiagram();
+run();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => renderDiagram());
+</script>
+</body>
+</html>
