@@ -1,6 +1,6 @@
 # Grid Field Guide
 
-**Live site:** https://franklan-pm.github.io/grid-field-guide/
+**Live site:** https://franklan.net/
 
 Four interactive chapters that follow electricity from the power plant to the customer's meter, then up into the control room that runs it. Written for program managers and other non-engineers who work around the grid.
 
@@ -27,5 +27,16 @@ Each chapter page starts with:
 <link rel="stylesheet" href="../../shared/theme.css">
 <script src="../../shared/nav.js" defer></script>
 ```
+
+## History
+
+Each chapter started as its own repo. They were imported here with their full commit history (`git log -- apps/02-distribution` shows a chapter's history). The old repos now forward to their chapter:
+
+| Old repo | Now |
+|---|---|
+| [grid-and-renewables](https://github.com/franklan-pm/grid-and-renewables) | `apps/01-power-mix` |
+| [electric-distribution-trainer](https://github.com/franklan-pm/electric-distribution-trainer) | `apps/02-distribution` |
+| [der-microgrid-sim](https://github.com/franklan-pm/der-microgrid-sim) | `apps/03-der-microgrids` |
+| [grid-mod-operations](https://github.com/franklan-pm/grid-mod-operations) | `apps/04-grid-operations` |
 
 These are learning tools, not engineering references. Values are simplified and typical.
