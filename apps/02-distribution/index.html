@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Distribution Grid Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#0B1E33;
+    --panel-navy:#12314F;
+    --panel-navy-2:#0F2946;
+    --line-cyan:#8FE0EC;
+    --line-cyan-dim:#4C7C8C;
+    --paper:#EAF2F5;
+    --muted:#7E9BB4;
+    --signal-amber:#F5A623;
+    --signal-amber-dim:#8A6323;
+    --copper:#D98457;
+    --good:#6FCF97;
+    --bad:#EB5B5B;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #163a5c 0%, transparent 55%),
+      var(--ink-navy);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+
+  /* header */
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    letter-spacing:.14em;
+    color:var(--signal-amber);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,4vw,38px);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  .sub{color:var(--muted);font-size:17px;max-width:640px;line-height:1.5;margin-bottom:26px;}
+
+  /* tabs */
+  .tabs{
+    display:flex;
+    gap:2px;
+    background:var(--panel-navy-2);
+    border:1px solid #1D4266;
+    border-radius:var(--radius);
+    padding:4px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+  }
+  .tab{
+    flex:1 1 auto;
+    min-width:120px;
+    text-align:center;
+    padding:10px 12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    letter-spacing:.03em;
+    color:var(--muted);
+    background:transparent;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .tab:hover{color:var(--paper);}
+  .tab.active{
+    background:var(--signal-amber);
+    color:#1A1102;
+    font-weight:600;
+  }
+
+  .panel{
+    background:var(--panel-navy);
+    border:1px solid #1D4266;
+    border-radius:var(--radius);
+    padding:22px;
+    display:none;
+  }
+  .panel.active{display:block;}
+
+  /* ---- diagram ---- */
+  .diagram-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .diagram-head h2{font-family:'Space Grotesk';font-size:20px;margin:0;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
+  #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;}
+  .node{cursor:pointer;}
+  .node:hover rect, .node:hover circle{ filter:brightness(1.35); }
+  .node.selected rect, .node.selected circle{ stroke:var(--signal-amber); stroke-width:3; }
+  .diagram-hint{font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted); margin-bottom:14px;}
+  .legend svg{display:inline-block; vertical-align:middle;}
+  .node text{pointer-events:none;}
+  .node.selected rect[fill="transparent"]{stroke:none;}
+  .node.selected line:not(.hit){filter:brightness(1.3) drop-shadow(0 0 3px rgba(245,166,35,.6));}
+  .node:hover text{fill:var(--paper);}
+  .node.selected text{fill:var(--signal-amber);}
+  .hit{stroke:transparent; stroke-width:16; fill:none;}
+  .read-head{font-family:'Space Grotesk'; font-size:18px; margin:26px 0 4px;}
+  .read-intro{font-size:15.5px; color:var(--muted); margin:0 0 12px; line-height:1.5;}
+  .read-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;}
+  .read-card{background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:14px 16px;}
+  .read-card h4{font-family:'Space Grotesk'; font-size:16.5px; margin:0 0 6px; color:var(--paper);}
+  .read-card p{font-size:15.5px; line-height:1.55; margin:0 0 8px; opacity:.92;}
+  .read-card p:last-child{margin-bottom:0;}
+
+  #infoCard{
+    background:var(--panel-navy-2);
+    border:1px solid #1D4266;
+    border-left:3px solid var(--signal-amber);
+    border-radius:8px;
+    padding:16px 18px;
+    min-height:96px;
+  }
+  #infoCard .placeholder{color:var(--muted); font-size:16px;}
+  .info-title{font-family:'Space Grotesk'; font-weight:600; font-size:19px; margin:0 0 3px;}
+  .info-tag{font-family:'IBM Plex Mono'; font-size:14px; color:var(--signal-amber); text-transform:uppercase; letter-spacing:.06em;}
+  .info-body{font-size:16.5px; line-height:1.55; color:var(--paper); margin-top:8px;}
+  .info-note{font-size:15px; color:var(--muted); margin-top:10px; border-top:1px dashed #26496b; padding-top:9px;}
+
+  /* ---- glossary ---- */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .chip{
+    font-family:'IBM Plex Mono'; font-size:14.5px;
+    padding:6px 12px; border-radius:20px;
+    border:1px solid #2A5478; color:var(--muted); cursor:pointer; background:transparent;
+  }
+  .chip.active{background:var(--line-cyan); color:#0B1E33; border-color:var(--line-cyan); font-weight:600;}
+  .gl-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:12px;}
+  .gl-card{background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:14px 16px;}
+  .gl-card h3{font-family:'Space Grotesk'; font-size:17.5px; margin:0 0 4px;}
+  .gl-card .cat{font-family:'IBM Plex Mono'; font-size:13px; color:var(--copper); text-transform:uppercase; letter-spacing:.05em;}
+  .gl-card p{font-size:15.5px; color:var(--paper); line-height:1.5; margin:8px 0 0; opacity:.9;}
+
+  /* ---- flashcards ---- */
+  .fc-wrap{display:flex; flex-direction:column; align-items:center; gap:16px;}
+  .fc-progress{font-family:'IBM Plex Mono'; font-size:14.5px; color:var(--muted);}
+  .flashcard{
+    width:100%; max-width:460px; height:230px;
+    background:var(--panel-navy-2);
+    border:1px solid #1D4266;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    padding:24px; cursor:pointer; user-select:none;
+    position:relative;
+  }
+  .flashcard .side-label{position:absolute; top:12px; left:14px; font-family:'IBM Plex Mono'; font-size:13px; color:var(--muted); letter-spacing:.08em;}
+  .flashcard h3{font-family:'Space Grotesk'; font-size:24px; margin:0;}
+  .flashcard p{font-size:17px; line-height:1.55; margin:0;}
+  .fc-controls{display:flex; gap:10px;}
+  .btn{
+    font-family:'IBM Plex Mono'; font-size:15px; letter-spacing:.03em;
+    padding:9px 16px; border-radius:7px; border:1px solid #2A5478;
+    background:transparent; color:var(--paper); cursor:pointer;
+  }
+  .btn:hover{border-color:var(--line-cyan);}
+  .btn.primary{background:var(--signal-amber); color:#1A1102; border-color:var(--signal-amber); font-weight:600;}
+  .btn.good{border-color:var(--good); color:var(--good);}
+  .btn.bad{border-color:var(--bad); color:var(--bad);}
+
+  /* ---- quiz ---- */
+  .quiz-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
+  .score-pill{font-family:'IBM Plex Mono'; font-size:14.5px; color:var(--muted); background:var(--panel-navy-2); border:1px solid #1D4266; padding:6px 12px; border-radius:20px;}
+  .q-text{font-family:'Space Grotesk'; font-size:20px; margin:0 0 16px; line-height:1.4;}
+  .q-options{display:grid; gap:9px;}
+  .q-option{
+    text-align:left; padding:12px 14px; border-radius:8px; border:1px solid #2A5478;
+    background:var(--panel-navy-2); color:var(--paper); font-size:16.5px; cursor:pointer; font-family:'IBM Plex Sans';
+  }
+  .q-option:hover{border-color:var(--line-cyan);}
+  .q-option.correct{border-color:var(--good); background:#12331f;}
+  .q-option.incorrect{border-color:var(--bad); background:#341515;}
+  .q-explain{margin-top:14px; font-size:16px; color:var(--muted); line-height:1.5; display:none;}
+  .q-footer{margin-top:16px; display:flex; justify-content:flex-end;}
+  .quiz-done{text-align:center; padding:20px 0;}
+  .quiz-done .big{font-family:'Space Grotesk'; font-size:36px; color:var(--signal-amber);}
+
+  /* ---- sequence game ---- */
+  .seq-instructions{font-size:16px; color:var(--muted); margin-bottom:16px; line-height:1.5;}
+  .seq-slots{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; min-height:52px;}
+  .seq-slot{
+    flex:1 1 100px; min-height:52px; border:1px dashed #2A5478; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'IBM Plex Mono'; font-size:14.5px; color:var(--muted); padding:6px;
+  }
+  .seq-slot.filled{border-style:solid; background:var(--panel-navy-2); color:var(--paper); font-family:'IBM Plex Sans'; font-size:15px;}
+  .seq-slot.correct{border-color:var(--good); color:var(--good);}
+  .seq-slot.wrong{border-color:var(--bad); color:var(--bad);}
+  .seq-pool{display:flex; gap:9px; flex-wrap:wrap;}
+  .seq-item{
+    padding:10px 14px; border-radius:8px; border:1px solid var(--copper); color:var(--paper);
+    background:#241408; cursor:pointer; font-size:15.5px;
+  }
+  .seq-item:hover{background:#31200f;}
+  .seq-item.used{opacity:.25; pointer-events:none;}
+  .seq-result{margin-top:16px; font-size:16.5px;}
+
+  /* ---- reliability ---- */
+  .metric-defs{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:22px;}
+  .metric-card{background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:14px 16px;}
+  .metric-card .m-name{font-family:'Space Grotesk'; font-weight:600; font-size:17.5px; color:var(--signal-amber);}
+  .metric-card .m-formula{font-family:'IBM Plex Mono'; font-size:14.5px; color:var(--line-cyan); margin:6px 0;}
+  .metric-card p{font-size:15.5px; line-height:1.5; margin:6px 0 0; opacity:.9;}
+  .calc-row{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center;}
+  .calc-row input{
+    background:var(--panel-navy-2); border:1px solid #2A5478; border-radius:6px; color:var(--paper);
+    padding:8px 10px; font-family:'IBM Plex Mono'; font-size:15px; width:100%;
+  }
+  .calc-row .rm{background:transparent; border:1px solid #2A5478; color:var(--bad); border-radius:6px; cursor:pointer; padding:8px 10px; font-family:'IBM Plex Mono'; font-size:14.5px;}
+  .calc-labels{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-family:'IBM Plex Mono'; font-size:13.5px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
+  .calc-results{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:18px;}
+  .result-pill{background:var(--panel-navy-2); border:1px solid var(--signal-amber); border-radius:8px; padding:12px 14px; text-align:center;}
+  .result-pill .val{font-family:'Space Grotesk'; font-size:24px; color:var(--signal-amber); font-weight:600;}
+  .result-pill .lbl{font-family:'IBM Plex Mono'; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+
+  /* ---- cost reference ---- */
+  .cost-note{font-size:15.5px; color:var(--muted); line-height:1.55; margin-bottom:18px; border-left:3px solid var(--copper); padding:8px 14px; background:var(--panel-navy-2); border-radius:0 8px 8px 0;}
+  .cost-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
+  .cost-card{background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;}
+  .cost-icon{flex:0 0 auto; width:44px; height:44px;}
+  .cost-body h3{font-family:'Space Grotesk'; font-size:17px; margin:0 0 4px;}
+  .cost-range{font-family:'IBM Plex Mono'; font-size:15.5px; color:var(--signal-amber); font-weight:600;}
+  .cost-body p{font-size:14.5px; color:var(--muted); line-height:1.5; margin:6px 0 0;}
+
+  /* ---- playground ---- */
+  .pg-legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin-bottom:16px;}
+  .pg-legend-card{background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:10px 12px;}
+  .pg-legend-card b{font-family:'Space Grotesk'; font-size:15.5px; display:block; margin-bottom:3px;}
+  .pg-legend-card span{font-size:14.5px; color:var(--muted); line-height:1.45;}
+  .pg-controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .pg-toggle{
+    font-family:'IBM Plex Mono'; font-size:15px; padding:9px 16px; border-radius:7px;
+    border:1px solid var(--bad); background:transparent; color:var(--bad); cursor:pointer;
+  }
+  .pg-toggle.active{background:var(--bad); color:#fff; font-weight:600;}
+  .pg-counter{margin-left:auto; font-family:'IBM Plex Mono'; font-size:15px; color:var(--paper); background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:20px; padding:8px 14px;}
+  #pgSvg{width:100%; height:auto; display:block; margin:10px 0;}
+  #pgSvg.fault-mode{cursor:crosshair;}
+  .pg-hint{
+    background:var(--panel-navy-2); border:1px solid #1D4266; border-left:3px solid var(--line-cyan);
+    border-radius:8px; padding:13px 16px; font-size:16px; line-height:1.55; margin-top:6px;
+  }
+  .pg-hint.warn{border-left-color:var(--bad); color:#ffb3b3;}
+  .pg-dev{cursor:pointer;}
+  .pg-dev:hover rect{filter:brightness(1.4);}
+  .pg-node{cursor:pointer;}
+  .pg-node:hover circle.pg-node-dot{filter:brightness(1.4);}
+  @keyframes pgPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .pg-locked{animation:pgPulse 1s ease-in-out infinite;}
+  @media (prefers-reduced-motion: reduce){ .pg-locked{animation:none;} }
+
+  footer{text-align:center; color:var(--muted); font-family:'IBM Plex Mono'; font-size:14px; margin-top:24px;}
+  @media (prefers-reduced-motion: reduce){ * { transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Field guide — for program managers, no engineering degree required</div>
+  <h1>Distribution Grid Equipment</h1>
+  <p class="sub">Click through the live one-line diagram, then drill the vocabulary with flashcards, a quiz, and a circuit-building game. Includes feeder ties, SCADA/automation, reliability metrics, and rough equipment costs — from the substation fence to the customer's meter.</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="diagram">◇ Diagram</button>
+    <button class="tab" data-tab="playground">⚡ Playground</button>
+    <button class="tab" data-tab="glossary">≡ Glossary</button>
+    <button class="tab" data-tab="flashcards">⟲ Flashcards</button>
+    <button class="tab" data-tab="quiz">? Quiz</button>
+    <button class="tab" data-tab="sequence">→ Build the Circuit</button>
+    <button class="tab" data-tab="reliability">% Reliability</button>
+    <button class="tab" data-tab="costs">$ Costs</button>
+  </div>
+
+  <!-- DIAGRAM -->
+  <section class="panel active" id="panel-diagram">
+    <div class="diagram-head">
+      <h2>One-line diagram: substation to customer</h2>
+      <div class="legend">
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#9FC0D6" stroke-width="2.5"/></svg>overhead (OH) = solid</span>
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#9FC0D6" stroke-width="2.5" stroke-dasharray="6 4"/></svg>underground (UG) = dashed</span>
+        <span><i class="swatch" style="background:var(--signal-amber)"></i>primary (~12kV)</span>
+        <span><i class="swatch" style="background:var(--line-cyan)"></i>secondary (120/240V)</span>
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="#B9A9F2" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/></svg>SCADA comms / monitoring</span>
+      </div>
+    </div>
+    <div class="diagram-hint">Color = voltage level · line style = overhead vs. underground. Click any labeled symbol or line below.</div>
+    <svg id="diagramSvg" viewBox="0 0 1000 510" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="infoCard"><div class="placeholder">Select a piece of equipment above to see what it does and why it matters.</div></div>
+
+    <h3 class="read-head">How to read this diagram</h3>
+    <p class="read-intro">A one-line diagram draws each circuit as a single line, even when it really carries three phase wires. The conventions below are the ones this diagram uses.</p>
+    <div class="read-grid">
+      <div class="read-card">
+        <h4>Feeder vs. lateral</h4>
+        <p>The <strong>feeder</strong> is the continuous three-phase backbone leaving the substation, labeled “3φ, OH.” It’s the trunk.</p>
+        <p>A <strong>lateral</strong> is labeled on the tap conductor itself (“1φ tap, OH”), not on a pole, because a lateral is a circuit, not a piece of hardware. This is usually where a single-phase tap peels off to serve a smaller area or a single large customer.</p>
+      </div>
+      <div class="read-card">
+        <h4>Overhead vs. underground: one rule</h4>
+        <p><strong>Solid = overhead, dashed = underground</strong>, applied the same way to primary and secondary. Color separates <span style="color:var(--signal-amber)">primary (orange, ~12kV)</span> from <span style="color:var(--line-cyan)">secondary (blue, 120/240V)</span>, so color and line style each carry exactly one meaning.</p>
+        <p>The <strong>riser pole</strong> marks the literal point where an overhead conductor becomes a cable and goes into the ground. It’s a real piece of hardware worth knowing, since it’s where crews actually do the transition splice.</p>
+      </div>
+      <div class="read-card">
+        <h4>Service drop vs. service lateral</h4>
+        <p>“<strong>Service drop</strong>” is reserved for the overhead conductor from a pole transformer to the customer. The underground equivalent, from a vault or pad-mount transformer, is a <strong>service lateral</strong>.</p>
+      </div>
+      <div class="read-card">
+        <h4>Recloser and switch</h4>
+        <p>Both show their normal state (<strong>N.C.</strong>, normally closed) right in the label. That’s the single most important thing a one-line communicates about a switching device.</p>
+        <p>A <strong>recloser</strong> is a self-contained circuit breaker with built-in relaying. It senses fault current, opens automatically, waits a set interval, and recloses to test whether the fault cleared (a tree branch, momentary contact) or persists (a downed conductor). It typically goes through 2–4 operations before locking out and staying open, which is why the lights sometimes blink a few times before an outage actually sticks. That’s the recloser doing its job.</p>
+      </div>
+      <div class="read-card">
+        <h4>SCADA</h4>
+        <p>The control center has monitoring/control links (dotted) into the recloser and the switch. Those are the two points where an operator can see status and, for the switch, operate it remotely from the office.</p>
+        <p>Not every device on a feeder is SCADA-equipped. The fuse and transformers here are not, which is realistic: fuses are purely local, non-communicating protective devices.</p>
+      </div>
+      <div class="read-card">
+        <h4>Where’s the feeder tie?</h4>
+        <p>Left out on purpose. Ties introduce backfeed and restoration, which are easier to learn once primary vs. secondary and OH vs. UG are solid. You can work with a tie hands-on in the <strong>Playground</strong> tab, and it’s still in the Glossary.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAYGROUND -->
+  <section class="panel" id="panel-playground">
+    <div class="diagram-head"><h2>Playground: two feeders, one tie</h2></div>
+    <p class="seq-instructions">Feeder A and Feeder B are tied together at a normally-open point. Click any switch, recloser, or the tie to operate it by hand. Hit <strong>Insert Fault</strong>, then click a spot on the trunk line or on a lateral to simulate a problem — then work out how to isolate it and restore as many customers as you can.</p>
+
+    <div class="pg-legend">
+      <div class="pg-legend-card"><b>Switch — manual only</b><span>Can't safely interrupt fault current. In this playground it simply won't stop a fault — the recloser has to trip first. Use switches only once the fault is already cleared, to isolate and reconfigure.</span></div>
+      <div class="pg-legend-card"><b>Recloser — automatic</b><span>Trips instantly on a fault, and is the only device here rated to interrupt one. You can also close/open it by hand like a switch when nothing's wrong.</span></div>
+      <div class="pg-legend-card"><b>Fuse — automatic, one-shot</b><span>Blows to protect just its own lateral, leaving the rest of the feeder alone. Needs a physical "replace" afterward — it won't reset itself.</span></div>
+      <div class="pg-legend-card"><b>Tie — normally open</b><span>A switch by construction, but its normal position is open. Close it to backfeed a de-energized section from the neighboring feeder — never to interrupt a fault.</span></div>
+    </div>
+
+    <div class="pg-controls">
+      <button class="pg-toggle" id="pgFaultMode">⚡ Insert Fault</button>
+      <button class="btn" id="pgReset">Reset to normal</button>
+      <span class="pg-counter" id="pgCounter">285 / 285 customers powered</span>
+    </div>
+
+    <svg id="pgSvg" viewBox="0 0 1200 260" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="pg-hint" id="pgHint">No faults active. Click "Insert Fault," then click a lateral (fuse-protected) or a spot on the trunk line to simulate a problem.</div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section class="panel" id="panel-glossary">
+    <div class="filters" id="filters"></div>
+    <div class="gl-grid" id="glGrid"></div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="panel" id="panel-flashcards">
+    <div class="fc-wrap">
+      <div class="fc-progress" id="fcProgress">Card 1 / 15</div>
+      <div class="flashcard" id="flashcard">
+        <span class="side-label" id="fcSideLabel">TERM — tap to flip</span>
+        <h3 id="fcFront"></h3>
+        <p id="fcBack" style="display:none;"></p>
+      </div>
+      <div class="fc-controls">
+        <button class="btn bad" id="fcKnew0">Didn't know it</button>
+        <button class="btn" id="fcShuffle">Shuffle</button>
+        <button class="btn good" id="fcKnew1">Knew it</button>
+      </div>
+      <div class="fc-progress" id="fcStats">Knew: 0 · To review: 0</div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="panel" id="panel-quiz">
+    <div class="quiz-top">
+      <span class="score-pill" id="quizProgress">Question 1 / 15</span>
+      <span class="score-pill" id="quizScore">Score: 0</span>
+    </div>
+    <div id="quizBody"></div>
+  </section>
+
+  <!-- SEQUENCE -->
+  <section class="panel" id="panel-sequence">
+    <p class="seq-instructions">Click the pieces below, in order, to trace power from the substation to a customer's outlet. There's more than one valid full path in real life — build the standard overhead one.</p>
+    <div class="seq-slots" id="seqSlots"></div>
+    <div class="seq-pool" id="seqPool"></div>
+    <div class="seq-result" id="seqResult"></div>
+    <div style="margin-top:14px;"><button class="btn" id="seqReset">Reset</button></div>
+  </section>
+
+  <!-- RELIABILITY -->
+  <section class="panel" id="panel-reliability">
+    <div class="diagram-head"><h2>Reliability metrics: SAIDI, SAIFI, CAIDI</h2></div>
+    <p class="seq-instructions">These three numbers are how utilities and regulators score grid reliability. Every capital project you evaluate — a recloser, a feeder tie, an undergrounding program — ultimately gets justified by how much it's expected to move these.</p>
+    <div class="metric-defs">
+      <div class="metric-card">
+        <div class="m-name">SAIDI</div>
+        <div class="m-formula">Σ(customers interrupted × minutes) ÷ total customers</div>
+        <p>System Average Interruption <strong>Duration</strong> Index. The average number of outage-minutes a customer experienced over the year. This is the headline number regulators watch.</p>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">SAIFI</div>
+        <div class="m-formula">Σ(customers interrupted) ÷ total customers</div>
+        <p>System Average Interruption <strong>Frequency</strong> Index. The average number of separate interruptions a customer experienced. Reclosers and feeder ties mainly attack this number.</p>
+      </div>
+      <div class="metric-card">
+        <div class="m-name">CAIDI</div>
+        <div class="m-formula">SAIDI ÷ SAIFI</div>
+        <p>Customer Average Interruption Duration Index. Of the interruptions a customer did have, how long each one lasted on average — a measure of how fast crews restore power once something fails.</p>
+      </div>
+    </div>
+
+    <div class="diagram-head"><h2>Try it: build a year of outages</h2></div>
+    <p class="seq-instructions">Set your system's total customer count, then add outage events (customers affected × how long it lasted) to see how they move SAIDI/SAIFI/CAIDI. This is the same math utilities run for a whole year of events.</p>
+    <div style="margin-bottom:16px;">
+      <label style="font-family:'IBM Plex Mono'; font-size:14.5px; color:var(--muted); display:block; margin-bottom:6px;">TOTAL CUSTOMERS ON THE SYSTEM</label>
+      <input type="number" id="relTotalCustomers" value="10000" min="1" style="background:var(--panel-navy-2); border:1px solid #2A5478; border-radius:6px; color:var(--paper); padding:9px 12px; font-family:'IBM Plex Mono'; font-size:15.5px; width:180px;">
+    </div>
+    <div class="calc-labels"><span>Customers affected</span><span>Duration (minutes)</span><span>What happened</span><span></span></div>
+    <div id="relRows"></div>
+    <button class="btn" id="relAddRow">+ Add outage event</button>
+    <div class="calc-results" id="relResults"></div>
+  </section>
+
+  <!-- COSTS -->
+  <section class="panel" id="panel-costs">
+    <div class="diagram-head"><h2>Approximate equipment costs</h2></div>
+    <div class="cost-note">Planning-level ranges only, assembled from public utility unit-cost filings (e.g., PG&E, SDG&E Rule 21 guides) and industry cost surveys — not quotes. Actual costs swing widely with region, labor market, voltage class, site access, and vendor, easily by 2–5x. Always confirm against your utility's own unit-cost book before budgeting a real project.</div>
+    <div class="cost-grid" id="costGrid"></div>
+  </section>
+
+  <footer>Built for learning, not for engineering sign-off — always defer to your utility's actual system for real decisions.</footer>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const EQUIP = [
+  {id:'substation', name:'Substation', cat:'Voltage Transformation', tag:'69–230kV → 12.47kV (typ.)',
+    short:'Steps transmission voltage down to distribution voltage; the origin point of every feeder.',
+    long:'A distribution substation takes high-voltage transmission power and steps it down through large power transformers to a distribution voltage (commonly 12.47kV or 13.8kV). It also houses the main breakers that protect each feeder leaving the site. From an investment lens, substations are big, lumpy capital assets — a single transformer replacement or capacity upgrade can be a multi-million-dollar project with a long lead time.'},
+  {id:'feeder', name:'Feeder', cat:'Power Delivery Path', tag:'Primary · 3-phase',
+    short:'The main trunk circuit carrying primary voltage out from a substation to a whole service area.',
+    long:'Feeders are the backbone circuits leaving the substation, usually three-phase, carrying power at primary distribution voltage to an entire neighborhood or district. Utilities track feeder loading closely — an overloaded feeder is a common trigger for capital investment (reconductoring, a new feeder, or load transfer to a neighboring circuit).'},
+  {id:'lateral', name:'Lateral', cat:'Power Delivery Path', tag:'Primary · often 1-phase',
+    short:'A smaller branch circuit tapped off a feeder, serving a street, a small area, or a single large customer.',
+    long:'Laterals (also called taps or branches) peel off the main feeder to reach smaller pockets of load — a side street, a cul-de-sac, or a single large customer. A lateral is a circuit, not a piece of hardware: it’s usually a single-phase tap, and on a one-line it’s labeled on the conductor itself (e.g., “1φ tap, OH”). Laterals are usually protected by a fuse at the tap point so a fault on the lateral doesn’t take down the whole feeder. They’re numerous, so they dominate outage counts even though each one affects few customers.'},
+  {id:'transformer', name:'Distribution Transformer', cat:'Voltage Transformation', tag:'~12kV → 120/240V',
+    short:'Steps primary voltage down to the 120/240V customers actually use.',
+    long:'The last voltage step before the customer. Can be pole-mounted (overhead systems), pad-mounted (green boxes at ground level), or submersible units inside a vault (underground systems). These are the most numerous transformer assets on the system, which makes them a major line item in asset-management and replacement budgets.'},
+  {id:'service', name:'Service Drop', cat:'Power Delivery Path', tag:'Secondary · 120/240V · overhead',
+    short:'The final overhead conductor run from a pole transformer to the customer’s meter.',
+    long:'The last few dozen feet of overhead wire connecting a pole-mounted distribution transformer to an individual customer’s meter base — the classic wire running from a pole to the roofline. The term is reserved for overhead service; the underground equivalent is called a service lateral.'},
+  {id:'servicelateral', name:'Service Lateral', cat:'Power Delivery Path', tag:'Secondary · 120/240V · underground',
+    short:'The underground equivalent of a service drop: buried cable from a vault or pad-mount transformer to the meter.',
+    long:'A service lateral is the underground secondary run from a distribution transformer (in a vault or a pad-mount box) to the customer’s meter, usually in conduit. It does the same job as a service drop, but because it’s buried, repairs mean locating and excavating rather than just re-hanging a wire — one reason underground service costs more to install and fix.'},
+  {id:'pole', name:'Pole', cat:'Structures & Pathways', tag:'Wood · steel · concrete',
+    short:'The overhead support structure for wires, transformers, and switching equipment.',
+    long:'Poles carry conductors, transformers, streetlights, and communications attachments (often for a fee — "pole attachment" revenue). Wood pole age and decay is one of the most common drivers of overhead system replacement programs, so pole inspection data is a frequent input to capital planning.'},
+  {id:'riser', name:'Riser Pole', cat:'Structures & Pathways', tag:'Overhead → underground transition',
+    short:'The pole where an overhead conductor turns into a cable and goes down into the ground.',
+    long:'A riser pole marks the literal transition point from overhead to underground. The overhead conductor terminates at the top in a cable termination (a “pothead”), usually with a fuse or disconnect and surge arrester, and the insulated cable runs down the pole in a protective U-guard or riser conduit into the ground. It’s where crews do the transition splice, and it’s a common failure and inspection point — worth knowing about whenever a project converts overhead line to underground.'},
+  {id:'conduit', name:'Conduit', cat:'Structures & Pathways', tag:'PVC · steel · fiber duct',
+    short:'Protective pipe that underground cable is pulled through between vaults or manholes.',
+    long:'Conduit doesn’t carry current itself — it protects cable from damage and lets crews pull new cable through later without excavating again. Installing extra ("spare") conduit during a project is a common low-cost way to reduce the cost of future upgrades, since digging is usually the expensive part of underground work.'},
+  {id:'vault', name:'Vault', cat:'Structures & Pathways', tag:'Underground enclosure',
+    short:'An underground room housing transformers, switches, or cable splices for underground systems.',
+    long:'Vaults let underground systems put equipment below grade — common in dense urban areas or where overhead lines aren’t allowed. They’re more expensive to build and maintain than overhead equivalents (confined-space entry, flooding risk) but avoid storm and vehicle-collision outages that hit overhead systems.'},
+  {id:'wire', name:'Wire / Conductor', cat:'Conductors', tag:'Often bare, overhead',
+    short:'The overhead conductor that actually carries current, usually uninsulated.',
+    long:'Overhead "wire" (conductor) is often bare or only weather-covered — insulation isn’t needed in open air the way it is underground, since the air itself provides clearance-based insulation. Conductor size and material (e.g., aluminum vs. copper) directly drive how much load a line can carry.'},
+  {id:'cable', name:'Cable', cat:'Conductors', tag:'Insulated, usually underground',
+    short:'Fully insulated conductor, typically run underground in conduit or direct-buried.',
+    long:'Cable has a solid insulation layer because it’s often buried directly against soil or run through conduit with other cables nearby. Underground cable is more expensive to install than overhead wire but much less exposed to storms and trees — a classic reliability-vs-cost tradeoff PMs weigh in undergrounding projects.'},
+  {id:'switch', name:'Switch', cat:'Protection & Switching', tag:'Isolation · shown N.C. (normally closed)',
+    short:'A manually operated device used to isolate a section of line — not built to interrupt fault current.',
+    long:'Switches let crews open or close a section of circuit for maintenance or to reconfigure power flow (e.g., feeding a neighborhood from a different feeder during an outage). Unlike breakers or reclosers, a basic disconnect switch generally isn’t rated to safely interrupt a fault — it’s for isolating already-de-energized or normal-load sections. On a one-line, every switch is labeled with its normal state: N.C. (normally closed, carrying load) or N.O. (normally open, like a feeder tie). When a switch is SCADA-equipped, an operator can see its status and open or close it remotely from the control center.'},
+  {id:'fuse', name:'Fuse', cat:'Protection & Switching', tag:'One-time protection',
+    short:'A sacrificial device that permanently opens the circuit when current exceeds a threshold.',
+    long:'Fuses protect laterals and transformers cheaply: when a fault occurs, the fuse element melts and must be physically replaced before service is restored. Because there’s no automatic reclosing, a fuse operation on a lateral means a truck roll — one reason utilities are selective about where fuses vs. more expensive automated devices get deployed.'},
+  {id:'recloser', name:'Recloser', cat:'Protection & Switching', tag:'Automatic, multi-shot · N.C.',
+    short:'A self-contained breaker with built-in relaying that opens on a fault, then tries reclosing — since most faults are momentary.',
+    long:'A recloser is a self-contained circuit breaker with built-in relaying: it senses fault current, opens automatically, waits a set interval, and recloses to test whether the fault cleared (a tree branch, momentary contact) or persists (a downed conductor). It typically goes through 2–4 operations before locking out and staying open — which is why you’ll sometimes see the lights blink a few times before an outage actually sticks. That’s the recloser doing its job. Most faults (a tree branch brushing a line, a lightning strike) are transient and clear themselves in a fraction of a second. A recloser opens the circuit, waits briefly, and tries closing again — usually a few times — before giving up and staying open (a "lockout") if the fault is permanent. This dramatically cuts the number of sustained outages compared to fuses alone, which is why reclosers are a common target for reliability-improvement capital programs.'},
+  {id:'feedertie', name:'Feeder Tie / Normally-Open Point', cat:'Automation & Resilience', tag:'Switch, normally OPEN',
+    short:'A switch connecting two feeders that stays open in normal operation — closed to restore power from a neighbor during an outage.',
+    long:'Feeders are usually built as loops between two substations (or two points on the same substation) but operated "open" at one point, splitting the loop into two radial circuits. That open point is the tie. If a fault takes out the upstream half of one feeder, crews (or automation) can open a device to isolate the fault, then close the tie switch to backfeed the stranded customers from the healthy neighboring feeder. Where you place ties, and how many customers each one can carry, is a core distribution-planning decision — it directly determines how many customers can be restored quickly instead of waiting for a repair crew.'},
+  {id:'scada', name:'SCADA / Distribution Automation', cat:'Automation & Resilience', tag:'Monitoring + remote control',
+    short:'The remote monitoring and control layer laid over switches, reclosers, and substations.',
+    long:'SCADA (Supervisory Control and Data Acquisition) is the software and communications system that lets operators see the state of remote devices (is this switch open or closed? how much current is flowing?) and operate them from a control room instead of dispatching a truck. "Distribution automation" goes a step further, letting devices act on their own logic — for example, a scheme of reclosers and tie switches that automatically isolates a fault and restores everyone else within seconds (FLISR: Fault Location, Isolation, and Service Restoration). This is usually the single biggest reliability lever available short of rebuilding lines, but it requires investment in communications infrastructure, not just the switches themselves. Not every device is SCADA-equipped: fuses and most transformers are purely local, non-communicating devices.'}
+];
+
+const CATS = ['All', ...Array.from(new Set(EQUIP.map(e=>e.cat)))];
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------------- DIAGRAM ---------------- */
+function eq(id){ return EQUIP.find(e=>e.id===id); }
+
+function buildDiagram(){
+  const svg = document.getElementById('diagramSvg');
+  const AMBER = 'var(--signal-amber)', CYAN = 'var(--line-cyan)', HW = '#9FC0D6', POLE = '#5b7c94', SCADA = '#B9A9F2', FILL = '#0F2946';
+  const UG = 'stroke-dasharray="7 5"';
+  const parts = [];
+
+  function node(id, shape){ return `<g class="node" data-id="${id}">${shape}</g>`; }
+  function label(x,y,text,anchor='middle',fill='#9FC0D6',size=11){
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="IBM Plex Mono" font-size="${size}" fill="${fill}">${text}</text>`;
+  }
+  function house(cx, y, color, dashed){
+    return `<polygon points="${cx},${y} ${cx+20},${y+18} ${cx+14},${y+18} ${cx+14},${y+34} ${cx-14},${y+34} ${cx-14},${y+18} ${cx-20},${y+18}" fill="${FILL}" stroke="${color}" stroke-width="2" ${dashed?'stroke-dasharray="4 3"':''}/>`;
+  }
+  const FY = 196; // feeder elevation
+
+  // ---- SCADA control center + comms (drawn first so everything sits on top)
+  parts.push(`<path d="M860,82 L860,118 L230,118 L230,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="1 5" stroke-linecap="round"/>`);
+  parts.push(`<path d="M620,118 L620,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="1 5" stroke-linecap="round"/>`);
+  parts.push(label(425,112,'monitoring / control','middle',SCADA,10));
+  parts.push(node('scada', `
+    <rect x="780" y="24" width="160" height="58" rx="8" fill="${FILL}" stroke="${SCADA}" stroke-width="2"/>
+    ${label(860,48,'SCADA','middle','#E4DCFF',13)}
+    ${label(860,67,'control center','middle',SCADA,11)}
+  `));
+
+  // ---- FEEDER: 3-phase overhead primary backbone
+  parts.push(node('feeder', `
+    <line x1="170" y1="${FY}" x2="930" y2="${FY}" stroke="${AMBER}" stroke-width="3.5"/>
+    <polyline points="920,${FY-7} 932,${FY} 920,${FY+7}" fill="none" stroke="${AMBER}" stroke-width="2.5"/>
+    <line class="hit" x1="170" y1="${FY}" x2="930" y2="${FY}"/>
+    ${label(470,FY-14,'FEEDER (PRIMARY, ~12kV, 3φ, OH)','middle','#F5C877')}
+  `));
+  parts.push(label(955,FY+4,'…','middle','#F5C877',14));
+
+  // overhead poles along the feeder (short ticks)
+  parts.push(node('pole', [290,450,540,850].map(x=>
+    `<line x1="${x}" y1="${FY}" x2="${x}" y2="${FY+16}" stroke="${POLE}" stroke-width="3"/><rect x="${x-8}" y="${FY-8}" width="16" height="30" fill="transparent"/>`).join('')));
+
+  // ---- SUBSTATION
+  parts.push(node('substation', `
+    <rect x="40" y="168" width="130" height="56" rx="6" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
+    <circle cx="80" cy="196" r="12" fill="none" stroke="${AMBER}" stroke-width="2"/>
+    <circle cx="96" cy="196" r="12" fill="none" stroke="${AMBER}" stroke-width="2"/>
+    ${label(140,200,'SUB','middle','#EAF2F5',12)}
+  `));
+  parts.push(label(105,244,'SUBSTATION'));
+
+  // ---- RECLOSER (N.C.)
+  parts.push(node('recloser', `
+    <rect x="216" y="184" width="28" height="24" rx="4" fill="#241203" stroke="${AMBER}" stroke-width="2"/>
+    <line x1="223" y1="190" x2="237" y2="202" stroke="${AMBER}" stroke-width="2"/>
+    <line x1="237" y1="190" x2="223" y2="202" stroke="${AMBER}" stroke-width="2"/>
+    ${label(230,228,'RECLOSER (N.C.)')}
+  `));
+
+  // ---- SWITCH (N.C.)
+  parts.push(node('switch', `
+    <rect x="607" y="184" width="26" height="24" rx="4" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
+    <line x1="612" y1="202" x2="628" y2="190" stroke="${HW}" stroke-width="2"/>
+    ${label(620,228,'SWITCH (N.C.)')}
+  `));
+
+  // ---- OVERHEAD LATERAL branch (x=360)
+  const LX = 360;
+  parts.push(`<circle cx="${LX}" cy="${FY}" r="4" fill="${AMBER}"/>`);
+  parts.push(node('lateral', `
+    <line x1="${LX}" y1="${FY}" x2="${LX}" y2="262" stroke="${AMBER}" stroke-width="2.5"/>
+    <line x1="${LX}" y1="278" x2="${LX}" y2="318" stroke="${AMBER}" stroke-width="2.5"/>
+    <line class="hit" x1="${LX}" y1="${FY}" x2="${LX}" y2="318"/>
+    ${label(LX+14,244,'LATERAL (1φ TAP, OH)','start','#F5C877')}
+  `));
+  parts.push(node('fuse', `
+    <rect x="${LX-15}" y="262" width="30" height="16" rx="8" fill="#241203" stroke="${AMBER}" stroke-width="2"/>
+    ${label(LX+24,275,'FUSE','start')}
+  `));
+  parts.push(node('transformer', `
+    <circle cx="${LX}" cy="338" r="20" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
+    <circle cx="${LX}" cy="338" r="8" fill="none" stroke="${HW}" stroke-width="1.5"/>
+    ${label(LX+30,342,'POLE TRANSFORMER','start')}
+  `));
+  parts.push(node('service', `
+    <line x1="${LX}" y1="358" x2="${LX}" y2="418" stroke="${CYAN}" stroke-width="2.5"/>
+    <line class="hit" x1="${LX}" y1="358" x2="${LX}" y2="418"/>
+    ${label(LX+14,392,'SERVICE DROP (OH)','start','#BDEFF6')}
+    ${house(LX,418,CYAN,false)}
+    ${label(LX,470,'CUSTOMER')}
+  `));
+
+  // ---- UNDERGROUND branch via riser pole (x=740)
+  const RX = 740;
+  parts.push(`<circle cx="${RX}" cy="${FY}" r="4" fill="${AMBER}"/>`);
+  parts.push(node('riser', `
+    <rect x="${RX-3}" y="${FY}" width="6" height="52" fill="${POLE}"/>
+    <rect x="${RX-12}" y="${FY+4}" width="24" height="4" fill="${POLE}"/>
+    <rect x="${RX-12}" y="${FY}" width="24" height="56" fill="transparent"/>
+    ${label(RX+16,228,'RISER POLE (OH → UG)','start')}
+  `));
+  parts.push(node('cable', `
+    <line x1="${RX}" y1="248" x2="${RX}" y2="296" stroke="${AMBER}" stroke-width="2.5" ${UG}/>
+    <line class="hit" x1="${RX}" y1="248" x2="${RX}" y2="296"/>
+    ${label(RX+16,270,'UG PRIMARY CABLE (in conduit)','start','#F5C877')}
+  `));
+  parts.push(node('vault', `
+    <rect x="${RX-78}" y="296" width="156" height="96" rx="8" fill="${FILL}" stroke="${HW}" stroke-width="1.5" stroke-dasharray="5 4"/>
+    ${label(RX,314,'VAULT (UNDERGROUND)','middle','#EAF2F5',11)}
+  `));
+  parts.push(node('transformer', `
+    <circle cx="${RX}" cy="348" r="18" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
+    <circle cx="${RX}" cy="348" r="7" fill="none" stroke="${HW}" stroke-width="1.5"/>
+    ${label(RX,382,'VAULT XFMR')}
+  `));
+  parts.push(node('servicelateral', `
+    <line x1="${RX}" y1="392" x2="${RX}" y2="438" stroke="${CYAN}" stroke-width="2.5" ${UG}/>
+    <line class="hit" x1="${RX}" y1="392" x2="${RX}" y2="438"/>
+    ${label(RX+14,418,'SERVICE LATERAL (UG)','start','#BDEFF6')}
+    ${house(RX,438,CYAN,false)}
+    ${label(RX,490,'CUSTOMER')}
+  `));
+
+  svg.innerHTML = parts.join('');
+
+  svg.querySelectorAll('.node').forEach(n=>{
+    n.addEventListener('click', ()=>{
+      svg.querySelectorAll('.node').forEach(x=>x.classList.toggle('selected', x.dataset.id===n.dataset.id));
+      showInfo(n.dataset.id);
+    });
+  });
+}
+
+function showInfo(id){
+  const e = eq(id);
+  const card = document.getElementById('infoCard');
+  if(!e){ card.innerHTML = '<div class="placeholder">No info found.</div>'; return; }
+  card.innerHTML = `
+    <div class="info-tag">${e.cat}</div>
+    <h3 class="info-title">${e.name}</h3>
+    <div class="info-note" style="border:none;padding:0;margin:2px 0 0;color:var(--muted)">${e.tag}</div>
+    <div class="info-body">${e.long}</div>
+  `;
+}
+
+buildDiagram();
+
+/* ---------------- GLOSSARY ---------------- */
+function buildGlossary(activeCat){
+  const filters = document.getElementById('filters');
+  filters.innerHTML = CATS.map(c=>`<button class="chip ${c===activeCat?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  filters.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('click', ()=>buildGlossary(ch.dataset.cat));
+  });
+  const grid = document.getElementById('glGrid');
+  const list = activeCat==='All' ? EQUIP : EQUIP.filter(e=>e.cat===activeCat);
+  grid.innerHTML = list.map(e=>`
+    <div class="gl-card">
+      <div class="cat">${e.cat}</div>
+      <h3>${e.name}</h3>
+      <p>${e.short}</p>
+    </div>
+  `).join('');
+}
+buildGlossary('All');
+
+/* ---------------- FLASHCARDS ---------------- */
+let fcDeck = [...EQUIP];
+let fcIndex = 0;
+let fcFlipped = false;
+let fcKnown = 0, fcReview = 0;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function renderFlashcard(){
+  const e = fcDeck[fcIndex];
+  document.getElementById('fcFront').style.display = fcFlipped ? 'none' : 'block';
+  document.getElementById('fcBack').style.display = fcFlipped ? 'block' : 'none';
+  document.getElementById('fcFront').textContent = e.name;
+  document.getElementById('fcBack').textContent = e.short;
+  document.getElementById('fcSideLabel').textContent = fcFlipped ? 'DEFINITION — tap to flip back' : 'TERM — tap to flip';
+  document.getElementById('fcProgress').textContent = `Card ${fcIndex+1} / ${fcDeck.length}`;
+  document.getElementById('fcStats').textContent = `Knew: ${fcKnown} · To review: ${fcReview}`;
+}
+document.getElementById('flashcard').addEventListener('click', ()=>{
+  fcFlipped = !fcFlipped;
+  renderFlashcard();
+});
+function fcNext(){
+  fcFlipped = false;
+  fcIndex = (fcIndex+1) % fcDeck.length;
+  renderFlashcard();
+}
+document.getElementById('fcKnew1').addEventListener('click', ()=>{ fcKnown++; fcNext(); });
+document.getElementById('fcKnew0').addEventListener('click', ()=>{ fcReview++; fcNext(); });
+document.getElementById('fcShuffle').addEventListener('click', ()=>{
+  fcDeck = shuffle(EQUIP); fcIndex=0; fcFlipped=false; fcKnown=0; fcReview=0; renderFlashcard();
+});
+renderFlashcard();
+
+/* ---------------- QUIZ ---------------- */
+const QUIZ_BANK = [
+  {q:'Which piece of equipment steps voltage down from transmission level to distribution level?', a:'Substation', opts:['Substation','Recloser','Lateral','Service drop'], exp:'Substations are the entry point of the distribution system — everything downstream flows out of one as feeders.'},
+  {q:'A tree branch briefly touches a line and causes a fault. Which device is most likely to clear the fault and automatically restore power within seconds, without a truck roll?', a:'Recloser', opts:['Fuse','Recloser','Switch','Conduit'], exp:'Reclosers assume many faults are transient and try reclosing a few times before giving up (locking out) on a permanent fault.'},
+  {q:'Which device, once it operates, must be physically replaced before service is restored?', a:'Fuse', opts:['Recloser','Switch','Fuse','Pole'], exp:'Fuses are sacrificial — the element melts and needs replacing, unlike a recloser which can re-close itself.'},
+  {q:'What is a lateral?', a:'A smaller branch tapped off a feeder', opts:['The main trunk circuit from the substation','A smaller branch tapped off a feeder','The wire from a transformer to a house','An underground equipment room'], exp:'Laterals branch off the feeder to reach smaller pockets of load, like a single street.'},
+  {q:'Which device is generally NOT rated to safely interrupt fault current — it’s for isolating an already de-energized or normal-load section?', a:'Switch', opts:['Recloser','Fuse','Switch','Substation breaker'], exp:'Basic disconnect switches are for isolation/reconfiguration, not for breaking fault current.'},
+  {q:'What underground structure commonly houses a transformer, switch, or cable splices below grade?', a:'Vault', opts:['Conduit','Vault','Lateral','Feeder'], exp:'Vaults are the underground equivalent of the pole-top or pad-mount space used in overhead/at-grade systems.'},
+  {q:'What is conduit’s job?', a:'Protect underground cable and allow future cable pulls', opts:['Carry current directly','Protect underground cable and allow future cable pulls','Step down voltage','Break fault current'], exp:'Conduit is a passive protective pipe — the cable inside does the actual current-carrying.'},
+  {q:'Put these in order from the substation outward: which comes immediately after the feeder in a typical overhead path?', a:'Lateral', opts:['Service drop','Lateral','Substation','Meter'], exp:'Feeder → Lateral → Distribution transformer → Service drop → Meter is the typical overhead sequence.'},
+  {q:'Why is overhead "wire" often bare/uninsulated while underground "cable" is always insulated?', a:'Open air provides clearance-based insulation; buried cable touches soil and other cables directly', opts:['Bare wire is cheaper to manufacture, that’s the only reason','Open air provides clearance-based insulation; buried cable touches soil and other cables directly','Insulated wire can’t carry as much current','There is no real difference'], exp:'Air itself acts as an insulator at typical distribution clearances, so overhead conductors often skip full insulation; buried cable can’t rely on that.'},
+  {q:'From an investment-planning view, why do pole condition surveys matter?', a:'Aging/decayed wood poles are a common driver of overhead system replacement programs', opts:['Poles never need replacement','Aging/decayed wood poles are a common driver of overhead system replacement programs','Pole height doesn’t affect line ratings','Poles are not capital assets'], exp:'Pole age and decay is one of the most common triggers for planned capital replacement work on overhead systems.'},
+  {q:'What is a feeder tie (normally-open point)?', a:'A switch between two feeders that stays open, closed to backfeed customers from a neighboring circuit during an outage', opts:['A permanent connection between two substations','A switch between two feeders that stays open, closed to backfeed customers from a neighboring circuit during an outage','A type of fuse used only on laterals','A backup generator at a substation'], exp:'Feeders are often built as loops but operated open at one point. Closing that tie point lets a neighboring feeder pick up stranded customers after a fault is isolated.'},
+  {q:'What does SCADA add on top of a recloser or switch that already works automatically?', a:'Remote visibility and control from a control room, without needing a truck at the device', opts:['Nothing — SCADA and reclosers are the same thing','Remote visibility and control from a control room, without needing a truck at the device','It replaces the need for fuses entirely','It only matters at the transmission level, not distribution'], exp:'SCADA is the monitoring/communications layer: it tells an operator what a device is doing and lets them (or automated logic) operate it remotely.'},
+  {q:'SAIDI measures...', a:'The average number of outage-minutes a customer experienced over the year', opts:['The average number of separate interruptions per customer', 'The average number of outage-minutes a customer experienced over the year', 'The average repair cost per outage', 'The total number of customers served'], exp:'SAIDI = Σ(customers interrupted × outage minutes) ÷ total customers — the headline duration metric.'},
+  {q:'A utility installs more reclosers and feeder ties. Which reliability metric are they most directly targeting?', a:'SAIFI — fewer sustained interruptions per customer', opts:['SAIFI — fewer sustained interruptions per customer','CAIDI — the average repair time once a crew arrives','None — these devices don’t affect reliability metrics','Only the cost per customer, not reliability'], exp:'Reclosers clear transient faults without a sustained outage at all, and ties let crews restore power fast by switching to a neighboring feeder — both cut the count of sustained interruptions, which is what SAIFI tracks.'},
+  {q:'A customer is fed by buried cable from a transformer in a vault. What is that final 120/240V run called?', a:'Service lateral', opts:['Service drop','Service lateral','Feeder','Riser'], exp:'“Service drop” is reserved for the overhead run from a pole transformer. The underground equivalent is a service lateral.'},
+  {q:'On a one-line diagram, where would you expect crews to make the overhead-to-underground transition splice?', a:'At a riser pole', opts:['At the substation fence','At a riser pole','Inside the customer’s meter','At the recloser'], exp:'The riser pole is the literal point where an overhead conductor terminates and becomes a cable running down the pole into the ground.'},
+  {q:'Why do the lights sometimes blink two or three times before an outage “sticks”?', a:'A recloser is opening and reclosing to test whether the fault has cleared before it locks out', opts:['The fuse is slowly melting','A recloser is opening and reclosing to test whether the fault has cleared before it locks out','SCADA is rebooting the feeder','The transformer is switching voltage levels'], exp:'A recloser typically makes 2–4 operations. If the fault is momentary (a branch brushing the line), service is restored; if it persists (a downed conductor), the recloser locks out and stays open.'}
+];
+
+let quizOrder = shuffle(QUIZ_BANK);
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+async function loadBestScore(){
+  try{
+    const r = await window.storage.get('grid-quiz-best', false);
+    return r ? JSON.parse(r.value).best : null;
+  }catch(e){ return null; }
+}
+async function saveBestScore(score){
+  try{
+    const prev = await loadBestScore();
+    if(prev===null || score>prev){
+      await window.storage.set('grid-quiz-best', JSON.stringify({best:score}), false);
+    }
+  }catch(e){ /* storage unavailable, ignore */ }
+}
+
+function renderQuiz(){
+  const body = document.getElementById('quizBody');
+  document.getElementById('quizProgress').textContent = `Question ${Math.min(quizIndex+1,quizOrder.length)} / ${quizOrder.length}`;
+  document.getElementById('quizScore').textContent = `Score: ${quizScore}`;
+
+  if(quizIndex >= quizOrder.length){
+    saveBestScore(quizScore);
+    body.innerHTML = `
+      <div class="quiz-done">
+        <div class="big">${quizScore} / ${quizOrder.length}</div>
+        <p style="color:var(--muted)">Nice work. Retake with a fresh shuffle any time.</p>
+        <button class="btn primary" id="quizRestart">Retake quiz</button>
+      </div>`;
+    document.getElementById('quizRestart').addEventListener('click', ()=>{
+      quizOrder = shuffle(QUIZ_BANK); quizIndex=0; quizScore=0; quizAnswered=false; renderQuiz();
+    });
+    return;
+  }
+
+  const item = quizOrder[quizIndex];
+  quizAnswered = false;
+  body.innerHTML = `
+    <p class="q-text">${item.q}</p>
+    <div class="q-options">
+      ${item.opts.map(o=>`<button class="q-option" data-opt="${o}">${o}</button>`).join('')}
+    </div>
+    <div class="q-explain" id="qExplain">${item.exp}</div>
+    <div class="q-footer"><button class="btn primary" id="qNext" style="display:none;">Next question</button></div>
+  `;
+  body.querySelectorAll('.q-option').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(quizAnswered) return;
+      quizAnswered = true;
+      const chosen = btn.dataset.opt;
+      body.querySelectorAll('.q-option').forEach(b=>{
+        if(b.dataset.opt === item.a) b.classList.add('correct');
+        else if(b===btn) b.classList.add('incorrect');
+      });
+      if(chosen === item.a) quizScore++;
+      document.getElementById('quizScore').textContent = `Score: ${quizScore}`;
+      document.getElementById('qExplain').style.display = 'block';
+      document.getElementById('qNext').style.display = 'inline-block';
+    });
+  });
+  document.getElementById('qNext').addEventListener('click', ()=>{
+    quizIndex++;
+    renderQuiz();
+  });
+}
+renderQuiz();
+
+/* ---------------- SEQUENCE GAME ---------------- */
+const SEQ_CORRECT = ['substation','feeder','lateral','transformer','service'];
+const SEQ_LABELS = {substation:'Substation', feeder:'Feeder', lateral:'Lateral', transformer:'Distribution Transformer', service:'Service Drop'};
+let seqPlaced = [];
+let seqPool = [];
+
+function buildSequenceGame(){
+  seqPlaced = [];
+  seqPool = shuffle(SEQ_CORRECT);
+  renderSlots();
+  renderPool();
+  document.getElementById('seqResult').textContent = '';
+}
+
+function renderSlots(){
+  const slots = document.getElementById('seqSlots');
+  slots.innerHTML = SEQ_CORRECT.map((_,i)=>{
+    const placedId = seqPlaced[i];
+    if(placedId){
+      return `<div class="seq-slot filled" data-idx="${i}">${SEQ_LABELS[placedId]}</div>`;
+    }
+    return `<div class="seq-slot" data-idx="${i}">${i+1}</div>`;
+  }).join('');
+}
+function renderPool(){
+  const pool = document.getElementById('seqPool');
+  pool.innerHTML = seqPool.map(id=>{
+    const used = seqPlaced.includes(id);
+    return `<div class="seq-item ${used?'used':''}" data-id="${id}">${SEQ_LABELS[id]}</div>`;
+  }).join('');
+  pool.querySelectorAll('.seq-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      if(seqPlaced.length>=SEQ_CORRECT.length) return;
+      const id = item.dataset.id;
+      if(seqPlaced.includes(id)) return;
+      seqPlaced.push(id);
+      renderSlots();
+      renderPool();
+      if(seqPlaced.length===SEQ_CORRECT.length) checkSequence();
+    });
+  });
+}
+function checkSequence(){
+  const slots = document.querySelectorAll('.seq-slot');
+  let allCorrect = true;
+  slots.forEach((s,i)=>{
+    if(seqPlaced[i]===SEQ_CORRECT[i]) s.classList.add('correct');
+    else { s.classList.add('wrong'); allCorrect=false; }
+  });
+  document.getElementById('seqResult').innerHTML = allCorrect
+    ? '<span style="color:var(--good)">✓ That’s the standard overhead path: Substation → Feeder → Lateral → Distribution Transformer → Service Drop.</span>'
+    : '<span style="color:var(--bad)">Not quite the standard order — check which piece steps voltage down last, right before the customer. Hit Reset to try again.</span>';
+}
+document.getElementById('seqReset').addEventListener('click', buildSequenceGame);
+buildSequenceGame();
+
+/* ---------------- RELIABILITY CALCULATOR ---------------- */
+let relRows = [
+  {customers:150, minutes:90, cause:'Lateral fuse operation'},
+  {customers:2200, minutes:4, cause:'Recloser clears transient fault'},
+  {customers:900, minutes:210, cause:'Storm — feeder repair'}
+];
+
+function renderReliability(){
+  const rowsEl = document.getElementById('relRows');
+  rowsEl.innerHTML = relRows.map((r,i)=>`
+    <div class="calc-row">
+      <input type="number" min="0" value="${r.customers}" data-idx="${i}" data-field="customers">
+      <input type="number" min="0" value="${r.minutes}" data-idx="${i}" data-field="minutes">
+      <input type="text" value="${r.cause}" data-idx="${i}" data-field="cause">
+      <button class="rm" data-idx="${i}">✕</button>
+    </div>
+  `).join('');
+  rowsEl.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const i = +inp.dataset.idx, f = inp.dataset.field;
+      relRows[i][f] = f==='cause' ? inp.value : (+inp.value || 0);
+      computeReliability();
+    });
+  });
+  rowsEl.querySelectorAll('.rm').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      relRows.splice(+btn.dataset.idx,1);
+      renderReliability();
+      computeReliability();
+    });
+  });
+  computeReliability();
+}
+function computeReliability(){
+  const total = Math.max(1, +document.getElementById('relTotalCustomers').value || 1);
+  const sumCustMinutes = relRows.reduce((s,r)=>s + r.customers*r.minutes, 0);
+  const sumCust = relRows.reduce((s,r)=>s + r.customers, 0);
+  const saidi = sumCustMinutes/total;
+  const saifi = sumCust/total;
+  const caidi = saifi>0 ? saidi/saifi : 0;
+  document.getElementById('relResults').innerHTML = `
+    <div class="result-pill"><div class="val">${saidi.toFixed(1)}</div><div class="lbl">SAIDI (min/customer)</div></div>
+    <div class="result-pill"><div class="val">${saifi.toFixed(2)}</div><div class="lbl">SAIFI (interruptions)</div></div>
+    <div class="result-pill"><div class="val">${caidi.toFixed(1)}</div><div class="lbl">CAIDI (min/event)</div></div>
+  `;
+}
+document.getElementById('relAddRow').addEventListener('click', ()=>{
+  relRows.push({customers:100, minutes:60, cause:'New outage event'});
+  renderReliability();
+});
+document.getElementById('relTotalCustomers').addEventListener('input', computeReliability);
+renderReliability();
+
+/* ---------------- COST REFERENCE ---------------- */
+const COSTS = [
+  {name:'Wood Distribution Pole', range:'$2,000 – $8,000 installed', note:'The bare pole is often just a few hundred dollars — installation labor, equipment, and traffic control is most of the cost.', icon:`<line x1="22" y1="4" x2="22" y2="40" stroke="${'var(--copper)'}" stroke-width="4"/><line x1="10" y1="10" x2="34" y2="10" stroke="var(--copper)" stroke-width="3"/>`},
+  {name:'Pole-Mounted Transformer', range:'$1,500 – $20,000', note:'Small single-phase residential units sit at the low end; larger three-phase units run higher.', icon:`<circle cx="22" cy="22" r="16" fill="none" stroke="var(--copper)" stroke-width="3"/><circle cx="22" cy="22" r="7" fill="none" stroke="var(--copper)" stroke-width="2"/>`},
+  {name:'Pad-Mounted Transformer', range:'$20,000 – $70,000', note:'Ground-level steel cabinet used in underground systems; sized well above pole-mount units.', icon:`<rect x="6" y="14" width="32" height="24" rx="3" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
+  {name:'New Distribution Substation', range:'$2M – $30M+', note:'Scales steeply with voltage class and MVA capacity; large or high-voltage sites can exceed $50M.', icon:`<rect x="6" y="10" width="32" height="26" rx="3" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><circle cx="16" cy="23" r="6" fill="none" stroke="var(--signal-amber)" stroke-width="2"/><circle cx="28" cy="23" r="6" fill="none" stroke="var(--signal-amber)" stroke-width="2"/>`},
+  {name:'Overhead Primary Line (per mile)', range:'$150,000 – $800,000', note:'Rural, low-density construction sits at the low end; dense urban terrain pushes it much higher.', icon:`<line x1="4" y1="26" x2="40" y2="26" stroke="var(--signal-amber)" stroke-width="3"/><line x1="12" y1="26" x2="12" y2="10" stroke="#5b7c94" stroke-width="3"/><line x1="30" y1="26" x2="30" y2="10" stroke="#5b7c94" stroke-width="3"/>`},
+  {name:'Underground Primary Cable (per mile)', range:'$500,000 – $2,000,000+', note:'Converting existing overhead to underground in dense areas often runs $1M–$6M/mile.', icon:`<rect x="4" y="20" width="36" height="10" rx="5" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
+  {name:'Fuse Cutout', range:'Hardware: a few hundred dollars · Installed unit cost: can run into the tens of thousands', note:'Utility unit-cost filings bundle in labor, bucket truck time, and traffic control — not just the hardware.', icon:`<rect x="12" y="10" width="20" height="10" rx="5" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><line x1="22" y1="20" x2="22" y2="36" stroke="var(--signal-amber)" stroke-width="3"/>`},
+  {name:'Recloser', range:'$20,000 – $30,000', note:'Device cost only; add for communications/SCADA integration if it\u2019s remotely controlled.', icon:`<rect x="8" y="12" width="28" height="20" rx="3" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><line x1="15" y1="18" x2="29" y2="26" stroke="var(--signal-amber)" stroke-width="2"/><line x1="29" y1="18" x2="15" y2="26" stroke="var(--signal-amber)" stroke-width="2"/>`},
+  {name:'Manual Air-Break Switch (overhead)', range:'$5,000 – $20,000 installed', note:'Rough planning figure; varies with pole work, access, and voltage class.', icon:`<rect x="8" y="14" width="24" height="18" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="13" y1="27" x2="25" y2="17" stroke="var(--line-cyan)" stroke-width="2"/>`},
+  {name:'Padmount Switchgear (underground)', range:'$50,000 – $150,000+', note:'Multi-way underground switching cabinets cost more than a simple overhead switch.', icon:`<rect x="6" y="10" width="32" height="26" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="14" y1="10" x2="14" y2="36" stroke="var(--line-cyan)" stroke-width="2"/><line x1="30" y1="10" x2="30" y2="36" stroke="var(--line-cyan)" stroke-width="2"/>`},
+  {name:'Underground Vault (precast)', range:'$25,000 – $50,000 installed', note:'Structure only — the equipment inside (transformer, switchgear) is priced separately.', icon:`<rect x="6" y="14" width="32" height="22" rx="3" fill="none" stroke="var(--copper)" stroke-width="3" stroke-dasharray="4 3"/>`},
+  {name:'Conduit (installed, per linear foot)', range:'$100 – $200 / ft', note:'Trenching and surface restoration usually cost more than the pipe itself.', icon:`<rect x="4" y="20" width="36" height="8" rx="4" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
+  {name:'SCADA / Automation Add-on (per device)', range:'$10,000 – $40,000', note:'Remote terminal unit, communications, and integration layered on top of a switch or recloser.', icon:`<rect x="10" y="14" width="24" height="16" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="16" y1="14" x2="16" y2="6" stroke="var(--line-cyan)" stroke-width="2"/><line x1="28" y1="14" x2="28" y2="6" stroke="var(--line-cyan)" stroke-width="2"/>`}
+];
+
+function renderCosts(){
+  const grid = document.getElementById('costGrid');
+  grid.innerHTML = COSTS.map(c=>`
+    <div class="cost-card">
+      <svg class="cost-icon" viewBox="0 0 44 44">${c.icon}</svg>
+      <div class="cost-body">
+        <h3>${c.name}</h3>
+        <div class="cost-range">${c.range}</div>
+        <p>${c.note}</p>
+      </div>
+    </div>
+  `).join('');
+}
+renderCosts();
+
+/* ---------------- PLAYGROUND ---------------- */
+const PG_NODES = [
+  {id:'A1', x:180, customers:40},
+  {id:'A2', x:340, customers:60},
+  {id:'A3', x:500, customers:50},
+  {id:'B3', x:660, customers:35},
+  {id:'B2', x:820, customers:55},
+  {id:'B1', x:980, customers:45}
+];
+const PG_TOTAL_CUSTOMERS = PG_NODES.reduce((s,n)=>s+n.customers,0);
+const PG_NODES_BY_ID = Object.fromEntries(PG_NODES.map(n=>[n.id,n]));
+PG_NODES.forEach(n=>{ n.fuseBlown=false; n.energized=false; n.energizedFromA=false; n.energizedFromB=false; n.customersPowered=false; });
+
+const PG_DEVICES = {
+  recA: {id:'recA', label:'REC-A', x:100, kind:'recloser', open:false, locked:false},
+  swA1: {id:'swA1', label:'SW-A1', x:260, kind:'switch', open:false},
+  swA2: {id:'swA2', label:'SW-A2', x:420, kind:'switch', open:false},
+  tie:  {id:'tie',  label:'TIE',   x:580, kind:'tie',     open:true},
+  swB2: {id:'swB2', label:'SW-B2', x:740, kind:'switch', open:false},
+  swB1: {id:'swB1', label:'SW-B1', x:900, kind:'switch', open:false},
+  recB: {id:'recB', label:'REC-B', x:1060, kind:'recloser', open:false, locked:false}
+};
+const PG_CHAIN = [
+  {kind:'source', x:20},
+  {kind:'device', dev:'recA'},
+  {kind:'node', node:'A1'},
+  {kind:'device', dev:'swA1'},
+  {kind:'node', node:'A2'},
+  {kind:'device', dev:'swA2'},
+  {kind:'node', node:'A3'},
+  {kind:'device', dev:'tie'},
+  {kind:'node', node:'B3'},
+  {kind:'device', dev:'swB2'},
+  {kind:'node', node:'B2'},
+  {kind:'device', dev:'swB1'},
+  {kind:'node', node:'B1'},
+  {kind:'device', dev:'recB'},
+  {kind:'source', x:1140}
+];
+
+// x-position of any chain element: sources carry their own x; devices and nodes look theirs up
+function pgChainX(el){
+  if(el.kind==='device') return PG_DEVICES[el.dev].x;
+  if(el.kind==='node') return PG_NODES_BY_ID[el.node].x;
+  return el.x;
+}
+
+let pgTrunkFault = null;   // {nodeId}
+let pgLateralFault = null; // {nodeId}
+let pgLoopWarning = false;
+let pgFaultMode = false;
+let pgTripMessage = null;
+let pgTripKind = null; // 'recloser' | 'fuse' | null
+
+function pgFloodFrom(startIdx, step){
+  let i = startIdx;
+  const energizedNodeIds = [];
+  let tripped = false;
+  while(true){
+    i += step;
+    if(i<0 || i>14) break;
+    const el = PG_CHAIN[i];
+    if(el.kind==='device'){
+      const d = PG_DEVICES[el.dev];
+      if(d.open) break;
+      continue;
+    }
+    if(el.kind==='node'){
+      const n = PG_NODES_BY_ID[el.node];
+      if(pgTrunkFault && pgTrunkFault.nodeId===n.id){
+        const rec = step===1 ? PG_DEVICES.recA : PG_DEVICES.recB;
+        if(!rec.open){
+          rec.open = true; rec.locked = true; tripped = true;
+          pgTripMessage = `${rec.label} tripped and locked out — it hit the fault at ${n.id}.`;
+          pgTripKind = 'recloser';
+        }
+        break;
+      }
+      energizedNodeIds.push(n.id);
+      continue;
+    }
+  }
+  return {energizedNodeIds, tripped};
+}
+
+function pgCompute(depth){
+  depth = depth||0;
+  const rA = pgFloodFrom(0, 1);
+  const rB = pgFloodFrom(14, -1);
+  if((rA.tripped || rB.tripped) && depth<6){
+    pgCompute(depth+1);
+    return;
+  }
+  PG_NODES.forEach(n=>{
+    n.energizedFromA = rA.energizedNodeIds.includes(n.id);
+    n.energizedFromB = rB.energizedNodeIds.includes(n.id);
+    n.energized = n.energizedFromA || n.energizedFromB;
+  });
+  pgLoopWarning = PG_NODES.some(n=>n.energizedFromA && n.energizedFromB);
+  PG_NODES.forEach(n=>{
+    if(n.energized){
+      if(pgLateralFault && pgLateralFault.nodeId===n.id && !n.fuseBlown){
+        n.fuseBlown = true;
+        pgTripMessage = `The fuse at ${n.id} blew — only that lateral's ${n.customers} customers lost power.`;
+        pgTripKind = 'fuse';
+      }
+      n.customersPowered = !n.fuseBlown;
+    } else {
+      n.customersPowered = false;
+    }
+  });
+}
+
+function pgHintText(){
+  if(pgLoopWarning){
+    return {warn:true, text:'⚠ The tie is closed while both feeders still have a live path to it — you\u2019re paralleling two independent sources. In real life you\u2019d isolate one side first, or use special closed-transition switching. Try opening a switch or the tie to break the loop.'};
+  }
+  if(pgTripMessage){
+    const msg = pgTripMessage;
+    if(pgTripKind==='recloser'){
+      return {warn:false, text: msg + ' ' + pgFollowupAdvice()};
+    }
+    return {warn:false, text: msg + ' Click the flame to repair it, then the fuse to replace it.'};
+  }
+  if(pgTrunkFault){
+    return {warn:false, text:`The fault at ${pgTrunkFault.nodeId} is isolated from the rest of the system. Its own customers stay out until it's repaired — click the flame icon on ${pgTrunkFault.nodeId} to simulate the repair crew.`};
+  }
+  if(pgLateralFault){
+    const n = PG_NODES_BY_ID[pgLateralFault.nodeId];
+    return {warn:false, text:`${pgLateralFault.nodeId}'s lateral fuse is blown — its ${n.customers} customers are out, but the rest of the feeder is unaffected. Click the flame to repair the fault, then the fuse icon to replace it.`};
+  }
+  return {warn:false, text:'No faults active. Click "Insert Fault," then click a lateral (fuse-protected) or a spot on the trunk line to simulate a problem.'};
+}
+function pgFollowupAdvice(){
+  return 'Everything downstream that has no other source is dark. Open the switch(es) next to the fault to isolate it, then reclose the recloser — and see if a tie can backfeed anyone still stranded.';
+}
+
+function pgIcon(dev){
+  const closed = !dev.open;
+  const color = dev.kind==='tie' ? (closed ? '#E39CE0' : '#6b5a6b') : (dev.locked ? 'var(--bad)' : (closed ? 'var(--signal-amber)' : '#5b7c94'));
+  const lockedClass = dev.locked ? ' pg-locked' : '';
+  const bladeRot = closed ? 0 : -28;
+  return `<g class="pg-dev${lockedClass}" data-dev="${dev.id}" transform="translate(${dev.x},70)">
+    <circle cx="-16" cy="0" r="3" fill="${color}"/>
+    <circle cx="16" cy="0" r="3" fill="${color}"/>
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="${color}" stroke-width="2" stroke-dasharray="2 4"/>
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="${color}" stroke-width="3" transform="rotate(${bladeRot} -16 0)"/>
+    <text x="0" y="-16" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" fill="#9FC0D6">${dev.label}</text>
+  </g>`;
+}
+function pgNodeSvg(n){
+  const trunkFaulted = pgTrunkFault && pgTrunkFault.nodeId===n.id;
+  const lateralFaulted = pgLateralFault && pgLateralFault.nodeId===n.id;
+  const trunkColor = n.energized ? 'var(--signal-amber)' : '#3a4d5e';
+  const latColor = n.customersPowered ? 'var(--line-cyan)' : '#3a4d5e';
+  return `
+  <g class="pg-node" data-node="${n.id}" data-part="trunk" transform="translate(${n.x},70)">
+    <circle class="pg-node-dot" r="6" fill="${trunkColor}"/>
+    <text x="0" y="-16" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" fill="#9FC0D6">${n.id}</text>
+    ${trunkFaulted ? `<text x="0" y="24" text-anchor="middle" font-size="18" data-node="${n.id}" data-part="repair-trunk">🔥</text>` : ''}
+  </g>
+  <line x1="${n.x}" y1="76" x2="${n.x}" y2="140" stroke="${latColor}" stroke-width="2"/>
+  <g class="pg-node" data-node="${n.id}" data-part="lateral" transform="translate(${n.x},150)">
+    <rect x="-14" y="-8" width="28" height="14" rx="7" fill="none" stroke="${n.fuseBlown?'var(--bad)':latColor}" stroke-width="2"/>
+    ${n.fuseBlown ? `<line x1="-10" y1="-5" x2="10" y2="2" stroke="var(--bad)" stroke-width="2"/><line x1="10" y1="-5" x2="-10" y2="2" stroke="var(--bad)" stroke-width="2"/>` : ''}
+    <polygon points="0,18 12,30 9,30 9,44 -9,44 -9,30 -12,30" fill="none" stroke="${latColor}" stroke-width="2"/>
+    <text x="0" y="62" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" fill="${n.customersPowered ? '#9FC0D6' : 'var(--muted)'}">${n.customers} cust.</text>
+    ${lateralFaulted ? `<text x="20" y="10" font-size="18" data-node="${n.id}" data-part="repair-lateral">🔥</text>` : ''}
+    ${n.fuseBlown && !lateralFaulted ? `<text x="20" y="0" font-size="15" fill="var(--line-cyan)" data-node="${n.id}" data-part="replace-fuse" style="cursor:pointer;">↻ replace</text>` : ''}
+  </g>`;
+}
+
+function pgRender(){
+  pgTripMessage = null;
+  pgTripKind = null;
+  pgCompute();
+  const svg = document.getElementById('pgSvg');
+  const parts = [];
+  // trunk line, colored by segment energization
+  for(let i=0;i<PG_CHAIN.length-1;i++){
+    const a = PG_CHAIN[i], b = PG_CHAIN[i+1];
+    let energized = false;
+    if(a.kind==='node') energized = PG_NODES_BY_ID[a.node].energized;
+    else if(b.kind==='node') energized = PG_NODES_BY_ID[b.node].energized;
+    else if(a.kind==='source' || b.kind==='source') energized = true; // the stub between a substation and its recloser is always live
+    const col = energized ? 'var(--signal-amber)' : '#2a3b4a';
+    parts.push(`<line x1="${pgChainX(a)}" y1="70" x2="${pgChainX(b)}" y2="70" stroke="${col}" stroke-width="3"/>`);
+  }
+  parts.push(`<text x="20" y="45" font-family="IBM Plex Mono" font-size="15" fill="var(--muted)">SUB A</text>`);
+  parts.push(`<text x="1140" y="45" text-anchor="end" font-family="IBM Plex Mono" font-size="15" fill="var(--muted)">SUB B</text>`);
+  Object.values(PG_DEVICES).forEach(d=> parts.push(pgIcon(d)));
+  PG_NODES.forEach(n=> parts.push(pgNodeSvg(n)));
+  svg.innerHTML = parts.join('');
+  svg.classList.toggle('fault-mode', pgFaultMode);
+
+  // wire up devices
+  svg.querySelectorAll('.pg-dev').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(pgFaultMode) return;
+      const d = PG_DEVICES[el.dataset.dev];
+      d.open = !d.open;
+      if(!d.open) d.locked = false;
+      pgRender();
+    });
+  });
+  // wire up nodes / laterals / repair / replace targets
+  svg.querySelectorAll('[data-node]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const nodeId = el.dataset.node;
+      const part = el.dataset.part;
+      if(part==='replace-fuse'){
+        PG_NODES_BY_ID[nodeId].fuseBlown = false;
+        pgRender();
+        return;
+      }
+      if(part==='repair-trunk'){
+        if(pgTrunkFault && pgTrunkFault.nodeId===nodeId){ pgTrunkFault=null; pgRender(); }
+        return;
+      }
+      if(part==='repair-lateral'){
+        if(pgLateralFault && pgLateralFault.nodeId===nodeId){
+          pgLateralFault=null;
+          PG_NODES_BY_ID[nodeId].fuseBlown=false;
+          pgRender();
+        }
+        return;
+      }
+      if(pgFaultMode){
+        if(pgTrunkFault || pgLateralFault){
+          document.getElementById('pgHint').textContent = 'Clear the current fault first (repair it, or hit Reset) before adding a new one.';
+          return;
+        }
+        if(part==='trunk'){ pgTrunkFault = {nodeId}; }
+        else if(part==='lateral'){ pgLateralFault = {nodeId}; }
+        pgFaultMode = false;
+        document.getElementById('pgFaultMode').classList.remove('active');
+        pgRender();
+      }
+    });
+  });
+
+  const total = PG_TOTAL_CUSTOMERS;
+  const powered = PG_NODES.reduce((s,n)=> s + (n.customersPowered ? n.customers : 0), 0);
+  document.getElementById('pgCounter').textContent = `${powered} / ${total} customers powered`;
+
+  const hint = pgHintText();
+  const hintEl = document.getElementById('pgHint');
+  hintEl.textContent = hint.text;
+  hintEl.classList.toggle('warn', hint.warn);
+}
+
+document.getElementById('pgFaultMode').addEventListener('click', function(){
+  pgFaultMode = !pgFaultMode;
+  this.classList.toggle('active', pgFaultMode);
+  document.getElementById('pgSvg').classList.toggle('fault-mode', pgFaultMode);
+});
+document.getElementById('pgReset').addEventListener('click', ()=>{
+  Object.values(PG_DEVICES).forEach(d=>{
+    d.open = (d.kind==='tie');
+    d.locked = false;
+  });
+  PG_NODES.forEach(n=>{ n.fuseBlown=false; });
+  pgTrunkFault = null;
+  pgLateralFault = null;
+  pgFaultMode = false;
+  document.getElementById('pgFaultMode').classList.remove('active');
+  pgRender();
+});
+pgRender();
+
+</script>
+</body>
+</html>
