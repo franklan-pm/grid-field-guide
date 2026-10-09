@@ -2,36 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>DER &amp; Microgrid Field Guide</title>
+<title>DER &amp; microgrids · Grid Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
 <style>
-  :root{
-    --ink-navy:#0B1E33;
-    --panel-navy:#12314F;
-    --panel-navy-2:#0F2946;
-    --line-cyan:#8FE0EC;
-    --line-cyan-dim:#4C7C8C;
-    --paper:#EAF2F5;
-    --muted:#7E9BB4;
-    --signal-amber:#F5A623;
-    --signal-amber-dim:#8A6323;
-    --copper:#D98457;
-    --good:#6FCF97;
-    --bad:#EB5B5B;
-    --solar:#F5D76E;
-    --battery:#8FD6C4;
-    --radius:10px;
-  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(ellipse at 20% -10%, #163a5c 0%, transparent 55%),
+      radial-gradient(ellipse at 20% -10%, var(--glow) 0%, transparent 55%),
       var(--ink-navy);
     color:var(--paper);
-    font-family:'IBM Plex Sans', sans-serif;
+    font-family:var(--f-body);
     min-height:100vh;
     padding:28px 18px 60px;
     font-size:17px;
@@ -39,7 +24,7 @@
   .wrap{max-width:1040px;margin:0 auto;}
 
   .eyebrow{
-    font-family:'IBM Plex Mono', monospace;
+    font-family:var(--f-mono);
     font-size:15px;
     letter-spacing:.14em;
     color:var(--signal-amber);
@@ -47,7 +32,7 @@
     margin-bottom:8px;
   }
   h1{
-    font-family:'Space Grotesk', sans-serif;
+    font-family:var(--f-display);
     font-weight:700;
     font-size:clamp(26px,4vw,38px);
     margin:0 0 6px;
@@ -60,7 +45,7 @@
     display:flex;
     gap:2px;
     background:var(--panel-navy-2);
-    border:1px solid #1D4266;
+    border:1px solid var(--edge);
     border-radius:var(--radius);
     padding:4px;
     margin-bottom:22px;
@@ -71,7 +56,7 @@
     min-width:120px;
     text-align:center;
     padding:11px 12px;
-    font-family:'IBM Plex Mono', monospace;
+    font-family:var(--f-mono);
     font-size:16px;
     letter-spacing:.03em;
     color:var(--muted);
@@ -84,58 +69,58 @@
   .tab:hover{color:var(--paper);}
   .tab.active{
     background:var(--signal-amber);
-    color:#1A1102;
+    color:var(--on-amber);
     font-weight:600;
   }
 
   .panel{
     background:var(--panel-navy);
-    border:1px solid #1D4266;
+    border:1px solid var(--edge);
     border-radius:var(--radius);
     padding:22px;
     display:none;
   }
   .panel.active{display:block;}
 
-  h2{font-family:'Space Grotesk';font-size:22px;margin:0 0 4px;}
-  h3{font-family:'Space Grotesk';font-size:18px;margin:0 0 6px;}
+  h2{font-family:var(--f-display);font-size:22px;margin:0 0 4px;}
+  h3{font-family:var(--f-display);font-size:18px;margin:0 0 6px;}
   p{line-height:1.55;}
 
   /* ---- diagram ---- */
   .diagram-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
-  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted);}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--f-mono); font-size:14px; color:var(--muted);}
   .legend span{display:inline-flex; align-items:center; gap:6px;}
   .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
   #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;}
   .node{cursor:pointer;}
   .node:hover rect, .node:hover circle{ filter:brightness(1.35); }
   .node.selected rect, .node.selected circle{ stroke:var(--signal-amber); stroke-width:3; }
-  .diagram-hint{font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted); margin-bottom:14px;}
+  .diagram-hint{font-family:var(--f-mono); font-size:14px; color:var(--muted); margin-bottom:14px;}
 
   #infoCard{
     background:var(--panel-navy-2);
-    border:1px solid #1D4266;
+    border:1px solid var(--edge);
     border-left:3px solid var(--signal-amber);
     border-radius:8px;
     padding:16px 18px;
     min-height:96px;
   }
   #infoCard .placeholder{color:var(--muted); font-size:16px;}
-  .info-title{font-family:'Space Grotesk'; font-weight:600; font-size:20px; margin:0 0 3px;}
-  .info-tag{font-family:'IBM Plex Mono'; font-size:14px; color:var(--signal-amber); text-transform:uppercase; letter-spacing:.06em;}
+  .info-title{font-family:var(--f-display); font-weight:600; font-size:20px; margin:0 0 3px;}
+  .info-tag{font-family:var(--f-mono); font-size:14px; color:var(--signal-amber); text-transform:uppercase; letter-spacing:.06em;}
   .info-body{margin-top:8px; line-height:1.55;}
-  .info-cost{margin-top:10px; font-family:'IBM Plex Mono'; font-size:14px; color:var(--good);}
+  .info-cost{margin-top:10px; font-family:var(--f-mono); font-size:14px; color:var(--good);}
 
   /* ---- glossary ---- */
   .search-row{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
   .search-row input, .search-row select{
-    background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px;
-    color:var(--paper); padding:10px 12px; font-family:'IBM Plex Sans'; font-size:16px;
+    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px;
+    color:var(--paper); padding:10px 12px; font-family:var(--f-body); font-size:16px;
   }
   .search-row input{flex:1 1 220px;}
   .card-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px;}
   .term-card{
-    background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px;
+    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px;
     padding:14px 16px;
   }
   .term-card .info-tag{font-size:13px;}
@@ -144,70 +129,70 @@
 
   /* ---- costs ---- */
   table{width:100%; border-collapse:collapse; margin-top:10px;}
-  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid #1D4266; font-size:15px;}
-  th{font-family:'IBM Plex Mono'; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
-  td.num{font-family:'IBM Plex Mono'; color:var(--good);}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--edge); font-size:15px;}
+  th{font-family:var(--f-mono); font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
+  td.num{font-family:var(--f-mono); color:var(--good);}
   .caveat{
     margin-top:16px; padding:12px 14px; background:var(--panel-navy-2);
     border-left:3px solid var(--copper); border-radius:6px; font-size:14px; color:var(--muted);
   }
-  .subtotal-row td{font-weight:600; color:var(--paper); border-top:2px solid #1D4266;}
+  .subtotal-row td{font-weight:600; color:var(--paper); border-top:2px solid var(--edge);}
 
   /* ---- playground ---- */
   .pg-grid{display:grid; grid-template-columns:1.15fr 1fr; gap:20px;}
   @media (max-width:820px){ .pg-grid{grid-template-columns:1fr;} }
   .controls{
-    background:var(--panel-navy-2); border:1px solid #1D4266; border-radius:8px; padding:16px 18px;
+    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:16px 18px;
   }
   .ctrl{margin-bottom:16px;}
-  .ctrl label{display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted); margin-bottom:6px;}
+  .ctrl label{display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:14px; color:var(--muted); margin-bottom:6px;}
   .ctrl label b{color:var(--paper); font-weight:600;}
   .ctrl input[type=range]{width:100%; accent-color:var(--signal-amber);}
-  .subreadout{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); margin-top:7px;}
+  .subreadout{font-family:var(--f-mono); font-size:12px; color:var(--muted); margin-top:7px;}
   .subreadout b{color:var(--good); font-weight:600;}
 
   .tt{position:relative; display:inline-flex; align-items:center; margin-left:6px; cursor:help;}
   .tt-icon{
-    width:15px; height:15px; border-radius:50%; background:#2a4d6e; color:var(--paper);
+    width:15px; height:15px; border-radius:50%; background:var(--edge-2); color:var(--paper);
     font-size:10.5px; font-weight:600; display:inline-flex; align-items:center; justify-content:center;
-    font-family:'IBM Plex Mono'; line-height:1; user-select:none;
+    font-family:var(--f-mono); line-height:1; user-select:none;
   }
-  .tt:hover .tt-icon, .tt:focus .tt-icon, .tt:focus-within .tt-icon{background:var(--signal-amber); color:#1A1102;}
+  .tt:hover .tt-icon, .tt:focus .tt-icon, .tt:focus-within .tt-icon{background:var(--signal-amber); color:var(--on-amber);}
   .tt-box{
     display:none; position:absolute; bottom:135%; left:50%; transform:translateX(-50%);
-    width:270px; background:var(--panel-navy-2); border:1px solid #2a4d6e; border-radius:8px;
-    padding:11px 13px; font-size:13px; line-height:1.5; color:var(--paper); font-family:'IBM Plex Sans';
+    width:270px; background:var(--panel-navy-2); border:1px solid var(--edge-2); border-radius:8px;
+    padding:11px 13px; font-size:13px; line-height:1.5; color:var(--paper); font-family:var(--f-body);
     text-align:left; z-index:20; box-shadow:0 6px 18px rgba(0,0,0,.45); font-weight:400;
   }
   .tt-box b{color:var(--signal-amber);}
   .tt:hover .tt-box, .tt:focus .tt-box, .tt:focus-within .tt-box{display:block;}
   .tt-box::after{
     content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-    border:6px solid transparent; border-top-color:#2a4d6e;
+    border:6px solid transparent; border-top-color:var(--edge-2);
   }
-  .toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-family:'IBM Plex Mono'; font-size:14px;}
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-family:var(--f-mono); font-size:14px;}
   .toggle-row button{
-    background:var(--panel-navy); border:1px solid #2a4d6e; color:var(--paper);
-    padding:9px 14px; border-radius:6px; cursor:pointer; font-family:'IBM Plex Mono'; font-size:14px;
+    background:var(--panel-navy); border:1px solid var(--edge-2); color:var(--paper);
+    padding:9px 14px; border-radius:6px; cursor:pointer; font-family:var(--f-mono); font-size:14px;
   }
-  .toggle-row button.on{background:var(--bad); border-color:var(--bad); color:#2a0000; font-weight:600;}
-  .toggle-row button.ok{background:var(--good); border-color:var(--good); color:#062b16; font-weight:600;}
-  .check-row{display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono'; font-size:14px; margin-bottom:6px;}
+  .toggle-row button.on{background:var(--bad); border-color:var(--bad); color:var(--bad-bg); font-weight:600;}
+  .toggle-row button.ok{background:var(--good); border-color:var(--good); color:var(--good-bg); font-weight:600;}
+  .check-row{display:flex; align-items:center; gap:8px; font-family:var(--f-mono); font-size:14px; margin-bottom:6px;}
 
   .readout{
     display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;
   }
   .stat{
-    background:var(--panel-navy); border:1px solid #1D4266; border-radius:8px; padding:10px 12px;
+    background:var(--panel-navy); border:1px solid var(--edge); border-radius:8px; padding:10px 12px;
   }
-  .stat .lbl{font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); text-transform:uppercase;}
-  .stat .val{font-family:'Space Grotesk'; font-size:20px; font-weight:600; margin-top:2px;}
+  .stat .lbl{font-family:var(--f-mono); font-size:12px; color:var(--muted); text-transform:uppercase;}
+  .stat .val{font-family:var(--f-display); font-size:20px; font-weight:600; margin-top:2px;}
   .stat .val.good{color:var(--good);}
   .stat .val.bad{color:var(--bad);}
   .stat .val.warn{color:var(--signal-amber);}
 
   #pgSvg{width:100%; height:auto; display:block;}
-  .flow-label{font-family:'IBM Plex Mono'; font-size:13px; fill:var(--muted);}
+  .flow-label{font-family:var(--f-mono); font-size:13px; fill:var(--muted);}
 
   .hint-box{
     margin-top:14px; padding:13px 16px; background:var(--panel-navy-2);
@@ -221,36 +206,37 @@
   .quiz-q h3{margin-bottom:10px;}
   .opt{
     display:block; width:100%; text-align:left; background:var(--panel-navy-2);
-    border:1px solid #1D4266; color:var(--paper); padding:11px 14px; border-radius:7px;
-    margin-bottom:8px; cursor:pointer; font-size:15px; font-family:'IBM Plex Sans';
+    border:1px solid var(--edge); color:var(--paper); padding:11px 14px; border-radius:7px;
+    margin-bottom:8px; cursor:pointer; font-size:15px; font-family:var(--f-body);
   }
   .opt:hover{border-color:var(--line-cyan-dim);}
-  .opt.correct{border-color:var(--good); background:#123a2c;}
-  .opt.wrong{border-color:var(--bad); background:#3a1414;}
+  .opt.correct{border-color:var(--good); background:var(--good-bg);}
+  .opt.wrong{border-color:var(--bad); background:var(--bad-bg);}
   .explain{font-size:14px; color:var(--muted); margin-top:6px; display:none;}
   .explain.show{display:block;}
-  #quizScore{font-family:'IBM Plex Mono'; color:var(--signal-amber); margin-bottom:16px;}
+  #quizScore{font-family:var(--f-mono); color:var(--signal-amber); margin-bottom:16px;}
 
   .badge{
-    display:inline-block; font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:.04em;
+    display:inline-block; font-family:var(--f-mono); font-size:12px; letter-spacing:.04em;
     padding:2px 8px; border-radius:10px; margin-left:8px; vertical-align:middle;
   }
-  .badge.util{background:#1D4266; color:var(--line-cyan);}
-  .badge.der{background:#4a3a10; color:var(--solar);}
+  .badge.util{background:var(--edge); color:var(--line-cyan);}
+  .badge.der{background:var(--solar-bg); color:var(--solar);}
 </style>
+<script src="../../shared/nav.js" defer></script>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Distribution Grid Field Guide — Companion Module</div>
+  <div class="eyebrow">Chapter 3 of 4 · What changes when a customer makes power too?</div>
   <h1>DER &amp; Microgrid Field Guide</h1>
   <p class="sub">A hands-on look at how <b>Distributed Energy Resources (DERs)</b> — solar, batteries, and the equipment that connects them — interconnect with the distribution grid. Worked example: a municipal site with <b>250 kW AC solar</b> + <b>750 kW AC battery storage</b> (an even <b>1,000 kW</b> total DER nameplate). Using the rule of thumb that 1 MW ≈ 1,000 average homes' worth of instantaneous demand, that's roughly a thousand households' worth of capacity tying into one feeder.</p>
 
   <div class="tabs">
-    <button class="tab active" data-tab="diagram">Diagram</button>
-    <button class="tab" data-tab="glossary">Glossary</button>
-    <button class="tab" data-tab="playground">Playground</button>
-    <button class="tab" data-tab="costs">Costs</button>
-    <button class="tab" data-tab="quiz">Quiz</button>
+    <button class="tab active" data-tab="diagram">◇ Diagram</button>
+    <button class="tab" data-tab="playground">⚡ Playground</button>
+    <button class="tab" data-tab="glossary">≡ Glossary</button>
+    <button class="tab" data-tab="quiz">? Quiz</button>
+    <button class="tab" data-tab="costs">$ Costs</button>
   </div>
 
   <!-- ================= DIAGRAM ================= -->
@@ -258,7 +244,7 @@
     <div class="diagram-head">
       <h2>Site One-Line: Grid ↔ DER Interconnection</h2>
       <div class="legend">
-        <span><i class="swatch" style="background:var(--line-cyan)"></i>Utility primary</span>
+        <span><i class="swatch" style="background:var(--signal-amber)"></i>Utility primary</span><span><i class="swatch" style="background:var(--line-cyan)"></i>Secondary (site voltage)</span>
         <span><i class="swatch" style="background:var(--solar)"></i>DER / DC-AC</span>
         <span><i class="swatch" style="background:var(--copper)"></i>Site AC bus</span>
       </div>
@@ -309,7 +295,7 @@
         <div class="ctrl">
           <label>Battery mode <b id="battModeLbl">Auto (balance the site)</b></label>
           <input type="range" id="battModeSlider" min="-750" max="750" step="25" value="0">
-          <div style="font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); display:flex; justify-content:space-between;">
+          <div style="font-family:var(--f-mono); font-size:12px; color:var(--muted); display:flex; justify-content:space-between;">
             <span>← force charge</span><span>auto</span><span>force discharge →</span>
           </div>
         </div>
@@ -465,9 +451,9 @@ function drawIcon(parent, type, x, y, s, color){
   }
 }
 function boxNode(svg, id, x, y, w, h, label, sub, fill, stroke, icon, textColor){
-  textColor = textColor || '#0B1E33';
+  textColor = textColor || 'var(--on-accent)';
   const g = el('g',{class:'node', 'data-id':id}, svg);
-  el('rect',{x,y,width:w,height:h,rx:8,fill,stroke:stroke||'#2a4d6e','stroke-width':1.5}, g);
+  el('rect',{x,y,width:w,height:h,rx:8,fill,stroke:stroke||'var(--edge-2)','stroke-width':1.5}, g);
   let textX = x+w/2, anchor='middle';
   if(icon){
     const iconSize = Math.min(h-14, 22);
@@ -494,26 +480,26 @@ function wire(svg, x1,y1,x2,y2,color,dash){
 function buildDiagram(){
   const svg = document.getElementById('diagramSvg');
   svg.innerHTML = '';
-  const CYAN = '#8FE0EC', COPPER='#D98457', SOLAR='#F5D76E', MUTED='#4C7C8C';
+  const CYAN = 'var(--line-cyan)', AMBER = 'var(--signal-amber)', COPPER='var(--copper)', SOLAR='var(--solar)', MUTED='var(--line-cyan-dim)';
 
   // utility feeder coming in
-  el('text',{x:20,y:34,'font-family':'IBM Plex Mono','font-size':13,fill:'#7E9BB4'},svg).textContent = 'FROM SUBSTATION / FEEDER';
-  wire(svg, 20,50, 140,50, CYAN);
-  boxNode(svg,'recloser',20,60,120,54,'Recloser','pole-mtd','#8FE0EC',null,'recloser');
-  wire(svg,140,87,200,87,CYAN);
-  boxNode(svg,'xfmr',200,60,130,54,'1 MVA Xfmr','utility','#8FE0EC',null,'transformer');
-  wire(svg,330,87,390,87,CYAN);
-  boxNode(svg,'pcc',390,60,120,54,'PCC / Meter','boundary','#B9E7ED',null,'meter');
+  el('text',{x:20,y:34,'font-family':'IBM Plex Mono','font-size':13,fill:'var(--muted)'},svg).textContent = 'FROM SUBSTATION / FEEDER';
+  wire(svg, 20,50, 140,50, AMBER);   // utility primary (~12 kV), amber as in chapter 2
+  boxNode(svg,'recloser',20,60,120,54,'Recloser','pole-mtd','var(--line-cyan)',null,'recloser');
+  wire(svg,140,87,200,87,AMBER);
+  boxNode(svg,'xfmr',200,60,130,54,'1 MVA Xfmr','utility','var(--line-cyan)',null,'transformer');
+  wire(svg,330,87,390,87,CYAN);     // transformer secondary (site voltage)
+  boxNode(svg,'pcc',390,60,120,54,'PCC / Meter','boundary','var(--cyan-soft)',null,'meter');
   wire(svg,510,87,570,87,COPPER);
-  boxNode(svg,'gateway',570,60,130,54,'DER Gateway','utility','#8FE0EC',null,'gateway');
+  boxNode(svg,'gateway',570,60,130,54,'DER Gateway','utility','var(--line-cyan)',null,'gateway');
 
   // site AC bus (vertical copper spine)
   wire(svg,700,87,770,87,COPPER);
   wire(svg,770,50,770,300,COPPER);
-  el('text',{x:782,y:180,'font-family':'IBM Plex Mono','font-size':12,fill:'#D98457'},svg).textContent = 'SITE AC BUS';
+  el('text',{x:782,y:180,'font-family':'IBM Plex Mono','font-size':12,fill:'var(--copper)'},svg).textContent = 'SITE AC BUS';
 
   // load
-  boxNode(svg,'load',810,60,160,54,'Site Load','municipal bldgs','#EAF2F5','#4C7C8C',null,'load');
+  boxNode(svg,'load',810,60,160,54,'Site Load','municipal bldgs','var(--box-hi)','var(--line-cyan-dim)',null,'load','var(--on-box-hi)');
   wire(svg,770,87,810,87,COPPER);
 
   // DER branches down from bus
@@ -523,22 +509,22 @@ function buildDiagram(){
 
   // solar branch
   wire(svg,560,190,560,230,SOLAR);
-  boxNode(svg,'pvinv',470,230,180,50,'PV Inverter','250 kW AC','#F5D76E',null,'inverter');
+  boxNode(svg,'pvinv',470,230,180,50,'PV Inverter','250 kW AC','var(--solar)',null,'inverter');
   wire(svg,470,255,410,255,SOLAR);
   wire(svg,410,255,410,290,SOLAR);
-  boxNode(svg,'pvarray',320,300,190,64,'PV Array','250 kW AC nameplate','#F7E48A',null,'solar');
+  boxNode(svg,'pvarray',320,300,190,64,'PV Array','250 kW AC nameplate','var(--solar-soft)',null,'solar');
 
   // battery branch
-  wire(svg,970,190,970,230,'#8FD6C4');
-  boxNode(svg,'pcs',870,230,190,50,'Battery Inverter (PCS)','bidirectional','#8FD6C4',null,'inverter');
-  wire(svg,870,255,950,255,'#8FD6C4');
-  wire(svg,950,255,950,290,'#8FD6C4');
-  boxNode(svg,'bess',840,300,200,64,'BESS','750 kW / ~1,500 kWh','#A9E6D6',null,'battery');
+  wire(svg,970,190,970,230,'var(--battery)');
+  boxNode(svg,'pcs',870,230,190,50,'Battery Inverter (PCS)','bidirectional','var(--battery)',null,'inverter');
+  wire(svg,870,255,950,255,'var(--battery)');
+  wire(svg,950,255,950,290,'var(--battery)');
+  boxNode(svg,'bess',840,300,200,64,'BESS','750 kW / ~1,500 kWh','var(--battery-soft)',null,'battery');
 
   // ATS / microgrid controller (dashed - optional)
-  boxNode(svg,'ats',560,300,190,64,'ATS + Microgrid Ctrl.','optional — islanding','#12314F','#F5A623','ats','#F5A623');
+  boxNode(svg,'ats',560,300,190,64,'ATS + Microgrid Ctrl.','optional — islanding','var(--panel-navy)','var(--signal-amber)','ats','var(--signal-amber)');
   svg.querySelector('[data-id="ats"] rect').setAttribute('stroke-dasharray','5,4');
-  wire(svg,655,190,655,300,'#F5A623','5,4');
+  wire(svg,655,190,655,300,'var(--signal-amber)','5,4');
 
   document.querySelectorAll('#diagramSvg .node').forEach(n=>{
     n.addEventListener('click', ()=>{
@@ -556,7 +542,7 @@ const ID_TO_TERM = {
 };
 function showInfo(id){
   const card = document.getElementById('infoCard');
-  const iconSpan = (type) => `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(type, '#F5A623')}</span>`;
+  const iconSpan = (type) => `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(type, 'var(--signal-amber)')}</span>`;
   if(id === 'load'){
     card.innerHTML = `<div class="info-tag">${iconSpan('load')}Customer Load</div><div class="info-title">Site Load</div><div class="info-body">The municipal buildings, EV chargers, streetlights, etc. that consume power on-site. This is what the solar array and battery are sized against — and what has to be served on its own if the site islands during a grid outage.</div>`;
     return;
@@ -595,7 +581,7 @@ function renderGlossary(){
       const catLabel = t.cat==='utility'?'Utility-owned':(t.cat==='der'?'Customer DER':'Controls/Protection');
       const card = document.createElement('div');
       card.className='term-card';
-      const icon = TERM_ICONS[t.id] ? `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(TERM_ICONS[t.id], '#F5A623')}</span>` : '';
+      const icon = TERM_ICONS[t.id] ? `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(TERM_ICONS[t.id], 'var(--signal-amber)')}</span>` : '';
       card.innerHTML = `<div class="info-tag">${icon}${catLabel}</div><h3>${t.name}</h3><p>${t.body}</p>${t.cost?`<div class="info-cost">≈ ${t.cost}</div>`:''}`;
       grid.appendChild(card);
     });
@@ -765,50 +751,51 @@ function runSim(){
 function drawPlaygroundDiagram(s){
   const svg = document.getElementById('pgSvg');
   svg.innerHTML = '';
-  const CYAN='#8FE0EC', COPPER='#D98457', SOLAR='#F5D76E', BATT='#8FD6C4', BAD='#EB5B5B', GOOD='#6FCF97', MUTED='#4C7C8C';
+  const CYAN='var(--line-cyan)', AMBER='var(--signal-amber)', COPPER='var(--copper)', SOLAR='var(--solar)', BATT='var(--battery)', BAD='var(--bad)', GOOD='var(--good)', MUTED='var(--line-cyan-dim)';
 
-  el('text',{x:10,y:22,'font-family':'IBM Plex Mono','font-size':12,fill:'#7E9BB4'},svg).textContent = 'UTILITY FEEDER';
+  el('text',{x:10,y:22,'font-family':'IBM Plex Mono','font-size':12,fill:'var(--muted)'},svg).textContent = 'UTILITY FEEDER';
 
-  const gridColor = s.gatewayTripped ? BAD : (s.ATSisland ? MUTED : CYAN);
+  const gridColor = s.gatewayTripped ? BAD : (s.ATSisland ? MUTED : CYAN);      // secondary, after the transformer
+  const primaryColor = s.gatewayTripped ? BAD : (s.ATSisland ? MUTED : AMBER);  // utility primary, before it
   const gridDash = s.ATSisland ? '5,4' : null;
-  wire(svg, 10,40, 90,40, gridColor, gridDash);
+  wire(svg, 10,40, 90,40, primaryColor, gridDash);
   boxNode(svg,'x1',10,50,108,40,'Recloser','', CYAN, null, 'recloser');
-  wire(svg,100,90,100,120,gridColor, gridDash);
+  wire(svg,100,90,100,120,primaryColor, gridDash);
   boxNode(svg,'x2',30,120,140,40,'1 MVA Xfmr','', CYAN, null, 'transformer');
   wire(svg,100,160,100,190,gridColor, gridDash);
-  const pccFill = s.gatewayTripped ? '#EB5B5B' : (s.ATSisland ? '#7E9BB4' : (s.pccFlow>=0?'#6FCF97':'#8FE0EC'));
+  const pccFill = s.gatewayTripped ? 'var(--bad)' : (s.ATSisland ? 'var(--muted)' : (s.pccFlow>=0?'var(--good)':'var(--line-cyan)'));
   boxNode(svg,'x3',20,190,160,44,s.gatewayTripped?'PCC — TRIPPED':(s.ATSisland?'PCC — OPEN (ATS)':'PCC / Gateway'), s.gatewayTripped?'':(s.ATSisland?'':(Math.round(s.pccFlow)+' kW')), pccFill, null, 'gateway');
 
   // site bus
   wire(svg,100,234,100,270,COPPER);
   wire(svg,100,270,340,270,COPPER);
-  el('text',{x:250,y:290,'font-family':'IBM Plex Mono','font-size':11,fill:'#D98457'},svg).textContent = 'SITE BUS';
+  el('text',{x:250,y:290,'font-family':'IBM Plex Mono','font-size':11,fill:'var(--copper)'},svg).textContent = 'SITE BUS';
 
   // load
-  const loadFill = s.loadServed < s.load ? '#EB5B5B' : '#EAF2F5';
-  boxNode(svg,'l1',380,248,200,44,'Site Load',Math.round(s.loadServed)+' / '+s.load+' kW', loadFill, '#4C7C8C', 'load');
+  const loadFill = s.loadServed < s.load ? 'var(--bad)' : 'var(--box-hi)';
+  boxNode(svg,'l1',380,248,200,44,'Site Load',Math.round(s.loadServed)+' / '+s.load+' kW', loadFill, 'var(--line-cyan-dim)', 'load', s.loadServed < s.load ? 'var(--on-accent)' : 'var(--on-box-hi)');
   wire(svg,340,270,380,270,COPPER);
 
   // solar branch
   const solarActive = s.solar > 0;
   wire(svg,150,270,150,320, solarActive?SOLAR:MUTED);
-  boxNode(svg,'s1',70,320,160,44,'PV Inverter', Math.round(s.solar)+' kW', solarActive?SOLAR:'#1D3A54', null, 'solar', solarActive?'#0B1E33':'#7E9BB4');
+  boxNode(svg,'s1',70,320,160,44,'PV Inverter', Math.round(s.solar)+' kW', solarActive?SOLAR:'var(--box-off)', null, 'solar', solarActive?'var(--on-accent)':'var(--muted)');
 
   // battery branch
   const battActive = Math.abs(s.battDischarge) > 1;
   wire(svg,300,270,300,320, battActive?BATT:MUTED);
   const battLbl = (s.battDischarge>=0 ? (Math.round(s.battDischarge)+' kW out') : (Math.round(-s.battDischarge)+' kW in')) + (s.socLimited ? ' ⚡SOC-capped' : '');
-  boxNode(svg,'b1',260,320,170,44,'Battery PCS', battActive?battLbl:'idle', battActive?BATT:'#1D3A54', null, 'battery', battActive?'#0B1E33':'#7E9BB4');
+  boxNode(svg,'b1',260,320,170,44,'Battery PCS', battActive?battLbl:'idle', battActive?BATT:'var(--box-off)', null, 'battery', battActive?'var(--on-accent)':'var(--muted)');
 
   // curtailment marker
   if(s.curtailment > 0){
-    el('text',{x:150,y:400,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':12,fill:'#F5A623'},svg).textContent = '⚡ curtailed ' + Math.round(s.curtailment) + ' kW';
+    el('text',{x:150,y:400,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':12,fill:'var(--signal-amber)'},svg).textContent = '⚡ curtailed ' + Math.round(s.curtailment) + ' kW';
   }
   if(s.ATSisland){
-    el('text',{x:100,y:180,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':11,fill:'#7E9BB4'},svg).textContent = 'ISLANDED';
+    el('text',{x:100,y:180,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':11,fill:'var(--muted)'},svg).textContent = 'ISLANDED';
   }
   if(s.gatewayTripped){
-    el('text',{x:100,y:180,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':11,fill:'#EB5B5B'},svg).textContent = 'ANTI-ISLAND TRIP';
+    el('text',{x:100,y:180,'text-anchor':'middle','font-family':'IBM Plex Mono','font-size':11,fill:'var(--bad)'},svg).textContent = 'ANTI-ISLAND TRIP';
   }
 }
 

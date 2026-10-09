@@ -2,96 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Distributed Energy Playground</title>
+<title>Power mix · Grid Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
 <style>
   :root{
-    --ink-navy:#0B1E33; --panel-navy:#12314F; --panel-navy-2:#0F2946;
-    --line-cyan:#8FE0EC; --line-cyan-dim:#4C7C8C; --paper:#EAF2F5; --muted:#7E9BB4;
-    --signal-amber:#F5A623; --copper:#D98457; --good:#6FCF97; --bad:#EB5B5B; --violet:#B9A9F2;
-    --edge:#1D4266; --edge-2:#2A5478; --radius:10px;
-    --c-gas:#D98457; --c-wind:#8FE0EC; --c-solar:#F5C542; --c-batt:#6FCF97; --c-charge:#B9A9F2;
+    /* chapter-only tokens; shared ones come from shared/theme.css */
+    --c-gas:var(--copper);
+    --c-wind:var(--line-cyan);
+    --c-solar:var(--solar);
+    --c-batt:var(--good);
+    --c-charge:var(--violet);
   }
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink-navy:#0B1E33; --paper:#EAF2F5; } }
-  :root[data-theme="dark"]{ --ink-navy:#0B1E33; --paper:#EAF2F5; }
   :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
   html{ scroll-padding-top:env(safe-area-inset-top,0px); background:var(--ink-navy); }
   *,*::before,*::after{box-sizing:border-box;}
   html,body{margin:0;}
   body{
-    background: radial-gradient(ellipse at 20% -10%, #163a5c 0%, transparent 55%), var(--ink-navy);
-    color:var(--paper); font-family:'IBM Plex Sans', system-ui, sans-serif;
+    background: radial-gradient(ellipse at 20% -10%, var(--glow) 0%, transparent 55%), var(--ink-navy);
+    color:var(--paper); font-family:var(--f-body);
     min-height:100vh; padding:28px 18px 60px;
   }
   .wrap{max-width:1020px;margin:0 auto;}
-  .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:14px;letter-spacing:.14em;color:var(--signal-amber);text-transform:uppercase;margin-bottom:8px;}
-  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:clamp(26px,4vw,38px);margin:0 0 6px;letter-spacing:-0.01em;}
+  .eyebrow{font-family:var(--f-mono);font-size:14px;letter-spacing:.14em;color:var(--signal-amber);text-transform:uppercase;margin-bottom:8px;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,4vw,38px);margin:0 0 6px;letter-spacing:-0.01em;}
   .sub{color:var(--muted);font-size:17px;max-width:680px;line-height:1.5;margin-bottom:26px;}
-  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+  .mono{font-family:var(--f-mono);}
 
   .tabs{display:flex;gap:2px;background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:var(--radius);padding:4px;margin-bottom:22px;flex-wrap:wrap;}
-  .tab{flex:1 1 auto;min-width:120px;text-align:center;padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.03em;color:var(--muted);background:transparent;border:none;border-radius:6px;cursor:pointer;}
+  .tab{flex:1 1 auto;min-width:120px;text-align:center;padding:10px 12px;font-family:var(--f-mono);font-size:15px;letter-spacing:.03em;color:var(--muted);background:transparent;border:none;border-radius:6px;cursor:pointer;}
   .tab:hover{color:var(--paper);}
-  .tab.active{background:var(--signal-amber);color:#1A1102;font-weight:600;}
+  .tab.active{background:var(--signal-amber);color:var(--on-amber);font-weight:600;}
   button:focus-visible, input:focus-visible{outline:2px solid var(--line-cyan);outline-offset:2px;}
 
   .panel{background:var(--panel-navy);border:1px solid var(--edge);border-radius:var(--radius);padding:22px;display:none;}
   .panel.active{display:block;}
   .head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-  .head h2{font-family:'Space Grotesk';font-size:20px;margin:0;}
-  .hint{font-family:'IBM Plex Mono';font-size:14px;color:var(--muted);margin-bottom:12px;}
+  .head h2{font-family:var(--f-display);font-size:20px;margin:0;}
+  .hint{font-family:var(--f-mono);font-size:14px;color:var(--muted);margin-bottom:12px;}
   .intro{font-size:16px;color:var(--muted);margin:0 0 16px;line-height:1.5;max-width:760px;}
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-family:'IBM Plex Mono';font-size:13.5px;color:var(--muted);}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--f-mono);font-size:13.5px;color:var(--muted);}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .sw{width:14px;height:10px;border-radius:2px;display:inline-block;}
 
   /* presets + time bar */
   .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
-  .presets .lbl{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--muted);margin-right:4px;}
-  .chip{font-family:'IBM Plex Mono';font-size:14px;padding:6px 12px;border-radius:20px;border:1px solid var(--edge-2);color:var(--muted);cursor:pointer;background:transparent;}
+  .presets .lbl{font-family:var(--f-mono);font-size:13.5px;color:var(--muted);margin-right:4px;}
+  .chip{font-family:var(--f-mono);font-size:14px;padding:6px 12px;border-radius:20px;border:1px solid var(--edge-2);color:var(--muted);cursor:pointer;background:transparent;}
   .chip:hover{color:var(--paper);border-color:var(--line-cyan);}
-  .chip.active{background:var(--line-cyan);color:#0B1E33;border-color:var(--line-cyan);font-weight:600;}
+  .chip.active{background:var(--line-cyan);color:var(--on-accent);border-color:var(--line-cyan);font-weight:600;}
   .timebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 14px;margin-bottom:14px;}
-  .timebar .clock{font-family:'Space Grotesk';font-size:22px;font-weight:600;min-width:104px;color:var(--signal-amber);}
+  .timebar .clock{font-family:var(--f-display);font-size:22px;font-weight:600;min-width:104px;color:var(--signal-amber);}
   .timebar input[type=range]{flex:1 1 240px;}
-  .btn{font-family:'IBM Plex Mono';font-size:14.5px;letter-spacing:.03em;padding:8px 14px;border-radius:7px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;}
+  .btn{font-family:var(--f-mono);font-size:14.5px;letter-spacing:.03em;padding:8px 14px;border-radius:7px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;}
   .btn:hover{border-color:var(--line-cyan);}
-  .btn.primary{background:var(--signal-amber);color:#1A1102;border-color:var(--signal-amber);font-weight:600;}
+  .btn.primary{background:var(--signal-amber);color:var(--on-amber);border-color:var(--signal-amber);font-weight:600;}
   input[type=range]{accent-color:var(--signal-amber);width:100%;}
 
   /* controls */
   .ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px;margin-bottom:10px;}
   .ctl{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;border-left:3px solid var(--edge-2);}
   .ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
-  .ctl b{font-family:'Space Grotesk';font-size:15.5px;}
-  .ctl .val{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--paper);text-align:right;}
+  .ctl b{font-family:var(--f-display);font-size:15.5px;}
+  .ctl .val{font-family:var(--f-mono);font-size:13.5px;color:var(--paper);text-align:right;}
   .ctl .note{font-size:13.5px;color:var(--muted);margin-top:4px;line-height:1.4;min-height:1.4em;}
   .ctl .row{display:flex;align-items:center;gap:6px;margin-top:6px;}
-  .step{width:30px;height:28px;flex:0 0 auto;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;font-family:'IBM Plex Mono';font-size:16px;line-height:1;}
+  .step{width:30px;height:28px;flex:0 0 auto;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--paper);cursor:pointer;font-family:var(--f-mono);font-size:16px;line-height:1;}
   .step:hover{border-color:var(--line-cyan);}
   .seg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
-  .seg button{flex:1 1 auto;font-family:'IBM Plex Mono';font-size:13px;padding:6px 8px;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--muted);cursor:pointer;}
-  .seg button.on{background:var(--line-cyan);border-color:var(--line-cyan);color:#0B1E33;font-weight:600;}
+  .seg button{flex:1 1 auto;font-family:var(--f-mono);font-size:13px;padding:6px 8px;border-radius:6px;border:1px solid var(--edge-2);background:transparent;color:var(--muted);cursor:pointer;}
+  .seg button.on{background:var(--line-cyan);border-color:var(--line-cyan);color:var(--on-accent);font-weight:600;}
   details.adv{margin:4px 0 14px;}
-  details.adv summary{cursor:pointer;font-family:'IBM Plex Mono';font-size:14px;color:var(--paper);padding:8px 12px;border:1px dashed var(--edge-2);border-radius:7px;display:inline-block;}
+  details.adv summary{cursor:pointer;font-family:var(--f-mono);font-size:14px;color:var(--paper);padding:8px 12px;border:1px dashed var(--edge-2);border-radius:7px;display:inline-block;}
   .linkbtn{font:inherit;color:var(--signal-amber);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
   @keyframes flash{0%,100%{box-shadow:none;}30%{box-shadow:0 0 0 3px var(--signal-amber);}}
   .ctl.flash{animation:flash 1.2s ease-in-out 2;}
   details.adv summary:hover{color:var(--paper);}
-  .group-title{font-family:'Space Grotesk';font-size:16px;margin:14px 0 8px;color:var(--paper);}
+  .group-title{font-family:var(--f-display);font-size:16px;margin:14px 0 8px;color:var(--paper);}
 
   /* pills */
   .pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin:6px 0 10px;}
   .pill{background:var(--panel-navy-2);border:1px solid var(--edge);border-top:3px solid var(--signal-amber);border-radius:8px;padding:10px 12px;}
-  .pill .v{font-family:'Space Grotesk';font-size:23px;font-weight:600;line-height:1.15;}
+  .pill .v{font-family:var(--f-display);font-size:23px;font-weight:600;line-height:1.15;}
   .pill .v small{font-size:14px;color:var(--muted);font-weight:500;}
-  .pill .l{font-family:'IBM Plex Mono';font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
+  .pill .l{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
   .pill .s{font-size:13px;color:var(--muted);margin-top:3px;}
-  .splitbar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:#0A2038;border:1px solid var(--edge);margin:4px 0 4px;}
+  .splitbar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:var(--well);border:1px solid var(--edge);margin:4px 0 4px;}
   .splitbar div{height:100%;transition:width .12s;}
-  .splitlegend{display:flex;flex-wrap:wrap;gap:12px;font-family:'IBM Plex Mono';font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .splitlegend{display:flex;flex-wrap:wrap;gap:12px;font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-bottom:14px;}
 
   .story{background:var(--panel-navy-2);border:1px solid var(--edge);border-left:3px solid var(--line-cyan);border-radius:8px;padding:13px 16px;font-size:16px;line-height:1.6;margin:8px 0 16px;}
   .story.warn{border-left-color:var(--bad);}
@@ -100,8 +101,8 @@
   svg.chart{width:100%;height:auto;display:block;touch-action:none;cursor:ew-resize;}
   .chart-wrap{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:10px 10px 4px;margin-bottom:10px;}
   .chart-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 4px 6px;}
-  .chart-top h3{font-family:'Space Grotesk';font-size:16px;margin:0;}
-  .chk{font-family:'IBM Plex Mono';font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer;}
+  .chart-top h3{font-family:var(--f-display);font-size:16px;margin:0;}
+  .chk{font-family:var(--f-mono);font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;cursor:pointer;}
 
   /* diagram */
   #dgSvg{width:100%;height:auto;display:block;margin:6px 0 4px;}
@@ -114,36 +115,37 @@
   @keyframes flow{to{stroke-dashoffset:-20;}}
   #infoCard{background:var(--panel-navy-2);border:1px solid var(--edge);border-left:3px solid var(--signal-amber);border-radius:8px;padding:16px 18px;min-height:96px;}
   #infoCard .placeholder{color:var(--muted);font-size:16px;}
-  .info-title{font-family:'Space Grotesk';font-weight:600;font-size:19px;margin:0 0 3px;}
-  .info-tag{font-family:'IBM Plex Mono';font-size:13.5px;color:var(--signal-amber);text-transform:uppercase;letter-spacing:.06em;}
+  .info-title{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0 0 3px;}
+  .info-tag{font-family:var(--f-mono);font-size:13.5px;color:var(--signal-amber);text-transform:uppercase;letter-spacing:.06em;}
   .info-body{font-size:16px;line-height:1.6;margin-top:8px;}
   .info-body p{margin:0 0 8px;}
-  .info-note{font-size:15px;color:var(--muted);margin-top:10px;border-top:1px dashed #26496b;padding-top:9px;}
-  .read-head{font-family:'Space Grotesk';font-size:18px;margin:26px 0 4px;}
+  .info-note{font-size:15px;color:var(--muted);margin-top:10px;border-top:1px dashed var(--edge-2);padding-top:9px;}
+  .read-head{font-family:var(--f-display);font-size:18px;margin:26px 0 4px;}
   .read-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
   .read-card{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:14px 16px;}
-  .read-card h4{font-family:'Space Grotesk';font-size:16.5px;margin:0 0 6px;}
+  .read-card h4{font-family:var(--f-display);font-size:16.5px;margin:0 0 6px;}
   .read-card p{font-size:15.5px;line-height:1.55;margin:0 0 8px;opacity:.93;}
   .read-card p:last-child{margin-bottom:0;}
 
   /* math */
   .m-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
   .m-card{background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:8px;padding:14px 16px;}
-  .m-card h3{font-family:'Space Grotesk';font-weight:600;font-size:17.5px;color:var(--signal-amber);margin:0 0 6px;}
+  .m-card h3{font-family:var(--f-display);font-weight:600;font-size:17.5px;color:var(--signal-amber);margin:0 0 6px;}
   .m-card p{font-size:15.5px;line-height:1.55;margin:6px 0;opacity:.93;}
-  .f{font-family:'IBM Plex Mono';font-size:14px;color:var(--line-cyan);background:#0A2038;border:1px solid var(--edge);border-radius:6px;padding:8px 10px;margin:8px 0;line-height:1.6;overflow-x:auto;overflow-wrap:anywhere;}
+  .f{font-family:var(--f-mono);font-size:14px;color:var(--line-cyan);background:var(--well);border:1px solid var(--edge);border-radius:6px;padding:8px 10px;margin:8px 0;line-height:1.6;overflow-x:auto;overflow-wrap:anywhere;}
   .f .live{color:var(--signal-amber);}
   .m-card svg{width:100%;height:auto;display:block;margin-top:6px;}
   .span2{grid-column:1/-1;}
 
-  footer{text-align:center;color:var(--muted);font-family:'IBM Plex Mono';font-size:13.5px;margin-top:24px;line-height:1.6;}
+  footer{text-align:center;color:var(--muted);font-family:var(--f-mono);font-size:13.5px;margin-top:24px;line-height:1.6;}
   @media (prefers-reduced-motion: reduce){ .flow{animation:none;} *{transition:none !important;} }
   @media (max-width:560px){ .panel{padding:14px;} .pill .v{font-size:20px;} }
 </style>
+<script src="../../shared/nav.js" defer></script>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Field guide — distributed energy resources</div>
+  <div class="eyebrow">Chapter 1 of 4 · Where does the power come from?</div>
   <h1>Distributed Energy Playground</h1>
   <p class="sub">A small town runs on one natural-gas plant. Add wind turbines, solar farms and a battery, then scrub through a 24-hour day to see who supplies each megawatt, when the battery charges or discharges, and how much of the demand renewables actually cover.</p>
 
@@ -582,7 +584,7 @@ function renderNow(){
     ['Wind', n.w * (n.w + n.s > 0 ? (n.w + n.s - n.chargeR) / (n.w + n.s) : 0), 'var(--c-wind)'],
     ['Solar', n.s * (n.w + n.s > 0 ? (n.w + n.s - n.chargeR) / (n.w + n.s) : 0), 'var(--c-solar)'],
     ['Battery (stored renewable)', n.dischGreen, 'var(--c-batt)'],
-    ['Battery (stored gas)', Math.max(0, n.p) * gf, '#3F8F63'],
+    ['Battery (stored gas)', Math.max(0, n.p) * gf, 'var(--good-dim)'],
     ['Unserved', n.uns, 'var(--bad)'],
   ];
   $('splitBar').innerHTML = parts.map(([l, v, c]) => `<div title="${l}: ${f1(v)} MW" style="width:${100 * v / n.d}%;background:${c}"></div>`).join('');
@@ -645,8 +647,8 @@ const NS = 'http://www.w3.org/2000/svg';
 const CH = { W:960, H:330, l:46, r:12, t:12, b:28 };
 function defs(svg){
   return `<defs>
-    <pattern id="${svg}-hc" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(185,169,242,.18)"/><rect width="3" height="7" fill="#B9A9F2"/></pattern>
-    <pattern id="${svg}-hx" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(235,91,91,.15)"/><rect width="3" height="7" fill="#EB5B5B"/></pattern>
+    <pattern id="${svg}-hc" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="color-mix(in srgb, var(--violet) 18%, transparent)"/><rect width="3" height="7" fill="var(--violet)"/></pattern>
+    <pattern id="${svg}-hx" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="color-mix(in srgb, var(--bad) 15%, transparent)"/><rect width="3" height="7" fill="var(--bad)"/></pattern>
   </defs>`;
 }
 function drawMain(){
@@ -665,40 +667,40 @@ function drawMain(){
   const chargeHi = B.D.map((d,i) => d + Math.max(-R.p[i], 0));
   const curtHi = s4.map((v,i) => v + R.curt[i]);
   let g = defs('m');
-  for (let v = 0; v <= maxY; v += 10){ g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1D4266" stroke-width="1"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${v}</text>`; }
-  g += `<text x="12" y="${t+ph/2}" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12" transform="rotate(-90 12 ${t+ph/2})" text-anchor="middle">MW</text>`;
-  for (let h = 0; h <= 24; h += 3){ g += `<text x="${X(h/DT)}" y="${H-8}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`; }
-  g += `<path d="${area(z, s1)}" fill="#D98457" opacity=".85"/>`;
-  g += `<path d="${area(s1, s2)}" fill="#8FE0EC" opacity=".85"/>`;
-  g += `<path d="${area(s2, s3)}" fill="#F5C542" opacity=".88"/>`;
-  g += `<path d="${area(s3, s4)}" fill="#6FCF97" opacity=".9"/>`;
+  for (let v = 0; v <= maxY; v += 10){ g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--edge)" stroke-width="1"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12">${v}</text>`; }
+  g += `<text x="12" y="${t+ph/2}" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12" transform="rotate(-90 12 ${t+ph/2})" text-anchor="middle">MW</text>`;
+  for (let h = 0; h <= 24; h += 3){ g += `<text x="${X(h/DT)}" y="${H-8}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`; }
+  g += `<path d="${area(z, s1)}" fill="var(--copper)" opacity=".85"/>`;
+  g += `<path d="${area(s1, s2)}" fill="var(--line-cyan)" opacity=".85"/>`;
+  g += `<path d="${area(s2, s3)}" fill="var(--solar)" opacity=".88"/>`;
+  g += `<path d="${area(s3, s4)}" fill="var(--good)" opacity=".9"/>`;
   g += `<path d="${area(B.D, chargeHi)}" fill="url(#m-hc)"/>`;
   g += `<path d="${area(s4, curtHi)}" fill="url(#m-hx)"/>`;
-  if (S.showNoBatt && S.bessMWh > 0 && S.mode !== 'off') g += `<path d="${line(R0.g)}" fill="none" stroke="#D98457" stroke-width="2" stroke-dasharray="6 5"/>`;
+  if (S.showNoBatt && S.bessMWh > 0 && S.mode !== 'off') g += `<path d="${line(R0.g)}" fill="none" stroke="var(--copper)" stroke-width="2" stroke-dasharray="6 5"/>`;
   const gm = S.gasCap * S.gasMinPct / 100;
-  g += `<line x1="${l}" x2="${W-r}" y1="${Y(S.gasCap)}" y2="${Y(S.gasCap)}" stroke="#EB5B5B" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${W-r-4}" y="${Y(S.gasCap)-5}" text-anchor="end" fill="#EB5B5B" font-family="IBM Plex Mono" font-size="11.5">gas max ${S.gasCap} MW</text>`;
-  if (gm > 0) g += `<line x1="${l}" x2="${W-r}" y1="${Y(gm)}" y2="${Y(gm)}" stroke="#1A1102" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${l+6}" y="${Y(gm)-5}" fill="#1A1102" font-family="IBM Plex Mono" font-size="11.5" opacity=".85">gas minimum ${f1(gm)} MW</text>`;
-  g += `<path d="${line(B.D)}" fill="none" stroke="#EAF2F5" stroke-width="2.6"/>`;
+  g += `<line x1="${l}" x2="${W-r}" y1="${Y(S.gasCap)}" y2="${Y(S.gasCap)}" stroke="var(--bad)" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${W-r-4}" y="${Y(S.gasCap)-5}" text-anchor="end" fill="var(--bad)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="11.5">gas max ${S.gasCap} MW</text>`;
+  if (gm > 0) g += `<line x1="${l}" x2="${W-r}" y1="${Y(gm)}" y2="${Y(gm)}" stroke="var(--on-amber)" stroke-width="1" stroke-dasharray="2 4" opacity=".7"/><text x="${l+6}" y="${Y(gm)-5}" fill="var(--on-amber)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="11.5" opacity=".85">gas minimum ${f1(gm)} MW</text>`;
+  g += `<path d="${line(B.D)}" fill="none" stroke="var(--paper)" stroke-width="2.6"/>`;
   const cx = X(idx());
-  g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="#F5A623" stroke-width="2"/><circle cx="${cx}" cy="${Y(B.D[idx()])}" r="5" fill="#EAF2F5" stroke="#F5A623" stroke-width="2"/>`;
+  g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="var(--signal-amber)" stroke-width="2"/><circle cx="${cx}" cy="${Y(B.D[idx()])}" r="5" fill="var(--paper)" stroke="var(--signal-amber)" stroke-width="2"/>`;
   svg.innerHTML = g;
 }
 function drawSoc(){
   const svg = $('socChart'), W = 960, H = 130, l = 46, r = 12, t = 10, b = 22, pw = W-l-r, ph = H-t-b;
   const X = i => l + pw * (i / N), Y = v => t + ph * (1 - v);
   let g = '';
-  [0, .5, 1].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1D4266"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${v*100}%</text>`);
-  for (let h = 0; h <= 24; h += 3) g += `<text x="${X(h/DT)}" y="${H-5}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`;
+  [0, .5, 1].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--edge)"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12">${v*100}%</text>`);
+  for (let h = 0; h <= 24; h += 3) g += `<text x="${X(h/DT)}" y="${H-5}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12">${h === 24 ? '12a' : fmtTime(h).replace(':00','').replace(' AM','a').replace(' PM','p')}</text>`;
   if (S.bessMWh > 0 && S.bessMW > 0){
-    [SOC_MIN, SOC_MAX].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#6FCF97" stroke-dasharray="3 4" opacity=".6"/>`);
+    [SOC_MIN, SOC_MAX].forEach(v => g += `<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--good)" stroke-dasharray="3 4" opacity=".6"/>`);
     let d = `M${X(0)},${Y(0)}`; for (let i = 0; i <= N; i++) d += `L${X(i).toFixed(1)},${Y(R.socPct[i % N]).toFixed(1)}`; d += `L${X(N)},${Y(0)}Z`;
-    g += `<path d="${d}" fill="rgba(111,207,151,.25)" stroke="#6FCF97" stroke-width="2"/>`;
+    g += `<path d="${d}" fill="color-mix(in srgb, var(--good) 25%, transparent)" stroke="var(--good)" stroke-width="2"/>`;
     // bars for charge/discharge
     for (let i = 0; i < N; i++){ const p = R.p[i]; if (Math.abs(p) < .05) continue;
       const hgt = Math.min(ph * .45, Math.abs(p) / S.bessMW * ph * .45);
-      g += `<rect x="${X(i)+1}" y="${p > 0 ? Y(0) - hgt : Y(0) - hgt}" width="${pw/N - 2}" height="${hgt}" fill="${p > 0 ? '#6FCF97' : '#B9A9F2'}" opacity=".35"/>`; }
-  } else g += `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13">Add battery power and energy to see it charge and discharge</text>`;
-  const cx = X(idx()); g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="#F5A623" stroke-width="2"/>`;
+      g += `<rect x="${X(i)+1}" y="${p > 0 ? Y(0) - hgt : Y(0) - hgt}" width="${pw/N - 2}" height="${hgt}" fill="${p > 0 ? 'var(--good)' : 'var(--violet)'}" opacity=".35"/>`; }
+  } else g += `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="13">Add battery power and energy to see it charge and discharge</text>`;
+  const cx = X(idx()); g += `<line x1="${cx}" x2="${cx}" y1="${t}" y2="${t+ph}" stroke="var(--signal-amber)" stroke-width="2"/>`;
   svg.innerHTML = g;
 }
 function chartScrub(svgId, left, width){
@@ -714,45 +716,45 @@ chartScrub('mainChart', 46, 960); chartScrub('socChart', 46, 960);
 /* ============================ DIAGRAM ============================ */
 const BUSX = 560;
 const DG = {
-  gas:  { x:30,  y:40,  w:200, h:74, y0:77,  color:'#D98457', name:'Gas plant' },
-  wind: { x:30,  y:162, w:200, h:90, y0:207, color:'#8FE0EC', name:'Wind farm' },
-  solar:{ x:30,  y:312, w:200, h:90, y0:357, color:'#F5C542', name:'Solar PV' },
-  inv:  { x:292, y:334, w:66,  h:46, y0:357, color:'#F5C542', name:'DC/AC' },
-  load: { x:780, y:90,  w:190, h:90, y0:135, color:'#EAF2F5', name:'Town' },
-  pcs:  { x:652, y:310, w:66,  h:46, y0:333, color:'#6FCF97', name:'DC/AC' },
-  bess: { x:780, y:296, w:190, h:74, y0:333, color:'#6FCF97', name:'Battery' },
+  gas:  { x:30,  y:40,  w:200, h:74, y0:77,  color:'var(--copper)', name:'Gas plant' },
+  wind: { x:30,  y:162, w:200, h:90, y0:207, color:'var(--line-cyan)', name:'Wind farm' },
+  solar:{ x:30,  y:312, w:200, h:90, y0:357, color:'var(--solar)', name:'Solar PV' },
+  inv:  { x:292, y:334, w:66,  h:46, y0:357, color:'var(--solar)', name:'DC/AC' },
+  load: { x:780, y:90,  w:190, h:90, y0:135, color:'var(--paper)', name:'Town' },
+  pcs:  { x:652, y:310, w:66,  h:46, y0:333, color:'var(--good)', name:'DC/AC' },
+  bess: { x:780, y:296, w:190, h:74, y0:333, color:'var(--good)', name:'Battery' },
 };
 function buildDiagram(){
   const svg = $('dgSvg');
-  let g = `<text x="${BUSX}" y="28" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12.5">substation bus</text>
-    <rect x="${BUSX-6}" y="38" width="12" height="360" rx="3" fill="#9FC0D6"/>
-    <text id="dg-bal" x="${BUSX}" y="425" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13"></text>
-    <text id="dg-bal2" x="${BUSX}" y="446" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="13"></text>`;
-  const xf = (x, y, c) => `<circle cx="${x-7}" cy="${y}" r="10" fill="#12314F" stroke="${c}" stroke-width="2"/><circle cx="${x+7}" cy="${y}" r="10" fill="#12314F" fill-opacity=".6" stroke="${c}" stroke-width="2"/>`;
-  const seg = (id, x1, x2, y, c) => `<line x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="#274b6d" stroke-width="3"/><line id="${id}" class="flow" x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="${c}" stroke-linecap="round"/>`;
+  let g = `<text x="${BUSX}" y="28" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12.5">substation bus</text>
+    <rect x="${BUSX-6}" y="38" width="12" height="360" rx="3" fill="var(--soft)"/>
+    <text id="dg-bal" x="${BUSX}" y="425" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="13"></text>
+    <text id="dg-bal2" x="${BUSX}" y="446" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="13"></text>`;
+  const xf = (x, y, c) => `<circle cx="${x-7}" cy="${y}" r="10" fill="var(--panel-navy)" stroke="${c}" stroke-width="2"/><circle cx="${x+7}" cy="${y}" r="10" fill="var(--panel-navy)" fill-opacity=".6" stroke="${c}" stroke-width="2"/>`;
+  const seg = (id, x1, x2, y, c) => `<line x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="var(--edge-2)" stroke-width="3"/><line id="${id}" class="flow" x1="${x1}" x2="${x2}" y1="${y}" y2="${y}" stroke="${c}" stroke-linecap="round"/>`;
   // lines
-  g += seg('fl-gas', 230, BUSX, 77, '#D98457') + seg('fl-wind', 230, BUSX, 207, '#8FE0EC');
-  g += seg('fl-sdc', 230, 292, 357, '#F5C542') + seg('fl-sac', 358, BUSX, 357, '#F5C542');
-  g += seg('fl-load', BUSX, 780, 135, '#EAF2F5');
-  g += seg('fl-bac', BUSX, 652, 333, '#6FCF97') + seg('fl-bdc', 718, 780, 333, '#6FCF97');
-  g += xf(420, 77, '#D98457') + xf(420, 207, '#8FE0EC') + xf(450, 357, '#F5C542') + xf(600, 333, '#6FCF97');
-  ['gas','wind','sac','load','bac'].forEach(k => g += `<text id="lb-${k}" text-anchor="middle" fill="#EAF2F5" font-family="IBM Plex Mono" font-size="13.5" font-weight="600"></text>`);
-  g += `<text x="261" y="344" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="11">DC</text><text x="749" y="320" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="11">DC</text>`;
+  g += seg('fl-gas', 230, BUSX, 77, 'var(--copper)') + seg('fl-wind', 230, BUSX, 207, 'var(--line-cyan)');
+  g += seg('fl-sdc', 230, 292, 357, 'var(--solar)') + seg('fl-sac', 358, BUSX, 357, 'var(--solar)');
+  g += seg('fl-load', BUSX, 780, 135, 'var(--paper)');
+  g += seg('fl-bac', BUSX, 652, 333, 'var(--good)') + seg('fl-bdc', 718, 780, 333, 'var(--good)');
+  g += xf(420, 77, 'var(--copper)') + xf(420, 207, 'var(--line-cyan)') + xf(450, 357, 'var(--solar)') + xf(600, 333, 'var(--good)');
+  ['gas','wind','sac','load','bac'].forEach(k => g += `<text id="lb-${k}" text-anchor="middle" fill="var(--paper)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="13.5" font-weight="600"></text>`);
+  g += `<text x="261" y="344" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="11">DC</text><text x="749" y="320" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="11">DC</text>`;
   // nodes
   Object.entries(DG).forEach(([k, n]) => {
     const small = k === 'inv' || k === 'pcs';
     g += `<g class="node" data-k="${k}" tabindex="0" role="button" aria-label="${n.name}">
-      <rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="8" fill="#0F2946" stroke="${n.color}" stroke-width="1.6"/>
-      ${small ? `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" fill="${n.color}" font-family="Space Grotesk" font-size="15" font-weight="600">DC/AC</text>` :
-      `<text x="${n.x+14}" y="${n.y+24}" fill="${n.color}" font-family="Space Grotesk" font-size="16.5" font-weight="600">${n.name}</text>
-       <text id="nd-${k}-a" x="${n.x+14}" y="${n.y+45}" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="12.5"></text>
-       <text id="nd-${k}-b" x="${n.x+14}" y="${n.y+63}" fill="#EAF2F5" font-family="IBM Plex Mono" font-size="12.5"></text>
-       ${k === 'load' ? `<text id="nd-load-c" x="${n.x+14}" y="${n.y+81}" fill="#6FCF97" font-family="IBM Plex Mono" font-size="12.5"></text>` : ''}
-       ${k === 'wind' || k === 'solar' ? `<text id="nd-${k}-c" x="${n.x+14}" y="${n.y+81}" font-family="IBM Plex Mono" font-size="12.5"></text>` : ''}`}
+      <rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" rx="8" fill="var(--panel-navy-2)" stroke="${n.color}" stroke-width="1.6"/>
+      ${small ? `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" fill="${n.color}" font-family="Space Grotesk, system-ui, sans-serif" font-size="15" font-weight="600">DC/AC</text>` :
+      `<text x="${n.x+14}" y="${n.y+24}" fill="${n.color}" font-family="Space Grotesk, system-ui, sans-serif" font-size="16.5" font-weight="600">${n.name}</text>
+       <text id="nd-${k}-a" x="${n.x+14}" y="${n.y+45}" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12.5"></text>
+       <text id="nd-${k}-b" x="${n.x+14}" y="${n.y+63}" fill="var(--paper)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12.5"></text>
+       ${k === 'load' ? `<text id="nd-load-c" x="${n.x+14}" y="${n.y+81}" fill="var(--good)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12.5"></text>` : ''}
+       ${k === 'wind' || k === 'solar' ? `<text id="nd-${k}-c" x="${n.x+14}" y="${n.y+81}" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="12.5"></text>` : ''}`}
     </g>`;
   });
   // battery fill gauge
-  g += `<rect x="930" y="306" width="28" height="54" rx="4" fill="none" stroke="#6FCF97" stroke-width="1.5"/><rect id="bess-fill" x="933" width="22" rx="2" fill="#6FCF97" opacity=".8"/>`;
+  g += `<rect x="930" y="306" width="28" height="54" rx="4" fill="none" stroke="var(--good)" stroke-width="1.5"/><rect id="bess-fill" x="933" width="22" rx="2" fill="var(--good)" opacity=".8"/>`;
   svg.innerHTML = g;
   svg.querySelectorAll('.node').forEach(el => {
     const pick = () => { selNode = el.dataset.k; svg.querySelectorAll('.node').forEach(x => x.classList.toggle('selected', x === el)); renderInfo(); };
@@ -770,7 +772,7 @@ function curtLine(id, built, mw, calm){
   if (!built){ el.textContent = ''; return; }
   const on = mw > 0.05;
   el.textContent = on ? `${f1(mw)} MW curtailed` : calm;
-  el.setAttribute('fill', on ? '#EB5B5B' : '#7E9BB4');
+  el.setAttribute('fill', on ? 'var(--bad)' : 'var(--muted)');
 }
 function fitNodeText(){
   document.querySelectorAll('#dgSvg .node').forEach(g => {
@@ -789,7 +791,7 @@ function renderDiagram(){
   setFlow('fl-sdc', S.solar * su.dc * (n.sAvail > 0.05 ? n.s / n.sAvail : 0)); setFlow('fl-load', n.d - n.uns);
   const bp = Math.abs(n.p) > 0.05 ? Math.abs(n.p) : 0;
   setFlow('fl-bac', bp, n.p < 0); setFlow('fl-bdc', bp, n.p < 0);
-  ['fl-bac','fl-bdc'].forEach(id => $(id).setAttribute('stroke', n.p < 0 ? '#B9A9F2' : '#6FCF97'));
+  ['fl-bac','fl-bdc'].forEach(id => $(id).setAttribute('stroke', n.p < 0 ? 'var(--violet)' : 'var(--good)'));
   label('lb-gas', 330, 62, `${f1(n.g)} MW`); label('lb-wind', 330, 192, `${f1(n.w)} MW`);
   label('lb-sac', 505, 342, `${f1(n.s)} MW`); label('lb-load', 672, 120, `${f1(n.d)} MW`);
   $('lb-bac').setAttribute('text-anchor','start');
@@ -827,7 +829,7 @@ function goToSetting(key){
 }
 function curtPara(avail, sent, gm, s, kind){
   const c = avail - sent;
-  if (c > 0.05) return `<p style="color:#ffb3b3">Right now it could make <strong>${f1(avail)} MW</strong> but only <strong>${f1(sent)} MW</strong> is sent to the grid. The other <strong>${f1(c)} MW is curtailed</strong>: the gas plant is already at its ${f1(gm)} MW minimum${S.bessMWh && S.bessMW && S.mode !== 'off' ? ' and the battery is full or at its charging limit' : ' and there is no battery to absorb it'}, so the inverters are told to back off.</p>`;
+  if (c > 0.05) return `<p style="color:var(--bad-soft)">Right now it could make <strong>${f1(avail)} MW</strong> but only <strong>${f1(sent)} MW</strong> is sent to the grid. The other <strong>${f1(c)} MW is curtailed</strong>: the gas plant is already at its ${f1(gm)} MW minimum${S.bessMWh && S.bessMW && S.mode !== 'off' ? ' and the battery is full or at its charging limit' : ' and there is no battery to absorb it'}, so the inverters are told to back off.</p>`;
   if (s.curt > 0.05) return `<p>Nothing is curtailed at this moment, but ${f1(s.curt)} MWh of wind and solar is curtailed across the whole day. Scrub to midday to see it.</p>`;
   return '';
 }
@@ -927,12 +929,12 @@ function drawWindCurve(vNow){
   const svg = $('windCurve'), W = 320, H = 150, l = 34, r = 8, t = 10, b = 26, pw = W-l-r, ph = H-t-b;
   const X = v => l + pw * v / 26, Y = p => t + ph * (1 - p / 3.2);
   let d = ''; for (let v = 0; v <= 26; v += 0.1) d += (v ? 'L' : 'M') + X(v).toFixed(1) + ',' + Y(3 * turbinePU(v)).toFixed(1);
-  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2A5478"/><line x1="${l}" x2="${l}" y1="${t}" y2="${Y(0)}" stroke="#2A5478"/>`;
-  [0,1,2,3].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${p}</text>`);
-  [0,5,10,15,20,25].forEach(v => g += `<text x="${X(v)}" y="${H-12}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${v}</text>`);
-  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">wind speed (m/s) → MW per turbine</text>`;
-  g += `<path d="${d}" fill="none" stroke="#8FE0EC" stroke-width="2.2"/>`;
-  g += `<line x1="${X(vNow)}" x2="${X(vNow)}" y1="${t}" y2="${Y(0)}" stroke="#F5A623" stroke-dasharray="3 3"/><circle cx="${X(vNow)}" cy="${Y(3*turbinePU(vNow))}" r="5" fill="#F5A623"/>`;
+  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--edge-2)"/><line x1="${l}" x2="${l}" y1="${t}" y2="${Y(0)}" stroke="var(--edge-2)"/>`;
+  [0,1,2,3].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">${p}</text>`);
+  [0,5,10,15,20,25].forEach(v => g += `<text x="${X(v)}" y="${H-12}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">${v}</text>`);
+  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">wind speed (m/s) → MW per turbine</text>`;
+  g += `<path d="${d}" fill="none" stroke="var(--line-cyan)" stroke-width="2.2"/>`;
+  g += `<line x1="${X(vNow)}" x2="${X(vNow)}" y1="${t}" y2="${Y(0)}" stroke="var(--signal-amber)" stroke-dasharray="3 3"/><circle cx="${X(vNow)}" cy="${Y(3*turbinePU(vNow))}" r="5" fill="var(--signal-amber)"/>`;
   svg.innerHTML = g;
 }
 function drawSolarCurve(iNow){
@@ -940,14 +942,14 @@ function drawSolarCurve(iNow){
   const maxY = Math.max(1.2, ...B.dcUnit) * 1.05;
   const X = i => l + pw * i / N, Y = p => t + ph * (1 - p / maxY);
   const ln = a => a.map((v,i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join('');
-  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2A5478"/>`;
-  [0, 0.5, 1].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${p}</text>`);
-  [0,6,12,18].forEach(h => g += `<text x="${X(h/DT)}" y="${H-12}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">${['12a','6a','12p','6p'][h/6]}</text>`);
-  g += `<line x1="${l}" x2="${W-r}" y1="${Y(1)}" y2="${Y(1)}" stroke="#EB5B5B" stroke-dasharray="3 3" opacity=".7"/><text x="${W-r}" y="${Y(1)-4}" text-anchor="end" fill="#EB5B5B" font-family="IBM Plex Mono" font-size="10">inverter limit 1 MW</text>`;
-  g += `<path d="${ln(B.dcUnit)}" fill="none" stroke="#F5C542" stroke-width="1.6" stroke-dasharray="4 3" opacity=".8"/>`;
-  g += `<path d="${ln(B.acUnit)}" fill="none" stroke="#F5C542" stroke-width="2.4"/>`;
-  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="#7E9BB4" font-family="IBM Plex Mono" font-size="10">dashed = panels (DC) · solid = grid (AC), MW</text>`;
-  g += `<line x1="${X(iNow)}" x2="${X(iNow)}" y1="${t}" y2="${Y(0)}" stroke="#F5A623" stroke-dasharray="3 3"/>`;
+  let g = `<line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--edge-2)"/>`;
+  [0, 0.5, 1].forEach(p => g += `<text x="${l-6}" y="${Y(p)+4}" text-anchor="end" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">${p}</text>`);
+  [0,6,12,18].forEach(h => g += `<text x="${X(h/DT)}" y="${H-12}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">${['12a','6a','12p','6p'][h/6]}</text>`);
+  g += `<line x1="${l}" x2="${W-r}" y1="${Y(1)}" y2="${Y(1)}" stroke="var(--bad)" stroke-dasharray="3 3" opacity=".7"/><text x="${W-r}" y="${Y(1)-4}" text-anchor="end" fill="var(--bad)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">inverter limit 1 MW</text>`;
+  g += `<path d="${ln(B.dcUnit)}" fill="none" stroke="var(--solar)" stroke-width="1.6" stroke-dasharray="4 3" opacity=".8"/>`;
+  g += `<path d="${ln(B.acUnit)}" fill="none" stroke="var(--solar)" stroke-width="2.4"/>`;
+  g += `<text x="${l+pw/2}" y="${H-1}" text-anchor="middle" fill="var(--muted)" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="10">dashed = panels (DC) · solid = grid (AC), MW</text>`;
+  g += `<line x1="${X(iNow)}" x2="${X(iNow)}" y1="${t}" y2="${Y(0)}" stroke="var(--signal-amber)" stroke-dasharray="3 3"/>`;
   svg.innerHTML = g;
 }
 

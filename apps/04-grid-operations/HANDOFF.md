@@ -1,10 +1,12 @@
 # Developer Handoff: Grid Operations Learning Tool
 
-**File:** `grid-operations-diagram-v2.html` (single file, ~105 KB)
+**File:** `index.html` (single file, ~105 KB)
 **Companion:** `README.md` (short overview and change log)
 **Status:** Working v2 with three tabs (Explore, Scenarios, Quiz) and a light/dark toggle. No known functional bugs.
 
 ---
+
+> **Update (Grid Field Guide, phase 2):** this chapter now uses the collection's shared theme. Colors come from `../../shared/theme.css`; the chapter's own names (`--bg1`, `--cyan`, `--amber`…) are aliases onto it, and `--edge`/`--well` were renamed `--box-edge`/`--ops-well`. Fonts are Space Grotesk and IBM Plex Mono instead of Inter and JetBrains Mono. The light/dark toggle moved to the chapter bar (`../../shared/nav.js`), and the theme key is now `gfg-theme`. The quiz key is now `gfg-ops-quiz-v1` (the old `grid-quiz-v1` is still read once). Sections 4.1, 4.5 and 6 below describe the earlier standalone version.
 
 ## 1. What this project is
 
@@ -290,7 +292,7 @@ The content reflects **general North American utility practice and public standa
 
 | File | Purpose |
 |---|---|
-| `grid-operations-diagram-v2.html` | The tool. Everything is in this file. |
+| `index.html` | The tool. Everything is in this file. |
 | `README.md` | Short overview (what, who, how) and the "What changed from the first version" list. |
 | `HANDOFF.md` | This document. |
 | `index.html` | Redirect to the tool so the GitHub Pages root URL (https://franklan-pm.github.io/grid-mod-operations/) opens it. Update it if the main file is renamed. |

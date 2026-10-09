@@ -1,0 +1,110 @@
+/* Grid Field Guide — shared theme.
+   Every page loads this before its own <style>:
+     <link rel="stylesheet" href="../../shared/theme.css">
+   Dark is the default (bare :root). Light applies when <html data-theme="light">,
+   which shared/theme.js sets from the reader's saved choice.
+   Color meanings are documented in docs/colors.md. Add a token here rather than
+   a hex value in a chapter, so both themes stay in step. */
+
+:root{
+  /* surfaces */
+  --ink-navy:#0B1E33;      /* page background */
+  --ink-deep:#06131F;      /* chapter bar, footer */
+  --panel-navy:#12314F;    /* raised panels */
+  --panel-navy-2:#0F2946;  /* panels, cards */
+  --well:#0A2038;          /* inset wells: formulas, bars */
+  --box-off:#1D3A54;       /* inactive diagram box */
+  --box-hi:#EAF2F5;        /* bright neutral diagram box (customer load) */
+  --on-box-hi:#0B1E33;
+  --glow:#163a5c;          /* top-left page glow */
+  --edge:#1D4266;          /* borders, grid lines */
+  --edge-2:#2A5478;        /* stronger borders */
+
+  /* text */
+  --paper:#EAF2F5;         /* main text */
+  --text-2:#C3D6E3;        /* secondary text */
+  --soft:#9FC0D6;          /* diagram labels, generation lines */
+  --muted:#7E9BB4;         /* captions, axes */
+  --muted-2:#5B7C94;       /* quiet notes, de-energized */
+  --slate:#3A4D5E;         /* dead / de-energized line */
+  --slate-2:#2A3B4A;
+
+  /* accents (each has a soft = brighter text tint, and a dim = inactive) */
+  --signal-amber:#F5A623;  --amber-soft:#F5C877;  --signal-amber-dim:#8A6323;  --amber-hover:#FFB940;
+  --line-cyan:#8FE0EC;     --cyan-soft:#BDEFF6;   --line-cyan-dim:#4C7C8C;
+  --violet:#B9A9F2;        --violet-soft:#E4DCFF;
+  --copper:#D98457;
+  --good:#6FCF97;          --good-dim:#3F8F63;
+  --bad:#EB5B5B;           --bad-soft:#FFB3B3;
+  --solar:#F5C542;         --solar-soft:#F7E48A;
+  --battery:#8FD6C4;       --battery-soft:#A9E6D6;
+  --pink:#F08FB8;          /* business + customer records (chapter 4) */
+  --orchid:#E39CE0;        --orchid-dim:#6B5A6B;   /* feeder tie (chapter 2) */
+  --flow-hi:#FFD08A;       /* moving highlight on a live feeder */
+
+  /* tinted backgrounds for status cards */
+  --good-bg:#12331F;  --bad-bg:#341515;  --amber-bg:#241408;  --solar-bg:#4A3A10;
+
+  /* text on a filled accent */
+  --on-amber:#1A1102;
+  --on-accent:#0B1E33;
+  --pill-bg:#8fe3f0;  --pill-fg:#0b2240;
+  --hover-fill:rgba(143,224,236,.06);
+
+  /* type */
+  --f-display:'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-body:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono:'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --radius:10px;
+  color-scheme:dark;
+}
+
+/* Light set. Kept in two places so it also applies with JavaScript off. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ink-navy:#eef3f8; --ink-deep:#ffffff; --panel-navy:#ffffff; --panel-navy-2:#f5f8fc;
+    --well:#e8eff6; --box-off:#e4ecf4; --box-hi:#ffffff; --on-box-hi:#0b2240; --glow:#dbe8f3; --edge:#c9d6e3; --edge-2:#9fb4c9;
+    --paper:#0b2240; --text-2:#2d4a66; --soft:#4a6782; --muted:#557089; --muted-2:#6a8399;
+    --slate:#b7c5d3; --slate-2:#cfd9e3;
+    --signal-amber:#b06800; --amber-soft:#8f5400; --signal-amber-dim:#d4b47c; --amber-hover:#8f5400;
+    --line-cyan:#08809a; --cyan-soft:#066a80; --line-cyan-dim:#8fb3bd;
+    --violet:#5f4bcc; --violet-soft:#4b3aa8;
+    --copper:#b5592c;
+    --good:#1b8a4e; --good-dim:#7cc39c;
+    --bad:#c43d3d; --bad-soft:#a32b2b;
+    --solar:#9a7400; --solar-soft:#7a5c00;
+    --battery:#1f8a75; --battery-soft:#17705f;
+    --pink:#b23c75; --orchid:#9b3a96; --orchid-dim:#c9b3c8;
+    --flow-hi:#ffe2b0;
+    --good-bg:#e2f3e9; --bad-bg:#fbe4e4; --amber-bg:#fbeedb; --solar-bg:#f8f0d4;
+    --on-amber:#ffffff; --on-accent:#ffffff;
+    --pill-bg:#08809a; --pill-fg:#ffffff;
+    --hover-fill:rgba(8,128,154,.07);
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --ink-navy:#eef3f8; --ink-deep:#ffffff; --panel-navy:#ffffff; --panel-navy-2:#f5f8fc;
+  --well:#e8eff6; --box-off:#e4ecf4; --box-hi:#ffffff; --on-box-hi:#0b2240; --glow:#dbe8f3; --edge:#c9d6e3; --edge-2:#9fb4c9;
+  --paper:#0b2240; --text-2:#2d4a66; --soft:#4a6782; --muted:#557089; --muted-2:#6a8399;
+  --slate:#b7c5d3; --slate-2:#cfd9e3;
+  --signal-amber:#b06800; --amber-soft:#8f5400; --signal-amber-dim:#d4b47c; --amber-hover:#8f5400;
+  --line-cyan:#08809a; --cyan-soft:#066a80; --line-cyan-dim:#8fb3bd;
+  --violet:#5f4bcc; --violet-soft:#4b3aa8;
+  --copper:#b5592c;
+  --good:#1b8a4e; --good-dim:#7cc39c;
+  --bad:#c43d3d; --bad-soft:#a32b2b;
+  --solar:#9a7400; --solar-soft:#7a5c00;
+  --battery:#1f8a75; --battery-soft:#17705f;
+  --pink:#b23c75; --orchid:#9b3a96; --orchid-dim:#c9b3c8;
+  --flow-hi:#ffe2b0;
+  --good-bg:#e2f3e9; --bad-bg:#fbe4e4; --amber-bg:#fbeedb; --solar-bg:#f8f0d4;
+  --on-amber:#ffffff; --on-accent:#ffffff;
+  --pill-bg:#08809a; --pill-fg:#ffffff;
+  --hover-fill:rgba(8,128,154,.07);
+  color-scheme:light;
+}
+
+html{background:var(--ink-navy)}
+[hidden]{display:none!important}
