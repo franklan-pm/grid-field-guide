@@ -41,9 +41,9 @@
   :root:not([data-theme="dark"]){
     --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
     --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
-    --v-hv:#18202B; --v-primary:#C2510C; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
+    --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
     --flow-hi:#F2A66E;
-    --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#B88A00; --fuel-battery:#2F7D55;
+    --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
     --ok:#1B7A45;
     color-scheme:light;
   }
@@ -51,9 +51,9 @@
 :root[data-theme="light"]{
   --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
   --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
-  --v-hv:#18202B; --v-primary:#C2510C; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
+  --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
   --flow-hi:#F2A66E;
-  --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#B88A00; --fuel-battery:#2F7D55;
+  --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
   --ok:#1B7A45;
   color-scheme:light;
 }
