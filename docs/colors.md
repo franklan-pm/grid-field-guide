@@ -38,7 +38,7 @@ Line **style** carries the rest:
 - **Double line in blue** is the DC side of an inverter (chapters 1 and 3). It's drawn as a thick blue stroke with a thinner `--ground` stroke on top, plus a "DC" label.
 - **Power-flow direction** is shown with arrowheads and a travelling highlight, never marching dashes. The highlight is a tint of the line's own color, `color-mix(in srgb, <line> 30%, var(--sheet))`. Arrowheads are static, so direction survives `prefers-reduced-motion`.
 
-## Data kinds (chapter 4, and chapter 2's SCADA links)
+## Data kinds (chapter 4, plus the SCADA and control links in chapters 2 and 5)
 
 Where a diagram is mostly about data, each kind gets its own color **and** its own dash pattern, so color is never the only cue. All are dashed or dotted, and none is used for power.
 
@@ -54,12 +54,12 @@ Regions in chapter 4 are told apart by soft tints, not line color:
 
 | Token | Vellum | Blueprint | Use |
 |---|---|---|---|
-| `--zone-sec` | `#8A6400` | `#E8C14A` | Security boundary: OT zone and DMZ (gold dash-dot, gold tint, gold label) |
+| `--zone-sec` | `#8A6400` | `#E8C14A` | Protective boundary: chapter 4's OT zone and DMZ (gold dash-dot, gold tint, gold label), and chapter 5's safety layer (gold-outlined boxes). Nothing here is a fault, so it isn't red |
 | `--data-biz` tint | | | Enterprise IT column (olive tint, matching the business-records lines) |
 
 ## Charts only
 
-These never color a **line** on a one-line diagram: lines are always voltage class. They do carry fuel identity everywhere else, so readers can follow a source from the diagram to the charts. In chapter 1, each source box has a soft fuel tint and a solid fuel bar down its left edge, its inverter a lighter tint, its MW reading a fuel-colored tag, and the bus sum a fuel mark before each source. Fuel colors are never used for text.
+These never color a **line** on a one-line diagram: lines are always voltage class. They do carry fuel identity everywhere else, so readers can follow a source from the diagram to the charts. In chapter 5, battery hardware (cell, module, rack, PCS) has the same tint and left bar, and the pipe-and-tank, cost ladder and state-of-charge charts use the battery color. In chapter 1, each source box has a soft fuel tint and a solid fuel bar down its left edge, its inverter a lighter tint, its MW reading a fuel-colored tag, and the bus sum a fuel mark before each source. Fuel colors are never used for text.
 
 | Token | Vellum | Blueprint |
 |---|---|---|
@@ -96,7 +96,3 @@ Every text pairing is checked against its background at 4.5:1 or better (3:1 for
 - Labels, values, diagram text: B612 Mono (`--f-mono`).
 - Square corners everywhere (`--radius: 0`), 1–2px ink rules, and no shadows or glows.
 - Uppercase lettering is for drawing-sheet furniture and diagram device labels only.
-
-## Legacy aliases
-
-The bottom of `theme.css` keeps a short block of the old names (`--signal-amber`, `--line-cyan`, `--paper` and so on) pointed at the role tokens. Only the chapter 5 draft (`apps/05-batteries`, on the `chapter-5-batteries` branch) still uses them. Delete the block when chapter 5 is restyled.

@@ -1,13 +1,13 @@
 # Chapter 5 · Batteries: progress note
 
-Status as of 2026-10-10: **standalone draft, not integrated, not deployed.**
+Status as of 2026-10-11: **restyled to the drawing-sheet design on the shared theme; still not listed in the guide.** The page now loads `../../shared/theme.css` and `theme.js` (the inlined theme copy is gone) and uses only role tokens. The stand-in chapter bar stays until the chapter is added to `shared/nav.js`.
 Plan and research: `docs/chapter-5-batteries-plan.md`. Preview: https://claude.ai/artifact/RgpDqzRFUCvwTzTSh65iJE
 
 ## Where the work is
 
 - `apps/05-batteries/index.html` on branch `chapter-5-batteries` (not `main`, so GitHub Pages doesn't serve it).
 - The page is fully self-contained. The shared theme (`theme.css`, `theme.js`) is inlined between two `STANDALONE` comments, and a stand-in chapter bar sits at the top of `<body>`, marked the same way.
-- Theme key `gfg-theme` (shared with the guide). Quiz progress key `gfg-batt-quiz-v1`.
+- Theme key `gfg-theme` (shared with the guide); opens in light by default. Quiz progress key `gfg-batt-quiz-v1`.
 - Tabs support hash deep links: `#basics`, `#diagram`, `#playground/sun|wear|size|pay`, `#glossary`, `#quiz`, `#costs`, `#safety`.
 
 ## What's built
@@ -32,7 +32,8 @@ Tested in dark and light, at desktop and 400 px wide: no script errors, no sidew
 
 - Basics is the first tab and the one that opens. This breaks the plan's tab-order convention (Diagram → Playground → Glossary → Quiz, then extras). Revisit at integration.
 - Safety moved out of Diagram into its own tab (static content).
-- Electrons in Basics are amber; ions use the battery teal.
+- Electrons in Basics are ink dots; Li⁺ ions use the battery fuel color (`--fuel-battery`) with `--on-ink` text, and the electrolyte carries a soft battery tint. (Was: electrons amber, ions teal. Amber now means primary voltage only.)
+- Restyle mapping (see `docs/colors.md`): in the diagram the DC side of the PCS is the blue double line, AC and the 12 kV feeder follow the voltage colors, and the transformer draws blue over orange. Cell data and telemetry are teal dotted, and setpoints are magenta dashed. Thermal management and fire protection are gold-outlined (`--zone-sec`). Flow direction is arrowheads plus a travelling highlight instead of marching dashes. Charts use the fuel colors, with the grid as neutral `--ink-3`, battery charging hatched battery green, and solar left over hatched solar yellow.
 - FEOC percentages removed from the incentives box until verified (the plan's "60% allowed foreign share" didn't match what Claude recalled for storage).
 - "Peak minus off-peak price" renamed "Peak price gap".
 
@@ -48,10 +49,10 @@ Tested in dark and light, at desktop and 400 px wide: no script errors, no sidew
 
 ## Integration checklist (when ready)
 
-1. Replace the `STANDALONE` block in `<head>` with `<script src="../../shared/theme.js"></script>` and `<link rel="stylesheet" href="../../shared/theme.css">`, and add `<script src="../../shared/nav.js" defer></script>`.
+1. ~~Replace the `STANDALONE` block in `<head>` with the shared theme links.~~ Done in the restyle. Still to do: add `<script src="../../shared/nav.js" defer></script>` at the end of `<head>`.
 2. Delete the stand-in `.iso-bar` at the top of `<body>` and its CSS.
 3. Add `{ dir: '05-batteries', short: 'Batteries', title: 'Batteries' }` to `CHAPTERS` in `shared/nav.js`.
 4. Change "Chapter n of 4" to "of 5" in chapters 1–4.
 5. Add a fifth chapter card (and map zone, if it fits) to the home page `index.html`, with dark and light thumbnails.
-6. Add chapter 5 colors to `docs/colors.md` (Li⁺ = battery teal, electrons = amber, flow dashes = paper).
+6. ~~Add chapter 5 colors to `docs/colors.md`.~~ Done in the restyle.
 7. Merge `chapter-5-batteries` into `main`.
