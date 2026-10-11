@@ -11,9 +11,9 @@
 <link rel="stylesheet" href="../../shared/theme.css">
 <style>
 :root{
-  /* Colors come from the shared role tokens (shared/theme.css). Data flows are all --data
-     (violet), told apart by dash pattern; electric power uses the voltage-class line colors;
-     red is only for wrong quiz answers. */
+  /* Colors come from the shared role tokens (shared/theme.css). Each data kind has its own
+     --data-* color AND its own dash pattern; electric power uses the voltage-class line
+     colors; red is only for wrong quiz answers. Zones are told apart by soft tints. */
   --ops-band:color-mix(in srgb, var(--ink) 2.5%, transparent);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
@@ -33,6 +33,12 @@ h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4v
 .sub{margin:10px 0 14px;font-size:15px;color:var(--ink-2);line-height:1.55;max-width:96ch}
 .pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px;font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
 .pills button{font-size:12.5px;padding:7px 14px}
+.pills button:not([data-f="all"])::before{content:"";display:inline-block;width:18px;margin-right:7px;vertical-align:middle;border-top:2px solid}
+.pills button[data-f="tel"]::before{border-top-style:dotted;border-color:var(--data-tel)}
+.pills button[data-f="ctl"]::before{border-top-style:dashed;border-color:var(--data-ctl)}
+.pills button[data-f="plan"]::before{border-color:var(--data-plan)}
+.pills button[data-f="biz"]::before{border-top-style:dashed;border-color:var(--data-biz)}
+.pills button[aria-pressed="true"]::before{border-color:var(--on-ink)}
 .scroll{overflow-x:auto;background:var(--ground);border:1px solid var(--band);
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:24px 24px}
@@ -57,23 +63,23 @@ svg{font-family:var(--f-mono)}
 .bl-s{fill:var(--ink-3);font-size:9.5px}
 .bl-r{fill:var(--ink-2);font-size:9.5px;font-weight:700}
 /* the enterprise column is a region, not a boundary */
-.colbox{fill:none;stroke:var(--band);stroke-width:1;stroke-dasharray:3 3}
-.col-h{fill:var(--ink-2);font-weight:700;font-size:10px}
+.colbox{fill:color-mix(in srgb, var(--data-biz) 8%, transparent);stroke:var(--data-biz);stroke-width:1;stroke-dasharray:3 3}
+.col-h{fill:var(--data-biz);font-weight:700;font-size:10px}
 /* security boundaries: ink dash-dot, labeled (not red: nothing is wrong) */
-.otzone{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:12 4 2 4}
-.dmz{fill:none;stroke:var(--ink);stroke-width:1;stroke-dasharray:12 4 2 4}
+.otzone{fill:color-mix(in srgb, var(--data-tel) 7%, transparent);stroke:var(--ink);stroke-width:1.4;stroke-dasharray:12 4 2 4}
+.dmz{fill:color-mix(in srgb, var(--ink) 5%, transparent);stroke:var(--ink);stroke-width:1;stroke-dasharray:12 4 2 4}
 .zone-l{fill:var(--ink);font-size:9.5px;font-weight:700}
 
-/* data flows: all --data, told apart by pattern. Periods divide 48 so one keyframe fits all. */
-.flow{fill:none;stroke:var(--data);stroke-width:2;animation:flow 2s linear infinite;transition:opacity .15s}
-.flow.tel{stroke-dasharray:2 4}                 /* telemetry + status: dotted */
-.flow.ctl{stroke-dasharray:8 4;stroke-width:2.2} /* control: long dash, filled arrowheads */
-.flow.plan{stroke-dasharray:8 3 2 3}            /* forecasts + limits: dash-dot */
-.flow.biz{stroke:var(--ink-3);stroke-width:1.4;stroke-dasharray:2 4} /* back office, off the real-time path */
-.flow.bus{stroke-width:1.2;stroke-dasharray:1.5 4.5;stroke-linecap:round;opacity:.6;animation:none} /* comms network, no direction */
+/* data flows: each kind has a color and a dash pattern. Periods divide 48 so one keyframe fits all. */
+.flow{fill:none;stroke-width:2;animation:flow 2s linear infinite;transition:opacity .15s}
+.flow.tel{stroke:var(--data-tel);stroke-dasharray:2 4}                  /* telemetry + status: dotted */
+.flow.ctl{stroke:var(--data-ctl);stroke-dasharray:8 4;stroke-width:2.2} /* control: long dash, filled arrowheads */
+.flow.plan{stroke:var(--data-plan);stroke-dasharray:8 3 2 3}            /* forecasts + limits: dash-dot */
+.flow.biz{stroke:var(--data-biz);stroke-dasharray:4 2}                  /* business records: short dash */
+.flow.bus{stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:1.5 4.5;stroke-linecap:round;opacity:.7;animation:none} /* comms network, no direction */
 @keyframes flow{to{stroke-dashoffset:-48}}
 .lbl{font-size:10px;fill:var(--ink-2);transition:opacity .15s}
-.lbl.tel,.lbl.ctl,.lbl.plan{fill:var(--data)} .lbl.biz{fill:var(--ink-3)}
+.lbl.tel{fill:var(--data-tel)} .lbl.ctl{fill:var(--data-ctl)} .lbl.plan{fill:var(--data-plan)} .lbl.biz{fill:var(--data-biz)}
 
 /* electric power, by voltage class; direction by a travelling highlight, never marching dashes */
 .pw{fill:none;stroke-width:2.4}
@@ -166,13 +172,14 @@ svg{font-family:var(--f-mono)}
         <h1>Grid operations: how the layers work together</h1></div>
       </div>
       <div class="legend">
-        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data)" stroke-width="2" stroke-dasharray="2 4"/></svg>telemetry + status</span>
-        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data)" stroke-width="2.2" stroke-dasharray="8 4"/></svg>control commands</span>
-        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data)" stroke-width="2" stroke-dasharray="8 3 2 3"/></svg>forecasts, schedules, limits</span>
-        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--ink-3)" stroke-width="1.4" stroke-dasharray="2 4"/></svg>business + customer records</span>
-        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data)" stroke-width="1.2" stroke-dasharray="1.5 4.5" stroke-linecap="round" opacity=".6"/></svg>comms network</span>
+        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data-tel)" stroke-width="2" stroke-dasharray="2 4"/></svg>telemetry + status</span>
+        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data-ctl)" stroke-width="2.2" stroke-dasharray="8 4"/></svg>control commands</span>
+        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data-plan)" stroke-width="2" stroke-dasharray="8 3 2 3"/></svg>forecasts, schedules, limits</span>
+        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--data-biz)" stroke-width="2" stroke-dasharray="4 2"/></svg>business + customer records</span>
+        <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="1.5 4.5" stroke-linecap="round" opacity=".7"/></svg>comms network</span>
         <span><svg width="30" height="8" aria-hidden="true"><line x1="1" y1="4" x2="29" y2="4" stroke="var(--v-primary)" stroke-width="3" stroke-dasharray="none"/></svg>electric power</span>
-        <span><svg width="30" height="12" aria-hidden="true"><rect x="1" y="1" width="28" height="10" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="12 4 2 4"/></svg>OT security zone / DMZ</span>
+        <span><svg width="30" height="12" aria-hidden="true"><rect x="1" y="1" width="28" height="10" fill="color-mix(in srgb, var(--data-tel) 12%, transparent)" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="12 4 2 4"/></svg>OT security zone / DMZ</span>
+        <span><svg width="30" height="12" aria-hidden="true"><rect x="1" y="1" width="28" height="10" fill="color-mix(in srgb, var(--data-biz) 14%, transparent)" stroke="var(--data-biz)" stroke-width="1" stroke-dasharray="3 3"/></svg>enterprise IT (back office)</span>
       </div>
     </div>
     <div class="tabs" role="tablist" aria-label="View">
@@ -465,8 +472,8 @@ const BANDS = [
 /* ---------- RENDER ---------- */
 const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-// Every data kind is --data (business records --ink-3); control gets filled arrowheads, the rest open ones.
-const KINDS = {tel:['--data', false], ctl:['--data', true], plan:['--data', false], biz:['--ink-3', false]};
+// Each data kind draws its arrowheads in its own color; control gets filled ones, the rest open.
+const KINDS = {tel:['--data-tel', false], ctl:['--data-ctl', true], plan:['--data-plan', false], biz:['--data-biz', false]};
 let svg = '<defs>' + Object.entries(KINDS).map(([k,[v,filled]]) =>
   `<marker id="m-${k}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">` +
   (filled ? `<path d="M0,0L8,4L0,8z" style="fill:var(${v})"/>` : `<path d="M1,1L7,4L1,7" style="fill:none;stroke:var(${v});stroke-width:1.4"/>`) + `</marker>`

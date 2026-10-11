@@ -27,6 +27,13 @@
   --dead:#4F6B88;          /* de-energized or open sections */
   --flow-hi:#FFE0BF;       /* travelling highlight showing power-flow direction */
 
+  /* data kinds, for diagrams about data (chapter 4). Always dashed, never power;
+     each kind also keeps its own dash pattern, so color is never the only cue. */
+  --data-tel:#5CCFC6;      /* telemetry + status */
+  --data-ctl:#F08AC4;      /* control commands */
+  --data-plan:#B9A3F5;     /* forecasts, schedules, limits (same as --data) */
+  --data-biz:#B5D16A;      /* business + customer records */
+
   /* charts only, never on a one-line diagram */
   --fuel-gas:#C99A78;  --fuel-wind:#C9D3DD;  --fuel-solar:#F2C94C;  --fuel-battery:#8FD6B4;
 
@@ -43,6 +50,7 @@
     --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
     --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
     --flow-hi:#F2A66E;
+    --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B;
     --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
     --ok:#1B7A45;
     color-scheme:light;
@@ -53,6 +61,7 @@
   --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
   --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
   --flow-hi:#F2A66E;
+  --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B;
   --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
   --ok:#1B7A45;
   color-scheme:light;
