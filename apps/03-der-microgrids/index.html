@@ -5,17 +5,20 @@
 <title>DER &amp; microgrids · Grid Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="../../shared/theme.js"></script>
 <link rel="stylesheet" href="../../shared/theme.css">
 <style>
+  /* Tabs, panels, buttons, cards and quiz options come from shared/theme.css; only
+     chapter layout lives here. Lines follow docs/colors.md: orange = utility primary,
+     blue = secondary / site voltage (double blue line = the DC side of an inverter),
+     violet dashed = data and control, red = faults and unserved load only.
+     Ownership is shown with dashed --band regions, never with line color. */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:
-      radial-gradient(ellipse at 20% -10%, var(--glow) 0%, transparent 55%),
-      var(--ink-navy);
-    color:var(--paper);
+    background:var(--ground);
+    color:var(--ink);
     font-family:var(--f-body);
     min-height:100vh;
     padding:28px 18px 60px;
@@ -25,226 +28,194 @@
 
   .eyebrow{
     font-family:var(--f-mono);
-    font-size:15px;
-    letter-spacing:.14em;
-    color:var(--signal-amber);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--ink-3);
     text-transform:uppercase;
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
   h1{
     font-family:var(--f-display);
     font-weight:700;
-    font-size:clamp(26px,4vw,38px);
-    margin:0 0 6px;
-    letter-spacing:-0.01em;
+    font-size:clamp(32px,5vw,48px);
+    line-height:1;
+    text-transform:uppercase;
+    margin:0 0 12px;
+    letter-spacing:.01em;
   }
-  .sub{color:var(--muted);font-size:18px;max-width:700px;line-height:1.55;margin-bottom:26px;}
-  .sub b{color:var(--paper);}
+  .sub{color:var(--ink-2);font-size:18px;max-width:700px;line-height:1.55;margin-bottom:26px;}
+  .sub b{color:var(--ink);}
 
-  .tabs{
-    display:flex;
-    gap:2px;
-    background:var(--panel-navy-2);
-    border:1px solid var(--edge);
-    border-radius:var(--radius);
-    padding:4px;
-    margin-bottom:22px;
-    flex-wrap:wrap;
-  }
-  .tab{
-    flex:1 1 auto;
-    min-width:120px;
-    text-align:center;
-    padding:11px 12px;
-    font-family:var(--f-mono);
-    font-size:16px;
-    letter-spacing:.03em;
-    color:var(--muted);
-    background:transparent;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    transition:background .15s, color .15s;
-  }
-  .tab:hover{color:var(--paper);}
-  .tab.active{
-    background:var(--signal-amber);
-    color:var(--on-amber);
-    font-weight:600;
-  }
-
-  .panel{
-    background:var(--panel-navy);
-    border:1px solid var(--edge);
-    border-radius:var(--radius);
-    padding:22px;
-    display:none;
-  }
+  /* tabs and panels: look from shared/theme.css */
+  .tabs{margin-bottom:22px;}
+  .panel{display:none;}
   .panel.active{display:block;}
 
-  h2{font-family:var(--f-display);font-size:22px;margin:0 0 4px;}
-  h3{font-family:var(--f-display);font-size:18px;margin:0 0 6px;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 6px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 6px;}
   p{line-height:1.55;}
+  .lede{color:var(--ink-2); margin-top:0;}
 
   /* ---- diagram ---- */
   .diagram-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
-  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--f-mono); font-size:14px; color:var(--muted);}
+  .legend{display:flex; gap:8px 16px; flex-wrap:wrap; font-family:var(--f-mono); font-size:12.5px; color:var(--ink-2);}
   .legend span{display:inline-flex; align-items:center; gap:6px;}
-  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
-  .swatch.dashed{background:repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 7px);}
-  #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;}
+  .legend svg{display:inline-block; vertical-align:middle;}
+  .swatch{width:18px;height:3px;display:inline-block;}
+  .fuel{width:10px;height:10px;display:inline-block;}
+  #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;border:1px solid var(--band);}
   .node{cursor:pointer;}
-  .node:hover rect, .node:hover circle{ filter:brightness(1.35); }
-  .node.selected rect, .node.selected circle{ stroke:var(--signal-amber); stroke-width:3.5; fill:var(--amber-bg); }
-  .diagram-hint{font-family:var(--f-mono); font-size:14px; color:var(--muted); margin-bottom:14px;}
+  /* hover and selection thicken the box outline; colors keep their meaning */
+  .node:hover > rect:first-child{ stroke-width:3.5; }
+  .node.selected > rect:first-child{ stroke-width:4; fill:var(--hover-fill); }
+  .node.selected text{ font-weight:700; }
+  .diagram-hint{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-3); margin-bottom:14px;}
 
   #infoCard{
-    background:var(--panel-navy-2);
-    border:1px solid var(--edge);
-    border-left:3px solid var(--signal-amber);
-    border-radius:8px;
+    background:var(--sheet);
+    border:1px solid var(--ink);
+    border-left:4px solid var(--ink);
     padding:16px 18px;
     min-height:96px;
   }
-  #infoCard .placeholder{color:var(--muted); font-size:16px;}
-  .info-title{font-family:var(--f-display); font-weight:600; font-size:20px; margin:0 0 3px;}
-  .info-tag{font-family:var(--f-mono); font-size:14px; color:var(--signal-amber); text-transform:uppercase; letter-spacing:.06em;}
+  #infoCard .placeholder{color:var(--ink-3); font-size:16px;}
+  .info-title{font-family:var(--f-display); font-weight:600; font-size:22px; margin:0 0 3px;}
+  .info-tag{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.1em;}
   .info-body{margin-top:8px; line-height:1.55;}
-  .info-cost{margin-top:10px; font-family:var(--f-mono); font-size:14px; color:var(--good);}
+  .info-cost{margin-top:10px; font-family:var(--f-mono); font-size:13px; color:var(--ink); font-weight:700;}
 
   /* ---- glossary ---- */
   .search-row{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;}
   .search-row input, .search-row select{
-    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px;
-    color:var(--paper); padding:10px 12px; font-family:var(--f-body); font-size:16px;
+    background:var(--sheet); border:1px solid var(--ink); border-radius:0;
+    color:var(--ink); padding:10px 12px; font-family:var(--f-body); font-size:16px;
   }
   .search-row input{flex:1 1 220px;}
-  .card-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:14px;}
-  .term-card{
-    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px;
-    padding:14px 16px;
-  }
-  .term-card .info-tag{font-size:13px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
+  .term-card{background:var(--sheet); border:1px solid var(--band); padding:14px 16px;}
   .term-card h3{margin:4px 0 6px;}
-  .term-card p{font-size:15px; color:var(--paper); margin:0; line-height:1.5;}
+  .term-card p{font-size:15px; color:var(--ink-2); margin:0; line-height:1.5;}
 
   /* ---- costs ---- */
-  table{width:100%; border-collapse:collapse; margin-top:10px;}
-  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--edge); font-size:15px;}
-  th{font-family:var(--f-mono); font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;}
-  td.num{font-family:var(--f-mono); color:var(--good);}
+  .table-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; margin-top:10px;}
+  .table-scroll table{min-width:560px; margin-top:0;}
+  table{width:100%; border-collapse:collapse; margin-top:10px; background:var(--sheet); border:1px solid var(--ink);}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--band); font-size:15px;}
+  th{font-family:var(--f-mono); font-size:11px; font-weight:400; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--ink);}
+  td.num{font-family:var(--f-mono); font-size:13.5px; color:var(--ink); font-weight:700;}
   .caveat{
-    margin-top:16px; padding:12px 14px; background:var(--panel-navy-2);
-    border-left:3px solid var(--copper); border-radius:6px; font-size:14px; color:var(--muted);
+    margin-top:16px; padding:12px 14px; background:var(--sheet);
+    border:1px solid var(--band); border-left:4px solid var(--ink); font-size:14px; color:var(--ink-2);
   }
-  .subtotal-row td{font-weight:600; color:var(--paper); border-top:2px solid var(--edge);}
+  .subtotal-row td{font-weight:600; color:var(--ink); border-top:2px solid var(--ink);}
 
   /* ---- playground ---- */
   .pg-grid{display:grid; grid-template-columns:1.15fr 1fr; gap:20px;}
   @media (max-width:820px){ .pg-grid{grid-template-columns:1fr;} }
-  .controls{
-    background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:16px 18px;
-  }
+  .controls{background:var(--sheet); border:1px solid var(--ink); padding:16px 18px;}
   .ctrl{margin-bottom:16px;}
-  .ctrl label{display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:14px; color:var(--muted); margin-bottom:6px;}
-  .ctrl label b{color:var(--paper); font-weight:600;}
-  .ctrl input[type=range]{width:100%; accent-color:var(--signal-amber);}
-  .subreadout{font-family:var(--f-mono); font-size:12px; color:var(--muted); margin-top:7px;}
-  .subreadout b{color:var(--good); font-weight:600;}
+  .ctrl label{display:flex; justify-content:space-between; font-family:var(--f-mono); font-size:12.5px; color:var(--ink-2); margin-bottom:6px;}
+  .ctrl label b{color:var(--ink); font-weight:700;}
+  .ctrl input[type=range]{width:100%; accent-color:var(--ink);}
+  .subreadout{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3); margin-top:7px;}
+  .subreadout b{color:var(--ink); font-weight:700;}
 
   .tt{position:relative; display:inline-flex; align-items:center; margin-left:6px; cursor:help;}
   .tt-icon{
-    width:15px; height:15px; border-radius:50%; background:var(--edge-2); color:var(--paper);
-    font-size:10.5px; font-weight:600; display:inline-flex; align-items:center; justify-content:center;
+    width:15px; height:15px; border:1px solid var(--ink); color:var(--ink);
+    font-size:10px; font-weight:700; display:inline-flex; align-items:center; justify-content:center;
     font-family:var(--f-mono); line-height:1; user-select:none;
   }
-  .tt:hover .tt-icon, .tt:focus .tt-icon, .tt:focus-within .tt-icon{background:var(--signal-amber); color:var(--on-amber);}
+  .tt:hover .tt-icon, .tt:focus .tt-icon, .tt:focus-within .tt-icon{background:var(--ink); color:var(--on-ink);}
   .tt-box{
     display:none; position:absolute; bottom:135%; left:50%; transform:translateX(-50%);
-    width:270px; background:var(--panel-navy-2); border:1px solid var(--edge-2); border-radius:8px;
-    padding:11px 13px; font-size:13px; line-height:1.5; color:var(--paper); font-family:var(--f-body);
-    text-align:left; z-index:20; box-shadow:0 6px 18px rgba(0,0,0,.45); font-weight:400;
+    width:270px; background:var(--sheet); border:1px solid var(--ink);
+    padding:11px 13px; font-size:13px; line-height:1.5; color:var(--ink); font-family:var(--f-body);
+    text-align:left; z-index:20; font-weight:400;
   }
-  .tt-box b{color:var(--signal-amber);}
+  .tt-box b{color:var(--ink);}
   .tt:hover .tt-box, .tt:focus .tt-box, .tt:focus-within .tt-box{display:block;}
   .tt-box::after{
     content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-    border:6px solid transparent; border-top-color:var(--edge-2);
+    border:6px solid transparent; border-top-color:var(--ink);
   }
-  .toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-family:var(--f-mono); font-size:14px;}
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; font-family:var(--f-mono); font-size:12.5px;}
   .toggle-row button{
-    background:var(--panel-navy); border:1px solid var(--edge-2); color:var(--paper);
-    padding:9px 14px; border-radius:6px; cursor:pointer; font-family:var(--f-mono); font-size:14px;
+    background:transparent; border:2px solid var(--ink); color:var(--ink);
+    padding:8px 14px; border-radius:0; cursor:pointer; font:600 15px/1.1 var(--f-display); letter-spacing:.06em; text-transform:uppercase;
   }
-  .toggle-row button.on{background:var(--bad); border-color:var(--bad); color:var(--bad-bg); font-weight:600;}
-  .toggle-row button.ok{background:var(--good); border-color:var(--good); color:var(--good-bg); font-weight:600;}
-  .check-row{display:flex; align-items:center; gap:8px; font-family:var(--f-mono); font-size:14px; margin-bottom:6px;}
+  .toggle-row button:hover{background:var(--hover-fill);}
+  /* an outage is a fault: the one red state of this control */
+  .toggle-row button.on{background:var(--fault); border-color:var(--fault); color:var(--on-ink);}
+  .check-row{display:flex; align-items:center; gap:8px; font-family:var(--f-mono); font-size:12.5px; margin-bottom:6px;}
+  .check-row input{accent-color:var(--ink);}
 
-  .seg{display:flex; gap:4px; background:var(--panel-navy); border:1px solid var(--edge); border-radius:8px; padding:4px;}
+  .seg{display:flex; gap:0; border:1px solid var(--ink);}
   .seg button{
-    flex:1; padding:9px 8px; border:none; border-radius:6px; background:transparent; color:var(--muted);
-    font-family:var(--f-mono); font-size:14px; cursor:pointer;
+    flex:1; padding:9px 8px; border:0; border-radius:0; background:transparent; color:var(--ink-2);
+    font-family:var(--f-mono); font-size:12.5px; cursor:pointer;
   }
-  .seg button:hover{color:var(--paper);}
-  .seg button[aria-pressed="true"]{background:var(--signal-amber); color:var(--on-amber); font-weight:600;}
+  .seg button + button{border-left:1px solid var(--ink);}
+  .seg button:hover{color:var(--ink); background:var(--hover-fill);}
+  .seg button[aria-pressed="true"]{background:var(--ink); color:var(--on-ink); font-weight:700;}
   #stratNote{line-height:1.5;}
 
-  #pgSvg{width:100%; height:auto; display:block;}
-  .flow-dots{stroke:var(--paper); stroke-linecap:round; stroke-dasharray:0.1 15.9; animation:pgflow linear infinite;}
-  @keyframes pgflow{to{stroke-dashoffset:-16;}}
-  @media (prefers-reduced-motion:reduce){ .flow-dots{animation:none;} }
+  #pgSvg{width:100%; height:auto; display:block;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;border:1px solid var(--band);}
+  /* power-flow direction: a travelling highlight (pathLength=100) plus a static chevron;
+     never marching dashes, since dashes mean data */
+  .flow-hi{stroke-linecap:round; stroke-dasharray:18 100; animation:pgflow linear infinite;}
+  @keyframes pgflow{from{stroke-dashoffset:18;} to{stroke-dashoffset:-100;}}
+  @media (prefers-reduced-motion:reduce){ .flow-hi{display:none;} }
 
-  .pg-head{font-family:var(--f-display); font-weight:600; font-size:18px; margin-bottom:4px;}
-  .pg-why{color:var(--paper); margin-bottom:12px;}
-  .pg-why b{color:var(--signal-amber);}
+  .pg-head{font-family:var(--f-display); font-weight:600; font-size:21px; margin-bottom:4px;}
+  .pg-why{color:var(--ink); margin-bottom:12px;}
+  .pg-why b{color:var(--ink);}
   .pg-sec .tt-box{text-transform:none; letter-spacing:normal;}
-  .pg-sec{font-family:var(--f-mono); font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:12px 0 6px;}
-  .load-bar{display:flex; height:14px; border-radius:7px; overflow:hidden; background:var(--edge); gap:2px;}
-  .load-legend{display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:6px; font-family:var(--f-mono); font-size:13px;}
+  .pg-sec{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin:12px 0 6px;}
+  .load-bar{display:flex; height:14px; overflow:hidden; background:var(--grid); gap:2px; border:1px solid var(--ink);}
+  .load-legend{display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:6px; font-family:var(--f-mono); font-size:12px;}
   .load-legend span, .bal-row span{display:inline-flex; align-items:center; gap:6px;}
-  .load-legend i, .bal-row i{width:10px; height:10px; border-radius:2px; display:inline-block;}
+  .load-legend i, .bal-row i{width:10px; height:10px; display:inline-block;}
   .balance{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center;}
-  .bal-col{background:var(--panel-navy); border:1px solid var(--edge); border-radius:8px; padding:8px 10px;}
-  .bal-h{font-family:var(--f-mono); font-size:12px; color:var(--muted); text-transform:uppercase; margin-bottom:4px;}
+  .bal-col{background:var(--sheet); border:1px solid var(--ink); padding:8px 10px;}
+  .bal-h{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px;}
   .bal-row{display:flex; justify-content:space-between; gap:8px; font-size:14px; padding:2px 0;}
-  .bal-row b{font-family:var(--f-mono); font-weight:600;}
+  .bal-row b{font-family:var(--f-mono); font-weight:700;}
   .bal-row.zero{opacity:.4;}
-  .bal-row.total{border-top:1px solid var(--edge); margin-top:4px; padding-top:5px; font-weight:600;}
-  .bal-eq{font-family:var(--f-display); font-size:22px; color:var(--muted);}
-  .bal-note{margin-top:8px; font-size:13px; color:var(--signal-amber);}
-  .bal-note.muted{margin-top:4px; color:var(--muted);}
+  .bal-row.total{border-top:1px solid var(--ink); margin-top:4px; padding-top:5px; font-weight:600;}
+  .bal-eq{font-family:var(--f-display); font-size:26px; color:var(--ink-3);}
+  .bal-note{margin-top:8px; font-size:13px; color:var(--ink-2);}
+  .bal-note.muted{margin-top:4px; color:var(--ink-3);}
   .energy-line{font-size:15px;}
-  .energy-line b{font-family:var(--f-mono); font-weight:600; color:var(--battery);}
+  .energy-line b{font-family:var(--f-mono); font-weight:700; color:var(--ink);}
   @media (max-width:480px){ .balance{grid-template-columns:1fr;} .bal-eq{text-align:center;} }
 
   .hint-box{
-    margin-top:14px; padding:13px 16px; background:var(--panel-navy-2);
-    border-left:3px solid var(--signal-amber); border-radius:6px; font-size:15px; line-height:1.5;
+    margin-top:14px; padding:13px 16px; background:var(--sheet);
+    border:1px solid var(--band); border-left:4px solid var(--ink); font-size:15px; line-height:1.5;
   }
-  .hint-box.alert{border-left-color:var(--bad);}
-  .hint-box.ok{border-left-color:var(--good);}
+  .hint-box.alert{border-left-color:var(--fault);}
+  .hint-box.ok{border-left-color:var(--ok);}
 
   /* ---- quiz ---- */
   .quiz-q{margin-bottom:22px;}
-  .quiz-q h3{margin-bottom:10px;}
+  .quiz-q h3{margin-bottom:10px; font-size:21px;}
   .opt{
-    display:block; width:100%; text-align:left; background:var(--panel-navy-2);
-    border:1px solid var(--edge); color:var(--paper); padding:11px 14px; border-radius:7px;
+    display:block; width:100%; text-align:left; padding:11px 14px;
     margin-bottom:8px; cursor:pointer; font-size:15px; font-family:var(--f-body);
   }
-  .opt:hover{border-color:var(--line-cyan-dim);}
-  .opt.correct{border-color:var(--good); background:var(--good-bg);}
-  .opt.wrong{border-color:var(--bad); background:var(--bad-bg);}
-  .explain{font-size:14px; color:var(--muted); margin-top:6px; display:none;}
+  .explain{font-size:14px; color:var(--ink-2); margin-top:6px; display:none;}
   .explain.show{display:block;}
-  #quizScore{font-family:var(--f-mono); color:var(--signal-amber); margin-bottom:16px;}
+  #quizScore{font-family:var(--f-mono); font-size:13px; color:var(--ink); margin-bottom:16px; display:inline-block; border:1px solid var(--ink); padding:6px 12px;}
 
   .badge{
-    display:inline-block; font-family:var(--f-mono); font-size:12px; letter-spacing:.04em;
-    padding:2px 8px; border-radius:10px; margin-left:8px; vertical-align:middle;
+    display:inline-block; font-family:var(--f-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; font-weight:400;
+    padding:3px 8px; margin-left:8px; vertical-align:middle; border:1px dashed var(--band); color:var(--ink-2);
   }
-  .badge.util{background:var(--edge); color:var(--line-cyan);}
-  .badge.der{background:var(--solar-bg); color:var(--solar);}
 </style>
 <script src="../../shared/nav.js" defer></script>
 </head>
@@ -256,7 +227,7 @@
 
   <div class="tabs">
     <button class="tab active" data-tab="diagram">◇ Diagram</button>
-    <button class="tab" data-tab="playground">⚡ Playground</button>
+    <button class="tab" data-tab="playground">⚡&#xFE0E; Playground</button>
     <button class="tab" data-tab="glossary">≡ Glossary</button>
     <button class="tab" data-tab="quiz">? Quiz</button>
     <button class="tab" data-tab="costs">$ Costs</button>
@@ -267,11 +238,12 @@
     <div class="diagram-head">
       <h2>Site One-Line: Grid ↔ DER Interconnection</h2>
       <div class="legend">
-        <span><i class="swatch" style="background:var(--signal-amber)"></i>Utility primary</span><span><i class="swatch" style="background:var(--line-cyan)"></i>Secondary (site voltage)</span>
-        <span><i class="swatch" style="background:var(--copper)"></i>Site AC bus</span>
-        <span><i class="swatch" style="background:var(--solar)"></i>Solar</span>
-        <span><i class="swatch" style="background:var(--battery)"></i>Battery</span>
-        <span><i class="swatch dashed"></i>Optional / comms</span>
+        <span><i class="swatch" style="background:var(--v-primary)"></i>Utility primary (~12 kV)</span>
+        <span><i class="swatch" style="background:var(--v-secondary)"></i>Secondary (site voltage)</span>
+        <span><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="var(--v-secondary)" stroke-width="6"/><line x1="1" y1="5" x2="25" y2="5" stroke="var(--ground)" stroke-width="2"/></svg>DC side of an inverter</span>
+        <span><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--data)" stroke-width="2" stroke-dasharray="4 3"/></svg>Data + control</span>
+        <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" fill="none" stroke="var(--band)" stroke-dasharray="3 3"/></svg>Who owns it</span>
+        <span><i class="fuel" style="background:var(--fuel-solar)"></i><i class="fuel" style="background:var(--fuel-battery)"></i>Solar · battery swatch</span>
       </div>
     </div>
     <div class="diagram-hint">Click any piece of equipment for a plain-language explanation.</div>
@@ -297,10 +269,10 @@
   <!-- ================= PLAYGROUND ================= -->
   <div class="panel" id="panel-playground">
     <h2>Power-Flow Playground</h2>
-    <p style="color:var(--muted); margin-top:0;">Adjust solar, load, and the battery — then flip the grid outage switch and watch what the DER Gateway actually does. This uses real interconnection logic, not just a visual toggle.</p>
+    <p class="lede">Adjust solar, load, and the battery — then flip the grid outage switch and watch what the DER Gateway actually does. This uses real interconnection logic, not just a visual toggle.</p>
     <div class="pg-grid">
       <div>
-        <svg id="pgSvg" viewBox="0 0 540 440" role="img" aria-label="Power flow diagram: feeder, solar, battery and site load"xmlns="http://www.w3.org/2000/svg"></svg>
+        <svg id="pgSvg" viewBox="0 0 540 440" role="img" aria-label="Power flow diagram: feeder, solar, battery and site load" xmlns="http://www.w3.org/2000/svg"></svg>
         <div class="hint-box" id="pgHint">Adjust the controls to begin.</div>
       </div>
       <div class="controls">
@@ -344,25 +316,25 @@
   <!-- ================= COSTS ================= -->
   <div class="panel" id="panel-costs">
     <h2>Planning-Level Costs — 1,000 kW DER Interconnection Example</h2>
-    <p style="color:var(--muted); margin-top:0;">Two separate cost buckets: what the <b style="color:var(--paper)">utility</b> installs on its side of the meter to accept the DER safely, and what the <b style="color:var(--paper)">customer/developer</b> installs on-site to generate and store the power. Figures are illustrative planning-level ranges, not a bid.</p>
+    <p class="lede">Two separate cost buckets: what the <b>utility</b> installs on its side of the meter to accept the DER safely, and what the <b>customer/developer</b> installs on-site to generate and store the power. Figures are illustrative planning-level ranges, not a bid.</p>
 
     <h3 style="margin-top:20px;">Utility-side interconnection equipment <span class="badge util">Utility owned</span></h3>
-    <table>
+    <div class="table-scroll"><table>
       <tr><th>Equipment</th><th>Role</th><th>Approx. cost</th></tr>
       <tr><td>1 MVA distribution transformer</td><td>Steps feeder voltage down to service voltage sized for the combined 1,000 kW DER + site load</td><td class="num">$100,000</td></tr>
       <tr><td>Pole-mounted recloser</td><td>Utility-side fault protection; isolates the DER's tap point from the rest of the feeder during a fault</td><td class="num">$70,000</td></tr>
       <tr><td>DER Gateway / interconnection meter &amp; comms</td><td>Utility visibility &amp; control point — monitors export, can signal curtailment or trip</td><td class="num">$3,000</td></tr>
       <tr class="subtotal-row"><td colspan="2">Utility-side subtotal</td><td class="num">$173,000</td></tr>
-    </table>
+    </table></div>
 
     <h3 style="margin-top:26px;">Customer-side DER equipment <span class="badge der">Customer / developer owned</span></h3>
-    <table>
+    <div class="table-scroll"><table>
       <tr><th>Equipment</th><th>Typical unit cost</th><th>This site</th><th>Approx. cost</th></tr>
       <tr><td>PV array + racking + string inverters (250 kW AC)</td><td class="num">~$1.50–$2.20/W AC</td><td>250,000 W</td><td class="num">$375,000–$550,000</td></tr>
       <tr><td>BESS — battery, PCS/inverter, enclosure, HVAC, fire suppression (750 kW / ~1,500 kWh, 2-hr duration)</td><td class="num">~$350–$500/kWh</td><td>1,500,000 Wh</td><td class="num">$525,000–$750,000</td></tr>
       <tr><td>Microgrid controller + automatic transfer switch (optional — only needed for intentional islanding)</td><td class="num">flat</td><td>—</td><td class="num">$150,000–$400,000</td></tr>
       <tr class="subtotal-row"><td colspan="3">Customer-side subtotal (with islanding)</td><td class="num">≈ $1.05M–$1.70M</td></tr>
-    </table>
+    </table></div>
 
     <div class="caveat">
       Ranges are planning-level and vary heavily by region, labor rates, site conditions, interconnection study results, and whether islanding capability is included. The utility-side figures come from a real interconnection cost estimate for this exact 1,000 kW example; the customer-side figures are broad industry ranges (NREL/EIA cost benchmarks) meant to show relative scale, not a quote. Note the utility equipment ($173K) is a small fraction of total project cost — its purpose isn't to handle bulk power, it's to make the DER safe and visible to the grid.
@@ -429,7 +401,7 @@ function el(tag, attrs, parent){
   if(parent) parent.appendChild(e);
   return e;
 }
-function drawIcon(parent, type, x, y, s, color){
+function drawIcon(parent, type, x, y, s, color, color2){
   const c = {fill:'none', stroke:color, 'stroke-width':1.6, 'stroke-linecap':'round','stroke-linejoin':'round'};
   if(type==='solar'){
     el('rect',{...c,x:x,y:y+s*0.12,width:s,height:s*0.62},parent);
@@ -438,18 +410,18 @@ function drawIcon(parent, type, x, y, s, color){
     el('line',{...c,x1:x+2*s/3,y1:y+s*0.12,x2:x+2*s/3,y2:y+s*0.74},parent);
     el('line',{...c,x1:x+s*0.5,y1:y+s*0.74,x2:x+s*0.5,y2:y+s*0.94},parent);
   } else if(type==='inverter'){
-    el('rect',{...c,x,y,width:s,height:s,rx:3},parent);
+    el('rect',{...c,x,y,width:s,height:s},parent);
     el('path',{...c,d:`M${x+3},${y+s/2} C${x+s*0.28},${y+3} ${x+s*0.28},${y+s-3} ${x+s*0.5},${y+s/2} C${x+s*0.72},${y+3} ${x+s*0.72},${y+s-3} ${x+s-3},${y+s/2}`},parent);
   } else if(type==='battery'){
-    el('rect',{...c,x,y:y+s*0.1,width:s*0.82,height:s*0.8,rx:2},parent);
+    el('rect',{...c,x,y:y+s*0.1,width:s*0.82,height:s*0.8},parent);
     el('rect',{fill:color,stroke:'none',x:x+s*0.82,y:y+s*0.34,width:s*0.14,height:s*0.32},parent);
     el('rect',{fill:color,stroke:'none',x:x+s*0.14,y:y+s*0.26,width:s*0.14,height:s*0.48},parent);
     el('rect',{fill:color,stroke:'none',x:x+s*0.38,y:y+s*0.26,width:s*0.14,height:s*0.48},parent);
   } else if(type==='transformer'){
     el('circle',{...c,cx:x+s*0.36,cy:y+s/2,r:s*0.3},parent);
-    el('circle',{...c,cx:x+s*0.64,cy:y+s/2,r:s*0.3},parent);
+    el('circle',{...c,stroke:color2||color,cx:x+s*0.64,cy:y+s/2,r:s*0.3},parent);
   } else if(type==='recloser'){
-    el('rect',{...c,x,y,width:s,height:s,rx:4},parent);
+    el('rect',{...c,x,y,width:s,height:s},parent);
     el('polyline',{...c,points:`${x+s*0.58},${y+s*0.12} ${x+s*0.32},${y+s*0.55} ${x+s*0.5},${y+s*0.55} ${x+s*0.4},${y+s*0.9}`,fill:'none'},parent);
   } else if(type==='meter'){
     el('circle',{...c,cx:x+s/2,cy:y+s/2,r:s/2-2},parent);
@@ -471,81 +443,100 @@ function drawIcon(parent, type, x, y, s, color){
   }
 }
 // Outlined equipment box shared by the one-line diagram and the playground:
-// dark fill, coloured border + icon, white name, coloured value line underneath.
+// sheet fill, border in the color of the line it sits on, ink icon and name, value underneath.
+// A source box (o.fuel) gets a small fuel swatch so it can be matched to the charts.
 function nodeBox(svg, o){
   const active = o.active !== false;
-  const color = active ? o.color : 'var(--muted)';
   const g = el('g', o.id ? {class:'node', 'data-id':o.id} : {}, svg);
-  const r = el('rect', {x:o.x, y:o.y, width:o.w, height:o.h, rx:9, fill:'var(--panel-navy-2)',
-    stroke: active ? o.color : 'var(--edge-2)', 'stroke-width': active ? 2.5 : 1.5}, g);
-  if(o.dashed) r.setAttribute('stroke-dasharray', '7,5');
+  const r = el('rect', {x:o.x, y:o.y, width:o.w, height:o.h, fill:'var(--sheet)',
+    stroke: active ? o.color : 'var(--dead)', 'stroke-width': active ? 2.5 : 1.5}, g);
+  if(o.dashed) r.setAttribute('stroke-dasharray', '5,4');
+  if(o.fuel) el('rect', {x:o.x + o.w - 15, y:o.y + 7, width:8, height:8, fill:o.fuel, opacity: active ? 1 : .4}, g);
   const iconSize = 24;
-  drawIcon(g, o.icon, o.x + 12, o.y + (o.h - iconSize)/2, iconSize, color);
+  const ic = active ? (o.iconColor || 'var(--ink)') : 'var(--ink-3)';
+  drawIcon(g, o.icon, o.x + 12, o.y + (o.h - iconSize)/2, iconSize, ic, active ? o.iconColor2 : null);
   const tx = o.x + 12 + iconSize + 10;
-  el('text', {x:tx, y:o.y + o.h/2 - 4, 'font-family':'IBM Plex Sans', 'font-size':16, 'font-weight':600, fill:'var(--paper)'}, g).textContent = o.label;
-  el('text', {x:tx, y:o.y + o.h/2 + 18, 'font-family':'IBM Plex Mono', 'font-size':15, 'font-weight':600, fill:color}, g).textContent = o.value;
-  if(o.extra) el('text', {x: o.x + o.w/2, y: o.y + o.h + 20, 'text-anchor':'middle', 'font-family':'IBM Plex Mono', 'font-size':13, fill: o.extra.color || 'var(--muted)'}, g).textContent = o.extra.text;
+  el('text', {x:tx, y:o.y + o.h/2 - 4, style:'font-family:var(--f-body)', 'font-size':16, 'font-weight':600, fill: active ? 'var(--ink)' : 'var(--ink-3)'}, g).textContent = o.label;
+  el('text', {x:tx, y:o.y + o.h/2 + 18, style:'font-family:var(--f-mono)', 'font-size':14, 'font-weight':700, fill: active ? (o.valueColor || 'var(--ink-2)') : 'var(--ink-3)'}, g).textContent = o.value;
+  if(o.extra) el('text', {x: o.x + o.w/2, y: o.y + o.h + 20, 'text-anchor':'middle', style:'font-family:var(--f-mono)', 'font-size':13, fill: o.extra.color || 'var(--ink-3)'}, g).textContent = o.extra.text;
   return g;
 }
 function wire(svg, x1,y1,x2,y2,color,dash,width){
-  const a = {x1,y1,x2,y2,stroke:color,'stroke-width':width||2.5,'stroke-linecap':'round'};
+  const a = {x1,y1,x2,y2,stroke:color,'stroke-width':width||2.5,'stroke-linecap':'square'};
   if(dash) a['stroke-dasharray'] = dash;
   el('line', a, svg);
+}
+// DC side of an inverter: a double line in the site-voltage color, never dashed
+// (dashes mean underground cable or data). Callers add a "DC" label.
+function dcWire(svg, x1,y1,x2,y2,color,width){
+  const w = width || 4;
+  el('line', {x1,y1,x2,y2,stroke:color||'var(--v-secondary)','stroke-width':w + 3}, svg);
+  el('line', {x1,y1,x2,y2,stroke:'var(--ground)','stroke-width':Math.max(1.5, w - 2.5)}, svg);
 }
 
 function buildDiagram(){
   const svg = document.getElementById('diagramSvg');
   svg.innerHTML = '';
-  const CYAN='var(--line-cyan)', AMBER='var(--signal-amber)', COPPER='var(--copper)', SOLAR='var(--solar)', BATT='var(--battery)', LOAD='var(--paper)';
+  const PRI='var(--v-primary)', SEC='var(--v-secondary)', DATA='var(--data)', INK='var(--ink)';
   const W = 4;                                  // wire weight, matches the playground
   const CX = 500, BW = 250, BH = 60, BUSY = 390;
   const SX = 210, LX = 790;                     // solar left, battery under the grid drop, load right (same as playground)
   const box = (id, cx, y, label, value, color, icon, extra) =>
     nodeBox(svg, Object.assign({id, x:cx - BW/2, y, w:BW, h:BH, label, value, color, icon}, extra || {}));
-  const mono = (x, y, text, color, size) =>
-    el('text', {x, y, 'text-anchor':'middle', 'font-family':'IBM Plex Mono', 'font-size':size || 13, fill:color}, svg).textContent = text;
+  const mono = (x, y, text, color, size, anchor) =>
+    el('text', {x, y, 'text-anchor':anchor || 'middle', style:'font-family:var(--f-mono)', 'font-size':size || 13, fill:color}, svg).textContent = text;
 
-  // utility side, top to bottom: primary (amber) -> transformer -> secondary (cyan) -> PCC
-  mono(CX, 20, 'FROM SUBSTATION / FEEDER', 'var(--muted)');
-  wire(svg, CX, 30, CX, 48, AMBER, null, W);    // utility primary (~12 kV), amber as in chapter 2
-  box('recloser', CX, 48, 'Recloser', 'pole-mounted', CYAN, 'recloser');
-  wire(svg, CX, 108, CX, 132, AMBER, null, W);
-  box('xfmr', CX, 132, '1 MVA Xfmr', 'utility-owned', CYAN, 'transformer');
-  wire(svg, CX, 192, CX, 216, CYAN, null, W);   // transformer secondary (site voltage)
-  box('pcc', CX, 216, 'PCC / Meter', 'customer boundary', CYAN, 'meter');
+  // ownership: a labeled dashed region on each side of the PCC meter (not line color)
+  const region = (x, y, w, h, label, lx, ly) => {
+    el('rect', {x, y, width:w, height:h, fill:'none', stroke:'var(--band)', 'stroke-width':1, 'stroke-dasharray':'3,3'}, svg);
+    mono(lx, ly, label, 'var(--ink-3)', 11, 'end');
+  };
+  region(358, 34, 590, 250, 'UTILITY-OWNED', 938, 52);
+  region(62, 292, 886, 292, 'CUSTOMER-OWNED', 938, 310);
 
-  // DER Gateway: a comms/monitoring tap on the PCC, not in the power path
-  wire(svg, CX + BW/2, 246, CX + 185, 246, CYAN, '6,5', 2.5);
-  mono((CX + BW/2 + CX + 185)/2, 238, 'monitors', 'var(--muted)', 11);
-  box('gateway', CX + 185 + BW/2, 216, 'DER Gateway', 'utility comms', CYAN, 'gateway');
+  // utility side, top to bottom: primary (orange) -> transformer -> secondary (blue) -> PCC
+  mono(CX, 20, 'FROM SUBSTATION / FEEDER', 'var(--ink-3)');
+  wire(svg, CX, 30, CX, 48, PRI, null, W);      // utility primary (~12 kV), as in chapter 2
+  box('recloser', CX, 48, 'Recloser', 'pole-mounted', PRI, 'recloser');
+  wire(svg, CX, 108, CX, 132, PRI, null, W);
+  box('xfmr', CX, 132, '1 MVA Xfmr', 'steps ~12 kV down', INK, 'transformer', {iconColor:PRI, iconColor2:SEC});
+  wire(svg, CX, 192, CX, 216, SEC, null, W);    // transformer secondary (site voltage)
+  box('pcc', CX, 216, 'PCC / Meter', 'customer boundary', SEC, 'meter');
+
+  // DER Gateway: a data tap on the PCC, not in the power path
+  wire(svg, CX + BW/2, 246, CX + 185, 246, DATA, '4,3', 2);
+  mono((CX + BW/2 + CX + 185)/2, 238, 'monitors', DATA, 11);
+  box('gateway', CX + 185 + BW/2, 216, 'DER Gateway', 'utility comms', DATA, 'gateway');
 
   // PCC down to the site bus
-  wire(svg, CX, 276, CX, BUSY, COPPER, null, W);
+  wire(svg, CX, 276, CX, BUSY, SEC, null, W);
 
-  // ATS + microgrid controller: optional, opens this segment to island the site
-  wire(svg, CX - 185, 333, CX, 333, AMBER, '6,5', 2.5);
-  mono(CX - 92, 325, 'opens to island', 'var(--muted)', 11);
-  box('ats', CX - 185 - BW/2, 303, 'ATS + Microgrid Ctrl.', 'optional — islanding', AMBER, 'ats', {dashed:true});
+  // ATS + microgrid controller: optional; its control link opens this segment to island the site
+  wire(svg, CX - 185, 333, CX, 333, DATA, '4,3', 2);
+  mono(CX - 92, 325, 'opens to island', DATA, 11);
+  box('ats', CX - 185 - BW/2, 303, 'ATS + Microgrid Ctrl.', 'optional — islanding', 'var(--ink-2)', 'ats', {dashed:true});
 
-  // site AC bus
-  wire(svg, SX, BUSY, LX, BUSY, COPPER, null, W);
-  mono((CX + LX)/2, BUSY - 10, 'SITE AC BUS', 'var(--copper)', 12);
+  // site AC bus (secondary / site voltage)
+  wire(svg, SX, BUSY, LX, BUSY, SEC, null, W);
+  mono((CX + LX)/2, BUSY - 10, 'SITE AC BUS', SEC, 12);
 
-  // solar branch
-  wire(svg, SX, BUSY, SX, 420, SOLAR, null, W);
-  box('pvinv', SX, 420, 'PV Inverter', '250 kW AC', SOLAR, 'inverter');
-  wire(svg, SX, 480, SX, 510, SOLAR, null, W);
-  box('pvarray', SX, 510, 'PV Array', '250 kW AC nameplate', SOLAR, 'solar');
+  // solar branch: AC from the inverter to the bus, DC from the array to the inverter
+  wire(svg, SX, BUSY, SX, 420, SEC, null, W);
+  box('pvinv', SX, 420, 'PV Inverter', '250 kW AC', SEC, 'inverter');
+  dcWire(svg, SX, 480, SX, 510, SEC, W);
+  mono(SX + 14, 499, 'DC', SEC, 11, 'start');
+  box('pvarray', SX, 510, 'PV Array', '250 kW AC nameplate', SEC, 'solar', {fuel:'var(--fuel-solar)'});
 
   // battery branch
-  wire(svg, CX, BUSY, CX, 420, BATT, null, W);
-  box('pcs', CX, 420, 'Battery Inverter (PCS)', 'bidirectional', BATT, 'inverter');
-  wire(svg, CX, 480, CX, 510, BATT, null, W);
-  box('bess', CX, 510, 'BESS', '750 kW / ~1,500 kWh', BATT, 'battery');
+  wire(svg, CX, BUSY, CX, 420, SEC, null, W);
+  box('pcs', CX, 420, 'Battery Inverter (PCS)', 'bidirectional', SEC, 'inverter');
+  dcWire(svg, CX, 480, CX, 510, SEC, W);
+  mono(CX + 14, 499, 'DC', SEC, 11, 'start');
+  box('bess', CX, 510, 'BESS', '750 kW / ~1,500 kWh', SEC, 'battery', {fuel:'var(--fuel-battery)'});
 
   // load
-  wire(svg, LX, BUSY, LX, 420, COPPER, null, W);
-  box('load', LX, 420, 'Site Load', 'municipal bldgs', LOAD, 'load');
+  wire(svg, LX, BUSY, LX, 420, SEC, null, W);
+  box('load', LX, 420, 'Site Load', 'municipal bldgs', INK, 'load');
 
   document.querySelectorAll('#diagramSvg .node').forEach(n=>{
     n.addEventListener('click', ()=>{
@@ -563,7 +554,7 @@ const ID_TO_TERM = {
 };
 function showInfo(id){
   const card = document.getElementById('infoCard');
-  const iconSpan = (type) => `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(type, 'var(--signal-amber)')}</span>`;
+  const iconSpan = (type) => `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(type, 'var(--ink)')}</span>`;
   if(id === 'load'){
     card.innerHTML = `<div class="info-tag">${iconSpan('load')}Customer Load</div><div class="info-title">Site Load</div><div class="info-body">The municipal buildings, EV chargers, streetlights, etc. that consume power on-site. This is what the solar array and battery are sized against — and what has to be served on its own if the site islands during a grid outage.</div>`;
     return;
@@ -602,7 +593,7 @@ function renderGlossary(){
       const catLabel = t.cat==='utility'?'Utility-owned':(t.cat==='der'?'Customer DER':'Controls/Protection');
       const card = document.createElement('div');
       card.className='term-card';
-      const icon = TERM_ICONS[t.id] ? `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(TERM_ICONS[t.id], 'var(--signal-amber)')}</span>` : '';
+      const icon = TERM_ICONS[t.id] ? `<span style="display:inline-flex; vertical-align:middle; margin-right:8px;">${iconMarkup(TERM_ICONS[t.id], 'var(--ink)')}</span>` : '';
       card.innerHTML = `<div class="info-tag">${icon}${catLabel}</div><h3>${t.name}</h3><p>${t.body}</p>${t.cost?`<div class="info-cost">≈ ${t.cost}</div>`:''}`;
       grid.appendChild(card);
     });
@@ -811,8 +802,8 @@ function renderBalance(r){
   const fromGrid = Math.max(0, r.loadServed - fromSolar - fromBatt);
   const shed = pgState.load - r.loadServed;
   const segs = [
-    ['Solar', fromSolar, 'var(--solar)'], ['Battery', fromBatt, 'var(--battery)'],
-    ['Feeder', fromGrid, 'var(--line-cyan)'], ['Shed', shed, 'var(--bad)']
+    ['Solar', fromSolar, 'var(--fuel-solar)'], ['Battery', fromBatt, 'var(--fuel-battery)'],
+    ['Feeder', fromGrid, 'var(--ink-3)'], ['Shed', shed, 'var(--fault)']
   ].filter(s => s[1] > 0.5);
   const bar = pgState.load > 0
     ? `<div class="load-bar">${segs.map(s=>`<div style="flex:${s[1]}; background:${s[2]}"></div>`).join('')}</div>
@@ -829,94 +820,101 @@ function renderBalance(r){
     <div class="balance">
       <div class="bal-col">
         <div class="bal-h">In</div>
-        ${row('Solar', r.solar, 'var(--solar)')}
-        ${row('Battery discharging', dis, 'var(--battery)')}
-        ${row('Import from feeder', imp, 'var(--line-cyan)')}
+        ${row('Solar', r.solar, 'var(--fuel-solar)')}
+        ${row('Battery discharging', dis, 'var(--fuel-battery)')}
+        ${row('Import from feeder', imp, 'var(--ink-3)')}
         <div class="bal-row total"><span>Total</span><b>${Math.round(totIn)} kW</b></div>
       </div>
       <div class="bal-eq">=</div>
       <div class="bal-col">
         <div class="bal-h">Out</div>
-        ${row('Site load', r.loadServed, 'var(--paper)')}
-        ${row('Battery charging', chg, 'var(--battery)')}
-        ${row('Export to feeder', exp, 'var(--good)')}
+        ${row('Site load', r.loadServed, 'var(--ink)')}
+        ${row('Battery charging', chg, 'repeating-linear-gradient(135deg, var(--fuel-battery) 0 2px, transparent 2px 4px)')}
+        ${row('Export to feeder', exp, 'var(--ink-3)')}
         <div class="bal-row total"><span>Total</span><b>${Math.round(totOut)} kW</b></div>
       </div>
     </div>
     ${r.curtailment > 0.5 ? `<div class="bal-note">Not in the balance: ${kw(r.curtailment)} of the ${kw(r.solarAvail)} available solar was curtailed (never produced).</div>` : ''}`;
 }
 
-// ---- diagram: large type + moving dots along each wire in the direction power flows ----
+// ---- diagram: large type; each live wire gets a travelling highlight and a chevron
+// pointing the way power flows (callers pass endpoints in the direction of flow)
 function flowWire(svg, x1, y1, x2, y2, color, kW, opts){
   opts = opts || {};
   const active = kW > 0.5 && !opts.dead;
   const w = active ? 3 + Math.min(1, kW / BATT_RATED) * 5 : 2.5;
-  const base = {x1, y1, x2, y2, stroke: active ? color : 'var(--line-cyan-dim)', 'stroke-width': w, 'stroke-linecap':'round'};
-  if(opts.dash) base['stroke-dasharray'] = opts.dash;
-  el('line', base, svg);
-  if(!active) return;
-  // dots travel from (x1,y1) toward (x2,y2); reverse handled by caller swapping endpoints
-  const speed = 25 + kW * 0.15;         // px/s — more power, faster dots
-  const dur = 16 / speed;
-  const dot = el('line', {x1, y1, x2, y2, class:'flow-dots', 'stroke-width': Math.max(3, w - 2)}, svg);
-  dot.style.animationDuration = dur + 's';
-  dot.style.animationDelay = -((performance.now() / 1000) % dur) + 's'; // keep phase steady across redraws
+  el('line', {x1, y1, x2, y2, stroke: active ? color : 'var(--dead)', 'stroke-width': w, 'stroke-linecap':'square'}, svg);
+  const len = Math.hypot(x2 - x1, y2 - y1);
+  if(!active || len < 30) return;   // too short to carry a readable direction marker
+  // arrowhead at the midpoint, static, so direction survives reduced motion
+  const ux = (x2 - x1) / len, uy = (y2 - y1) / len, mx = (x1 + x2) / 2, my = (y1 + y2) / 2, k = 5 + w * 0.6;
+  el('polygon', {points:`${mx + ux*k},${my + uy*k} ${mx - ux*k - uy*k},${my - uy*k + ux*k} ${mx - ux*k + uy*k},${my - uy*k - ux*k}`,
+    fill:color, stroke:'var(--ground)', 'stroke-width':1.2, 'stroke-linejoin':'miter'}, svg);
+  // travelling highlight: a lighter (or, on blueprint, deeper) tint of the wire's own color
+  const speed = 40 + kW * 0.12;         // px/s, more power, faster
+  const dur = Math.max(0.5, len / speed);
+  const hi = el('line', {x1, y1, x2, y2, class:'flow-hi', pathLength:100, 'stroke-width': Math.max(2, w - 2),
+    stroke:`color-mix(in srgb, ${color} 30%, var(--sheet))`}, svg);
+  hi.style.animationDuration = dur + 's';
+  hi.style.animationDelay = -((performance.now() / 1000) % dur) + 's'; // keep phase steady across redraws
 }
-function pgBox(svg, x, y, w, h, label, value, color, icon, active, extra){
-  nodeBox(svg, {x, y, w, h, label, value, color, icon, active, extra});
+function pgBox(svg, x, y, w, h, label, value, color, icon, active, extra, more){
+  nodeBox(svg, Object.assign({x, y, w, h, label, value, color, icon, active, extra}, more || {}));
 }
 function flowTag(svg, x, y, text, color, anchor){
-  el('text', {x, y, 'text-anchor': anchor || 'start', 'font-family':'IBM Plex Mono', 'font-size':14, 'font-weight':600, fill:color}, svg).textContent = text;
+  el('text', {x, y, 'text-anchor': anchor || 'start', style:'font-family:var(--f-mono)', 'font-size':14, 'font-weight':600, fill:color}, svg).textContent = text;
 }
 
 function drawPlaygroundDiagram(r){
   const svg = document.getElementById('pgSvg');
   svg.innerHTML = '';
-  const GRID='var(--line-cyan)', SOLAR='var(--solar)', BATT='var(--battery)', LOAD='var(--paper)', BUS='var(--copper)';
+  const PRI='var(--v-primary)', SEC='var(--v-secondary)', INK='var(--ink)', FAULT='var(--fault)';
   const gridDead = r.tripped || r.island;
   const imp = Math.max(0, -r.pcc), exp = Math.max(0, r.pcc), gridKW = Math.abs(r.pcc);
   const CX = 270, BUSY = 292;
 
-  // utility chain, top to bottom
-  el('text', {x:CX, y:18, 'text-anchor':'middle', 'font-family':'IBM Plex Mono', 'font-size':13, fill:'var(--muted)'}, svg).textContent = 'UTILITY FEEDER';
-  const gridSeg = (ya, yb) => exp > 0.5
-    ? flowWire(svg, CX, yb, CX, ya, GRID, gridKW, {dead:gridDead, dash:gridDead ? '6,5' : null})   // upward = export
-    : flowWire(svg, CX, ya, CX, yb, GRID, gridKW, {dead:gridDead, dash:gridDead ? '6,5' : null});
-  gridSeg(26, 38);
-  pgBox(svg, CX - 95, 38, 190, 60, 'Recloser', 'pole-mounted', GRID, 'recloser', !r.tripped);
-  gridSeg(98, 116);
-  pgBox(svg, CX - 95, 116, 190, 60, '1 MVA Xfmr', 'steps voltage', GRID, 'transformer', !r.tripped);
-  gridSeg(176, 194);
+  // utility chain, top to bottom: primary (orange) into the transformer, secondary (blue) below it
+  el('text', {x:CX, y:18, 'text-anchor':'middle', style:'font-family:var(--f-mono)', 'font-size':13, fill:'var(--ink-3)'}, svg).textContent = 'UTILITY FEEDER';
+  const gridSeg = (ya, yb, color) => exp > 0.5
+    ? flowWire(svg, CX, yb, CX, ya, color, gridKW, {dead:gridDead})   // upward = export
+    : flowWire(svg, CX, ya, CX, yb, color, gridKW, {dead:gridDead});
+  gridSeg(26, 38, PRI);
+  pgBox(svg, CX - 95, 38, 190, 60, 'Recloser', 'pole-mounted', PRI, 'recloser', !r.tripped);
+  gridSeg(98, 116, PRI);
+  pgBox(svg, CX - 95, 116, 190, 60, '1 MVA Xfmr', 'steps voltage', INK, 'transformer', !r.tripped, null, {iconColor:PRI, iconColor2:SEC});
+  gridSeg(176, 194, SEC);
   const pccVal = r.tripped ? 'TRIPPED' : r.island ? 'OPEN (islanded)' : exp > 0.5 ? 'exporting' : imp > 0.5 ? 'importing' : 'net zero';
-  pgBox(svg, CX - 95, 194, 190, 60, 'PCC / Gateway', pccVal, r.tripped ? 'var(--bad)' : r.island ? 'var(--muted)' : exp > 0.5 ? 'var(--good)' : GRID, 'gateway', !r.island);
-  gridSeg(254, BUSY);
-  if(!gridDead && gridKW > 0.5) flowTag(svg, CX + 14, 278, (exp > 0.5 ? '↑ ' : '↓ ') + kw(gridKW), exp > 0.5 ? 'var(--good)' : GRID);
+  pgBox(svg, CX - 95, 194, 190, 60, 'PCC / Gateway', pccVal, r.tripped ? FAULT : SEC, 'gateway', !r.island, null,
+        r.tripped ? {valueColor:FAULT} : null);
+  gridSeg(254, BUSY, SEC);
+  // export vs import: told apart by the arrow and the word, not by color
+  if(!gridDead && gridKW > 0.5) flowTag(svg, CX + 14, 278, (exp > 0.5 ? '↑ export ' : '↓ import ') + kw(gridKW), INK);
 
   // site bus: solar enters on the left, load leaves on the right, grid + battery meet in the middle
   const SX = 90, LX = 450;
-  flowWire(svg, SX, BUSY, CX, BUSY, BUS, r.solar);
-  flowWire(svg, CX, BUSY, LX, BUSY, BUS, r.loadServed);
-  el('text', {x:(SX + CX)/2, y:BUSY - 10, 'text-anchor':'middle', 'font-family':'IBM Plex Mono', 'font-size':12, fill:'var(--copper)'}, svg).textContent = 'SITE BUS';
+  flowWire(svg, SX, BUSY, CX, BUSY, SEC, r.solar);
+  flowWire(svg, CX, BUSY, LX, BUSY, SEC, r.loadServed);
+  el('text', {x:(SX + CX)/2, y:BUSY - 10, 'text-anchor':'middle', style:'font-family:var(--f-mono)', 'font-size':12, fill:SEC}, svg).textContent = 'SITE BUS';
 
   // solar branch (always flows up into the bus)
-  flowWire(svg, SX, 352, SX, BUSY, SOLAR, r.solar);
-  if(r.solar > 0.5) flowTag(svg, SX + 12, 330, '↑ ' + kw(r.solar), SOLAR);
-  pgBox(svg, SX - 85, 352, 170, 62, 'Solar PV', kw(r.solar), SOLAR, 'solar', r.solar > 0.5,
-        r.curtailment > 0.5 ? {text:`curtailed ${kw(r.curtailment)}`, color:'var(--signal-amber)'} : null);
+  flowWire(svg, SX, 352, SX, BUSY, SEC, r.solar);
+  if(r.solar > 0.5) flowTag(svg, SX + 12, 330, '↑ ' + kw(r.solar), INK);
+  pgBox(svg, SX - 85, 352, 170, 62, 'Solar PV', kw(r.solar), SEC, 'solar', r.solar > 0.5,
+        r.curtailment > 0.5 ? {text:`curtailed ${kw(r.curtailment)}`, color:'var(--ink-2)'} : null, {fuel:'var(--fuel-solar)'});
 
   // battery branch (up when discharging, down when charging)
   const bKW = Math.abs(r.batt);
-  if(r.batt > 0) flowWire(svg, CX, 352, CX, BUSY, BATT, bKW); else flowWire(svg, CX, BUSY, CX, 352, BATT, bKW);
-  if(bKW > 0.5) flowTag(svg, CX + 12, 330, (r.batt > 0 ? '↑ ' : '↓ ') + kw(bKW), BATT);
+  if(r.batt > 0) flowWire(svg, CX, 352, CX, BUSY, SEC, bKW); else flowWire(svg, CX, BUSY, CX, 352, SEC, bKW);
+  if(bKW > 0.5) flowTag(svg, CX + 12, 330, (r.batt > 0 ? '↑ ' : '↓ ') + kw(bKW), INK);
   const bVal = bKW < 0.5 ? 'idle' : r.batt > 0 ? kw(bKW) + ' out' : kw(bKW) + ' in';
-  pgBox(svg, CX - 85, 352, 170, 62, 'Battery', bVal, BATT, 'battery', bKW > 0.5, {text:`SOC ${pgState.soc}% · ${fmtKWh(BATT_KWH * pgState.soc / 100)}`});
+  pgBox(svg, CX - 85, 352, 170, 62, 'Battery', bVal, SEC, 'battery', bKW > 0.5, {text:`SOC ${pgState.soc}% · ${fmtKWh(BATT_KWH * pgState.soc / 100)}`}, {fuel:'var(--fuel-battery)'});
 
-  // load branch (always flows down out of the bus)
+  // load branch (always flows down out of the bus); unserved load is a fault
   const short = r.loadServed < pgState.load - 0.5;
-  flowWire(svg, LX, BUSY, LX, 352, LOAD, r.loadServed);
-  if(r.loadServed > 0.5) flowTag(svg, LX - 12, 330, '↓ ' + kw(r.loadServed), LOAD, 'end');
-  pgBox(svg, LX - 85, 352, 170, 62, 'Site Load', short ? `${Math.round(r.loadServed)} / ${pgState.load} kW` : kw(pgState.load), short ? 'var(--bad)' : LOAD, 'load', pgState.load > 0,
-        short ? {text:`shed ${kw(pgState.load - r.loadServed)}`, color:'var(--bad)'} : null);
+  flowWire(svg, LX, BUSY, LX, 352, SEC, r.loadServed);
+  if(r.loadServed > 0.5) flowTag(svg, LX - 12, 330, '↓ ' + kw(r.loadServed), INK, 'end');
+  pgBox(svg, LX - 85, 352, 170, 62, 'Site Load', short ? `${Math.round(r.loadServed)} / ${pgState.load} kW` : kw(pgState.load), short ? FAULT : INK, 'load', pgState.load > 0,
+        short ? {text:`shed ${kw(pgState.load - r.loadServed)}`, color:FAULT} : null, short ? {valueColor:FAULT} : null);
 }
 
 /* ============================================================

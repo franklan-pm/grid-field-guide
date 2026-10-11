@@ -7,121 +7,186 @@
 <meta name="description" content="Four interactive chapters that follow electricity from the power plant to the meter, then up into the control room that runs it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap">
 <script src="shared/theme.js"></script>
 <link rel="stylesheet" href="shared/theme.css">
 <style>
-/* Layout: one-line "map" of the grid as the hero, chapters as a 2×2 grid below, same field-guide tokens as the chapters.
-   Dark first; light and dark sets live in shared/theme.css. */
-/* Colors and fonts come from shared/theme.css. */
+/* Home page: an engineering drawing sheet. The one-line diagram is the hero, framed
+   with zone markers, a line legend, notes and a title block; the chapters follow as
+   a ruled sheet index. Colors, fonts, buttons and focus rings come from shared/theme.css. */
 *{box-sizing:border-box}
-html{background:var(--ink-navy)}
-body{
-  margin:0; min-height:100%;
-  background:radial-gradient(ellipse at 18% -8%, var(--glow) 0%, transparent 55%), var(--ink-navy);
-  color:var(--paper); font:400 16px/1.6 var(--f-body);
-}
-a{color:inherit}
-a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--signal-amber);outline-offset:3px;border-radius:6px}
-.wrap{max-width:1160px;margin:0 auto;padding-inline:max(16px, env(safe-area-inset-left,0px))}
+body{margin:0;min-height:100%;background:var(--ground);color:var(--ink);font:400 16px/1.6 var(--f-body)}
+a:not(.btn){color:inherit}
 
-/* top bar — same look as the chapter bar */
-.bar{background:var(--ink-deep);border-bottom:1px solid var(--edge);padding-top:env(safe-area-inset-top,0px)}
-.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px}
-.brand{display:flex;align-items:center;gap:8px;text-decoration:none;font:600 14px/1 var(--f-display)}
-.bar nav{display:flex;gap:18px;font:500 13px/1 var(--f-mono);color:var(--muted)}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:max(16px, min(33px, 2.3vw), env(safe-area-inset-left,0px))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* furniture lettering: small uppercase mono, for labels on the sheet only */
+.fl{font:400 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+/* header */
+.bar{border-bottom:2px solid var(--ink);padding-top:env(safe-area-inset-top,0px)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:700 20px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.brand svg{flex:none}
+.bar .right{display:flex;align-items:center;gap:28px}
+.bar nav{display:flex;gap:28px;font:400 12px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
 .bar nav a{text-decoration:none}
-.bar nav a:hover{color:var(--paper)}
-.bar .right{display:flex;align-items:center;gap:18px}
-/* theme toggle — same pill control as Grid Operations */
-.theme-toggle{display:inline-flex;border:1px solid var(--edge);border-radius:999px;padding:3px;gap:2px;flex:none}
-.theme-toggle button{font:500 12.5px/1 var(--f-mono);color:var(--muted);background:transparent;border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
-.theme-toggle button:hover{color:var(--paper)}
-.theme-toggle button[aria-pressed="true"]{background:var(--pill-bg);color:var(--pill-fg);font-weight:700}
-.theme-toggle button:focus-visible{outline:2px solid var(--signal-amber);outline-offset:2px}
+.bar nav a:hover{text-decoration:underline;text-underline-offset:4px}
+.theme-toggle{display:inline-flex;border:1px solid var(--ink);flex:none}
+.theme-toggle button{font:400 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:transparent;border:0;border-radius:0;margin:0;padding:7px 11px;cursor:pointer}
+.theme-toggle button + button{border-left:1px solid var(--ink)}
+.theme-toggle button:hover{background:var(--hover-fill)}
+.theme-toggle button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);font-weight:700}
 
-/* hero */
-.hero{padding-block:52px 28px;display:grid;gap:20px}
-.hero > *{min-width:0}
-.eyebrow{font:500 12px/1.3 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--signal-amber);margin:0}
-h1{font:700 clamp(40px,7vw,72px)/1 var(--f-display);letter-spacing:-.02em;margin:0;text-wrap:balance}
-.lede{font-size:clamp(17px,2vw,19px);color:var(--text-2);max-width:62ch;margin:0}
-.lede b{color:var(--paper);font-weight:600}
-.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:6px}
-.btn{display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border-radius:8px;text-decoration:none;font:600 15px/1 var(--f-display)}
-.btn.primary{background:var(--signal-amber);color:var(--on-amber)}
-.btn.primary:hover{background:var(--amber-hover)}
-.btn.ghost{border:1px solid var(--edge-2);color:var(--paper)}
-.btn.ghost:hover{border-color:var(--line-cyan)}
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px 56px;align-items:start;padding-block:56px 36px}
+h1{font:700 clamp(44px,5.6vw,78px)/.98 var(--f-display);letter-spacing:.005em;text-transform:uppercase;margin:0;text-wrap:balance}
+.lede{font-size:17px;line-height:1.65;color:var(--ink-2);margin:0 0 20px;max-width:56ch}
+.cta{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font-size:17px;padding:11px 20px}
 
-/* map */
-.map{margin:8px 0 0;background:linear-gradient(180deg,var(--panel-navy),var(--panel-navy-2));border:1px solid var(--edge);border-radius:14px;padding:18px 18px 12px}
-.map-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;align-items:baseline;margin-bottom:6px}
-.map-head h2{font:600 15px/1.3 var(--f-display);margin:0}
-.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 12px/1.4 var(--f-mono);color:var(--muted)}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend i{display:inline-block;width:18px;height:0;border-top:3px solid}
-.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.scroll svg{display:block;width:100%;min-width:760px;height:auto}
-svg text{font-family:var(--f-mono)}
+/* the sheet: 2px frame with a 24px zone-marker margin */
+.sheet{display:grid;grid-template-columns:24px minmax(0,1fr) 24px;grid-template-rows:24px auto 24px;border:2px solid var(--ink);background:var(--ground)}
+.zm{display:flex;font:400 10px/1 var(--f-mono);color:var(--ink-3)}
+.zm span{flex:1;display:flex;align-items:center;justify-content:center}
+.zm.top,.zm.bot{grid-column:2}
+/* tick marks between zones */
+.zm.top span + span{background:linear-gradient(var(--ink-3),var(--ink-3)) left top/1px 10px no-repeat}
+.zm.bot span + span{background:linear-gradient(var(--ink-3),var(--ink-3)) left bottom/1px 10px no-repeat}
+.zm.side{grid-row:2;flex-direction:column}
+.zm.l span + span{background:linear-gradient(var(--ink-3),var(--ink-3)) left top/10px 1px no-repeat}
+.zm.r span + span{background:linear-gradient(var(--ink-3),var(--ink-3)) right top/10px 1px no-repeat}
+.zm.l{grid-column:1}.zm.r{grid-column:3}
+.inner{grid-column:2;grid-row:2;border:1px solid var(--ink);min-width:0;background:var(--ground)}
+
+/* drafting grid behind the diagram */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-position:-1px -1px}
+.scroll:focus-visible{outline-offset:-2px}
+.scroll svg{display:block;width:100%;min-width:900px;height:auto}
+
+/* diagram */
+svg text{font-family:var(--f-mono);fill:var(--ink-3);font-size:11px;letter-spacing:.06em}
 .zone{cursor:pointer}
-.zone .bg{fill:transparent;stroke:var(--edge-2);stroke-dasharray:4 5;stroke-width:1;transition:fill .2s,stroke .2s}
-.zone .tag{fill:var(--muted);font-size:11px;letter-spacing:.12em}
-.zone .name{fill:var(--paper);font:600 15px var(--f-display)}
-.zone:hover .bg,.zone:focus .bg,.zone.hot .bg{fill:var(--hover-fill);stroke:var(--line-cyan);stroke-dasharray:none}
-.zone:hover .name,.zone.hot .name{fill:var(--line-cyan)}
+.zone .bg{fill:transparent;stroke:var(--band);stroke-width:1;stroke-dasharray:3 3}
+.zone:hover .bg,.zone.hot .bg{fill:var(--hover-fill);stroke:var(--ink);stroke-dasharray:none}
 .zone:focus{outline:none}
-.zone:focus-visible .bg{stroke:var(--signal-amber);stroke-width:2}
-.box{fill:var(--ink-navy);stroke:var(--edge-2)}
-.lbl{fill:var(--paper);font-size:12px}
-.sub{fill:var(--muted);font-size:10.5px}
-.prim{stroke:var(--signal-amber);stroke-width:3;fill:none}
-.sec{stroke:var(--line-cyan);stroke-width:2.5;fill:none}
-.gen{stroke:var(--soft);stroke-width:2.5;fill:none}
-.data{stroke:var(--violet);stroke-width:1.5;stroke-dasharray:2 4;fill:none}
-.flow{stroke-dasharray:8 7;animation:flow 1.6s linear infinite}
-@keyframes flow{to{stroke-dashoffset:-30}}
-.map-note{font:400 12px/1.5 var(--f-mono);color:var(--muted-2);margin:8px 2px 0}
+.zone:focus-visible .bg{stroke:var(--ink);stroke-width:2;stroke-dasharray:none}
+.zone .tag{font-size:10.5px;letter-spacing:.1em}
+.zone .name{fill:var(--ink);font:600 21px var(--f-display);letter-spacing:.03em}
+.box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.2}
+.box.sys{stroke:var(--data)}
+.box.site{stroke:var(--v-secondary)}
+.lbl{fill:var(--ink);font:600 13.5px var(--f-body);letter-spacing:0}
+.sub{font-size:11px;letter-spacing:.02em;fill:var(--ink-2)}
+.dev{font-size:10.5px;letter-spacing:.08em}
+.hv{stroke:var(--v-hv);stroke-width:2.5;fill:none}
+.prim{stroke:var(--v-primary);stroke-width:3;fill:none}
+.sec{stroke:var(--v-secondary);stroke-width:2.5;fill:none}
+.data{stroke:var(--data);stroke-width:1.5;stroke-dasharray:4 3;fill:none}
+.t-prim{fill:var(--v-primary);font-weight:700}
+.t-sec{fill:var(--v-secondary);font-weight:700}
+/* power-flow direction: a travelling highlight, never marching dashes (dashes mean data) */
+/* a lighter (or, on blueprint, deeper) tint of each line's own color, set per path */
+.flow{fill:none;stroke-width:1.4;stroke-linecap:butt;stroke-dasharray:14 100;animation:flow 3s linear infinite}
+@keyframes flow{from{stroke-dashoffset:14}to{stroke-dashoffset:-100}}
 
-/* chapters */
-.section-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;margin:56px 0 18px}
-.section-head h2{font:700 clamp(26px,3.4vw,34px)/1.1 var(--f-display);margin:0;letter-spacing:-.01em}
-.section-head p{margin:0;color:var(--muted);max-width:52ch}
-.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:18px;list-style:none;margin:0;padding:0}
-.card{position:relative;display:grid;grid-template-rows:auto 1fr;background:var(--panel-navy-2);border:1px solid var(--edge);border-radius:var(--radius);overflow:hidden;transition:border-color .2s,transform .2s}
-.card:hover,.card.hot{border-color:var(--line-cyan)}
-.card:hover{transform:translateY(-2px)}
-.thumb{aspect-ratio:16/9;max-width:100%;overflow:hidden;border-bottom:1px solid var(--edge);background:var(--ink-navy)}
-.thumb img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
-.thumb .lt{display:none}
-:root[data-theme="light"] .thumb .dk{display:none}
-:root[data-theme="light"] .thumb .lt{display:block}
-.body{padding:18px 20px 20px;display:grid;gap:10px;align-content:start;min-width:0}
-.meta{display:flex;justify-content:space-between;gap:12px;font:500 12px/1.3 var(--f-mono);color:var(--muted)}
-.meta .num{color:var(--signal-amber);letter-spacing:.12em;text-transform:uppercase}
-.card h3{font:700 24px/1.15 var(--f-display);margin:0}
-.card h3 a{text-decoration:none}
-.card h3 a::after{content:"";position:absolute;inset:0}
-.q{font:500 16px/1.4 var(--f-display);color:var(--line-cyan);margin:0}
-.desc{margin:0;color:var(--text-2);font-size:15px}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0;list-style:none}
-.tabs li{font:500 11.5px/1 var(--f-mono);color:var(--muted);border:1px solid var(--edge);border-radius:999px;padding:5px 9px}
-.open{font:600 14px/1 var(--f-display);color:var(--paper);margin-top:4px}
-.card:hover .open{color:var(--signal-amber)}
-.bridge{font:400 13px/1.5 var(--f-mono);color:var(--muted-2);border-top:1px dashed var(--edge);padding-top:10px;margin-top:2px}
+/* bottom strip: legend, notes, title block */
+.strip{display:grid;grid-template-columns:347fr 274fr 333fr;border-top:1px solid var(--ink)}
+.strip > *{min-width:0;padding:14px 18px 18px}
+.strip > * + *{border-left:1px solid var(--ink)}
+.strip .fl{margin:0 0 10px}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13px;line-height:1.35;color:var(--ink-2)}
+.legend li{display:flex;align-items:center;gap:10px}
+.legend i{flex:none;width:30px;border-top:3px solid}
+.legend b{font-weight:600}
+.notes{margin:0;padding-left:18px;font-size:13px;line-height:1.4;color:var(--ink-2);display:grid;gap:8px}
+.tb{padding:0!important;display:grid;grid-template-columns:1fr 1fr;background:var(--sheet)}
+.tb > div{padding:9px 12px 10px;border-top:1px solid var(--ink)}
+.tb > div:first-child{border-top:0}
+.tb .wide{grid-column:1/-1}
+.tb .c2{border-left:1px solid var(--ink)}
+.tb .fl{margin:0 0 3px;font-size:10px}
+.tb .v{font:700 13px/1.3 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin:0}
+.tb .v.status{color:var(--v-primary)}
+.tb .title{font:700 28px/1 var(--f-display);letter-spacing:.03em;text-transform:uppercase;margin:0 0 4px}
+.tb p{margin:0;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
 
-/* how to use */
-.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px;margin:56px 0 0;padding:22px 0 0;border-top:1px solid var(--edge)}
-.how h3{font:600 16px/1.3 var(--f-display);margin:0 0 6px}
-.how p{margin:0;color:var(--muted);font-size:15px}
+/* show "Ink" on vellum and "White" on blueprint in the legend */
+.nm-l{display:none}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .nm-l{display:inline}:root:not([data-theme="dark"]) .nm-d{display:none}}
+:root[data-theme="light"] .nm-l{display:inline}
+:root[data-theme="light"] .nm-d{display:none}
 
-footer{margin-top:56px;border-top:1px solid var(--edge);background:var(--ink-deep);padding-bottom:env(safe-area-inset-bottom,0px)}
-footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px 40px;padding-block:24px 32px;font-size:14px;color:var(--muted)}
-footer p{margin:0;max-width:64ch}
-footer a{color:var(--paper)}
+/* section heads */
+.section-head{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px 56px;align-items:end;margin:72px 0 0;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+.section-head h2{font:700 clamp(32px,3.4vw,44px)/1 var(--f-display);letter-spacing:.02em;text-transform:uppercase;margin:0}
+.section-head p{margin:0;color:var(--ink-2);font-size:15px;max-width:56ch}
 
-@media (prefers-reduced-motion:reduce){.flow{animation:none}.card,.card:hover{transition:none;transform:none}}
-@media (max-width:560px){.bar nav .opt{display:none}.theme-toggle .t{display:none}.theme-toggle button{padding:6px 10px}.bar .right{gap:12px}.hero{padding-block:36px 20px}}
+/* sheet index */
+.index{list-style:none;margin:0;padding:0}
+.row{position:relative;display:grid;grid-template-columns:136px minmax(0,1fr) minmax(0,1.5fr) auto;gap:8px 32px;padding:26px 0 28px;border-bottom:1px solid var(--band)}
+.row:last-child{border-bottom:2px solid var(--ink)}
+.row:hover,.row.hot{background:var(--hover-fill)}
+.row .num{font:700 60px/.9 var(--f-display);letter-spacing:-.01em}
+.row h3{font:600 30px/1.05 var(--f-display);letter-spacing:.03em;text-transform:uppercase;margin:0 0 8px}
+.row h3 a{text-decoration:none}
+.row h3 a::after{content:"";position:absolute;inset:0}
+.row .q{font-style:italic;color:var(--ink-2);margin:0 0 6px;line-height:1.45}
+.row .desc{margin:0 0 10px;color:var(--ink);font-size:15px;line-height:1.6}
+.row .inc,.row .lines{margin:0;font:400 11.5px/1.7 var(--f-mono);color:var(--ink-2);letter-spacing:.02em}
+.row .inc .fl,.row .lines .fl{margin-right:6px;font-size:10.5px}
+.row .lines{display:flex;align-items:center;gap:10px;margin-top:8px}
+.sw{display:inline-block;width:22px;border-top:3px solid}
+.sw.d{border-top-style:dashed;border-top-width:2px}
+.open{align-self:start;white-space:nowrap;font-size:16px}
+.row:hover .open,.row.hot .open{background:var(--ink);color:var(--on-ink)}
+
+/* general notes */
+.gnotes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--ink);background:var(--sheet);margin-top:20px}
+.gnotes > div{padding:20px 22px 24px}
+.gnotes > div + div{border-left:1px solid var(--ink)}
+.gnotes .fl{color:var(--v-primary);font-weight:700;margin:0 0 10px}
+.gnotes h3{font:600 17px/1.3 var(--f-body);letter-spacing:0;margin:0 0 8px}
+.gnotes p{margin:0;color:var(--ink-2);font-size:15px}
+.section-head.plain{border-bottom:0;padding-bottom:0}
+
+footer{margin-top:72px;border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:16px 40px;padding-block:24px 36px;font-size:13.5px;color:var(--ink-2)}
+footer p{margin:0;max-width:72ch}
+footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-underline-offset:4px}
+
+@media (prefers-reduced-motion:reduce){.flow{animation:none;display:none}}
+@media (max-width:1100px){
+  .row{grid-template-columns:96px minmax(0,1fr) auto}
+  .row .num{font-size:48px}
+  .row .what{grid-column:2/-1}
+  .row .open{grid-column:3;grid-row:1}
+  .strip{grid-template-columns:1fr 1fr}
+  .strip .tb{grid-column:1/-1;border-left:0;border-top:1px solid var(--ink)}
+}
+@media (max-width:760px){
+  .intro,.section-head{grid-template-columns:minmax(0,1fr)}
+  .intro{padding-block:36px 28px}
+  .strip{grid-template-columns:minmax(0,1fr)}
+  .strip > * + *{border-left:0;border-top:1px solid var(--ink)}
+  .gnotes{grid-template-columns:minmax(0,1fr)}
+  .gnotes > div + div{border-left:0;border-top:1px solid var(--ink)}
+  .row{grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:22px 0}
+  .row .num{font-size:40px}
+  .row .head,.row .what{grid-column:1/-1}
+  .row .open{grid-column:2;grid-row:1;align-self:center}
+}
+@media (max-width:560px){
+  .bar .right{gap:14px}
+  .bar nav{gap:12px}
+  .bar nav .nav-opt{display:none}
+  .theme-toggle .t{display:none}
+  .theme-toggle button{padding:7px 9px}
+  .brand{font-size:17px}
+}
+@media (max-width:380px){.brand .name{display:none}}
 </style>
 </head>
 <body>
@@ -129,209 +194,258 @@ footer a{color:var(--paper)}
 <header class="bar">
   <div class="wrap">
     <a class="brand" href="./">
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h4l2-5 2 10 2-5h4" fill="none" stroke="var(--signal-amber)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
-      Grid Field Guide
+      <svg width="28" height="18" viewBox="0 0 28 18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="19" cy="9" r="7" fill="none" stroke="var(--v-primary)" stroke-width="2"/></svg>
+      <span class="name">Grid Field Guide</span>
     </a>
     <div class="right">
       <nav aria-label="Site">
         <a href="#chapters">Chapters</a>
-        <a class="opt" href="#about">About</a>
+        <a class="nav-opt" href="#about">About</a>
         <a href="https://github.com/franklan-pm/grid-field-guide">GitHub</a>
       </nav>
       <div class="theme-toggle" role="group" aria-label="Color theme">
-        <button type="button" id="theme-light" data-theme-set="light" aria-pressed="false">☀<span class="t"> Light</span></button>
-        <button type="button" id="theme-dark" data-theme-set="dark" aria-pressed="true">☾<span class="t"> Dark</span></button>
+        <button type="button" id="theme-light" data-theme-set="light" aria-pressed="true">☀<span class="t"> Light</span></button>
+        <button type="button" id="theme-dark" data-theme-set="dark" aria-pressed="false">☾<span class="t"> Dark</span></button>
       </div>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="hero" aria-labelledby="title">
-    <p class="eyebrow">Field guide · 4 chapters · no engineering degree required</p>
-    <h1 id="title">Grid Field Guide</h1>
-    <p class="lede">Follow electricity from the power plant to the customer's meter, then up into the control room that runs it all. <b>Four interactive chapters</b> for program managers and other non-engineers who work around the grid and need to speak its language.</p>
-    <div class="cta">
-      <a class="btn primary" href="apps/01-power-mix/index.html">Start with chapter 1 <span aria-hidden="true">→</span></a>
-      <a class="btn ghost" href="#chapters">See all chapters</a>
-    </div>
-
-    <figure class="map" aria-labelledby="map-title">
-      <div class="map-head">
-        <h2 id="map-title">The whole guide on one line</h2>
-        <div class="legend" aria-hidden="true">
-          <span><i style="border-color:var(--soft)"></i>generation</span>
-          <span><i style="border-color:var(--signal-amber)"></i>primary, ~12 kV</span>
-          <span><i style="border-color:var(--line-cyan)"></i>secondary, 120/240 V</span>
-          <span><i style="border-color:var(--violet);border-top-style:dotted"></i>monitoring + control</span>
-        </div>
+  <section class="intro" aria-labelledby="title">
+    <h1 id="title">Follow the power, then the decisions.</h1>
+    <div>
+      <p class="lede">Four interactive chapters that follow electricity from the power plant to the customer's meter, then up into the control room. For program managers and other non-engineers who work around the grid. No engineering degree required.</p>
+      <div class="cta">
+        <a class="btn primary" href="apps/01-power-mix/index.html">Start with chapter 1 <span aria-hidden="true">→</span></a>
+        <a class="btn" href="#chapters">Sheet index</a>
       </div>
-      <div class="scroll">
-      <svg viewBox="0 0 1120 430" role="group" aria-label="Map of the four chapters. Generation feeds a substation, a feeder carries power to customers and a DER site, and a control room above monitors and controls the field equipment.">
+    </div>
+  </section>
+
+  <figure class="sheet" aria-labelledby="sheet-title" style="margin:0">
+    <div class="zm top" aria-hidden="true"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
+    <div class="zm side l" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
+    <div class="inner">
+      <div class="scroll" tabindex="0" aria-label="One-line diagram of the guide; scrolls sideways on small screens">
+      <svg viewBox="0 0 1310 602" role="group" aria-label="One-line diagram of the four chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, and control-room systems above monitor and control the field equipment.">
         <defs>
-          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--signal-amber)"/></marker>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--v-primary)"/></marker>
         </defs>
 
-        <!-- Chapter 4 zone: control room (drawn first so the field zones sit on top) -->
+        <!-- Chapter 4: control-room systems (drawn first so the field regions sit on top) -->
         <a class="zone" data-ch="4" href="apps/04-grid-operations/index.html" aria-label="Chapter 4: Grid operations">
-          <rect class="bg" x="316" y="12" width="790" height="118" rx="10"/>
-          <text class="tag" x="332" y="36">CHAPTER 4</text>
-          <text class="name" x="332" y="56">Grid operations</text>
-          <text class="sub" x="332" y="74">sees, decides, controls</text>
-          <rect class="box" x="520" y="34" width="120" height="44" rx="6"/>
-          <text class="lbl" x="580" y="54" text-anchor="middle">SCADA</text>
-          <text class="sub" x="580" y="69" text-anchor="middle">real-time path</text>
-          <rect class="box" x="666" y="34" width="150" height="44" rx="6"/>
-          <text class="lbl" x="741" y="54" text-anchor="middle">ADMS</text>
-          <text class="sub" x="741" y="69" text-anchor="middle">OMS · FLISR · VVO</text>
-          <rect class="box" x="842" y="34" width="120" height="44" rx="6"/>
-          <text class="lbl" x="902" y="54" text-anchor="middle">DERMS</text>
-          <text class="sub" x="902" y="69" text-anchor="middle">DER dispatch</text>
-          <path class="data" d="M640 56 H666 M816 56 H842"/>
-          <text class="sub" x="992" y="54">5 min to</text>
-          <text class="sub" x="992" y="68">milliseconds</text>
+          <rect class="bg" x="375" y="18" width="879" height="167"/>
+          <text class="tag" x="390" y="32">CHAPTER 4</text>
+          <text class="name" x="390" y="59">GRID OPERATIONS →</text>
+          <rect class="box sys" x="455" y="82" width="167" height="50"/>
+          <text class="lbl" x="467" y="104">SCADA</text>
+          <text class="sub" x="467" y="120">real-time path</text>
+          <rect class="box sys" x="671" y="82" width="199" height="50"/>
+          <text class="lbl" x="683" y="104">ADMS</text>
+          <text class="sub" x="683" y="120">OMS · FLISR · VVO</text>
+          <rect class="box sys" x="943" y="82" width="167" height="50"/>
+          <text class="lbl" x="955" y="104">DERMS</text>
+          <text class="sub" x="955" y="120">DER dispatch</text>
+          <path class="data" d="M622 107 H671 M870 107 H943"/>
+          <text class="dev" x="1131" y="96">5 MIN TO</text>
+          <text class="dev" x="1131" y="110">MILLISECONDS</text>
         </a>
 
-        <!-- monitoring / control lines down into the field -->
-        <path class="data" d="M560 78 V244 M600 78 V100 H495 V258 M950 78 V112 H1050 V331 H982"/>
+        <!-- data and control down into the field -->
+        <path class="data" d="M539 132 V392 M606 132 V165 H638 V392 M1078 132 V386"/>
 
-        <!-- Chapter 1 zone: power mix -->
+        <!-- Chapter 1: power mix -->
         <a class="zone" data-ch="1" href="apps/01-power-mix/index.html" aria-label="Chapter 1: Power mix">
-          <rect class="bg" x="14" y="146" width="292" height="272" rx="10"/>
-          <text class="tag" x="30" y="170">CHAPTER 1</text>
-          <text class="name" x="30" y="190">Power mix</text>
-          <rect class="box" x="30" y="208" width="118" height="36" rx="6" style="stroke:var(--copper)"/>
-          <text class="lbl" x="42" y="231">Gas plant</text>
-          <rect class="box" x="30" y="258" width="118" height="36" rx="6" style="stroke:var(--line-cyan)"/>
-          <text class="lbl" x="42" y="281">Wind</text>
-          <rect class="box" x="30" y="308" width="118" height="36" rx="6" style="stroke:var(--solar)"/>
-          <text class="lbl" x="42" y="331">Solar PV</text>
-          <rect class="box" x="30" y="358" width="118" height="36" rx="6" style="stroke:var(--good)"/>
-          <text class="lbl" x="42" y="381">Battery</text>
-          <path class="gen" d="M148 226 H226 M148 276 H226 M148 326 H226 M148 376 H226"/>
-          <rect x="224" y="206" width="6" height="190" rx="2" fill="var(--soft)"/>
-          <text class="sub" x="214" y="410" text-anchor="middle">bus: supply = demand</text>
+          <rect class="bg" x="55" y="210" width="287" height="374"/>
+          <text class="tag" x="70" y="232">CHAPTER 1</text>
+          <text class="name" x="70" y="257">POWER MIX →</text>
+          <rect class="box" x="79" y="282" width="167" height="43"/>
+          <text class="lbl" x="91" y="308">Gas plant</text>
+          <rect class="box" x="79" y="342" width="167" height="43"/>
+          <text class="lbl" x="91" y="368">Wind</text>
+          <rect class="box" x="79" y="402" width="167" height="43"/>
+          <text class="lbl" x="91" y="428">Solar PV</text>
+          <rect class="box" x="79" y="462" width="167" height="43"/>
+          <text class="lbl" x="91" y="488">Battery</text>
+          <path class="hv" d="M246 303 H302 M246 363 H302 M246 423 H302 M246 483 H302"/>
+          <rect x="300" y="286" width="5" height="215" fill="var(--v-hv)"/>
+          <text class="dev" x="79" y="546">BUS · SUPPLY = DEMAND</text>
         </a>
 
-        <!-- generation to substation -->
-        <path class="gen flow" d="M230 270 H330"/>
+        <!-- bus to substation -->
+        <path class="hv" d="M305 402 H412"/>
 
-        <!-- Chapter 2 zone: distribution -->
+        <!-- Chapter 2: distribution -->
         <a class="zone" data-ch="2" href="apps/02-distribution/index.html" aria-label="Chapter 2: Distribution">
-          <rect class="bg" x="316" y="146" width="530" height="272" rx="10"/>
-          <text class="tag" x="332" y="170">CHAPTER 2</text>
-          <text class="name" x="332" y="190">Distribution</text>
-          <!-- substation -->
-          <circle cx="350" cy="270" r="13" fill="none" stroke="var(--soft)" stroke-width="2"/>
-          <circle cx="366" cy="270" r="13" fill="none" stroke="var(--signal-amber)" stroke-width="2"/>
-          <text class="sub" x="358" y="302" text-anchor="middle">substation</text>
-          <!-- recloser -->
-          <rect x="484" y="259" width="22" height="22" rx="3" fill="var(--ink-navy)" stroke="var(--signal-amber)" stroke-width="2"/>
-          <path d="M489 264 L501 276 M501 264 L489 276" stroke="var(--signal-amber)" stroke-width="2"/>
-          <text class="sub" x="495" y="302" text-anchor="middle">recloser</text>
-          <!-- switch -->
-          <rect x="549" y="259" width="22" height="22" rx="3" fill="var(--ink-navy)" stroke="var(--soft)" stroke-width="2"/>
-          <path d="M553 276 L567 264" stroke="var(--soft)" stroke-width="2"/>
-          <text class="sub" x="560" y="302" text-anchor="middle">switch</text>
-          <!-- lateral, fuse, transformer, house -->
-          <path class="prim" d="M680 270 V318"/>
-          <rect x="672" y="318" width="16" height="10" rx="3" fill="var(--ink-navy)" stroke="var(--signal-amber)" stroke-width="2"/>
-          <path class="prim" d="M680 328 V344"/>
-          <circle cx="680" cy="356" r="12" fill="none" stroke="var(--signal-amber)" stroke-width="2"/>
-          <path class="sec" d="M692 356 H760"/>
-          <path d="M760 368 V352 L774 340 L788 352 V368 Z" fill="none" stroke="var(--line-cyan)" stroke-width="2"/>
-          <text class="sub" x="636" y="326" text-anchor="end">fuse</text>
-          <text class="sub" x="636" y="360" text-anchor="end">transformer</text>
-          <text class="sub" x="774" y="388" text-anchor="middle">customer</text>
-          <text class="sub" x="620" y="258" text-anchor="middle">feeder · ~12 kV</text>
+          <rect class="bg" x="375" y="210" width="527" height="374"/>
+          <text class="tag" x="390" y="232">CHAPTER 2</text>
+          <text class="name" x="390" y="257">DISTRIBUTION →</text>
+          <!-- substation transformer: high-voltage winding in ink, primary winding in orange -->
+          <circle cx="426" cy="402" r="14" fill="var(--sheet)" stroke="var(--v-hv)" stroke-width="2"/>
+          <circle cx="445" cy="402" r="14" fill="none" stroke="var(--v-primary)" stroke-width="2"/>
+          <text class="dev" x="437" y="434" text-anchor="middle">SUBSTATION</text>
+          <!-- recloser and switch -->
+          <rect x="528" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <text x="538.5" y="406" text-anchor="middle" style="fill:var(--v-primary);font-size:10px;font-weight:700">R</text>
+          <text class="dev" x="538" y="434" text-anchor="middle">RECLOSER</text>
+          <rect x="628" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <path d="M632 408 L645 396" stroke="var(--v-primary)" stroke-width="2"/>
+          <text class="dev" x="638" y="434" text-anchor="middle">SWITCH</text>
+          <text class="dev t-prim" x="755" y="386">FEEDER · ~12 kV</text>
+          <!-- lateral, fuse, pole transformer (orange primary, blue secondary), customer -->
+          <path class="prim" d="M738 402 V450 M738 472 V487"/>
+          <rect x="732" y="450" width="13" height="22" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <text class="dev" x="722" y="466" text-anchor="end">FUSE</text>
+          <circle cx="738" cy="496" r="9" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <circle cx="738" cy="510" r="9" fill="none" stroke="var(--v-secondary)" stroke-width="2"/>
+          <text class="dev" x="726" y="508" text-anchor="end">TRANSFORMER</text>
+          <path class="sec" d="M738 519 V553 H798"/>
+          <text class="dev t-sec" x="748" y="573">120/240 V</text>
+          <path d="M798 564 V550 L813 535 L828 550 V564 Z" fill="var(--sheet)" stroke="var(--v-secondary)" stroke-width="2"/>
+          <text class="dev" x="836" y="556">CUSTOMER</text>
         </a>
 
-        <!-- the feeder itself -->
-        <path class="prim" d="M379 270 H484 M506 270 H549 M571 270 H940"/>
-        <path class="prim flow" d="M379 270 H940" style="stroke:var(--flow-hi);stroke-width:1.2;opacity:.7"/>
+        <!-- the feeder itself, interrupted by the recloser and switch -->
+        <path class="prim" d="M459 402 H528 M549 402 H628 M649 402 H1062"/>
+        <path class="flow" pathLength="100" d="M305 402 H412" style="stroke:color-mix(in srgb, var(--v-hv) 30%, var(--sheet))"/>
+        <path class="flow" pathLength="100" d="M459 402 H1062" style="stroke:color-mix(in srgb, var(--v-primary) 30%, var(--sheet))"/>
 
-        <!-- Chapter 3 zone: DER & microgrids -->
+        <!-- Chapter 3: DER and microgrids -->
         <a class="zone" data-ch="3" href="apps/03-der-microgrids/index.html" aria-label="Chapter 3: DER and microgrids">
-          <rect class="bg" x="856" y="146" width="250" height="272" rx="10"/>
-          <text class="tag" x="872" y="170">CHAPTER 3</text>
-          <text class="name" x="872" y="190">DER + microgrids</text>
-          <path class="prim" d="M940 270 V316" marker-end="url(#arr)" marker-start="url(#arr)"/>
-          <rect class="box" x="900" y="318" width="80" height="26" rx="5"/>
-          <text class="lbl" x="940" y="335" text-anchor="middle" style="font-size:11px">PCC meter</text>
-          <path class="sec" d="M920 344 V366 M960 344 V366"/>
-          <rect class="box" x="876" y="366" width="88" height="30" rx="5" style="stroke:var(--solar)"/>
-          <text class="lbl" x="920" y="385" text-anchor="middle" style="font-size:11px">250 kW PV</text>
-          <rect class="box" x="970" y="366" width="96" height="30" rx="5" style="stroke:var(--good)"/>
-          <text class="lbl" x="1018" y="385" text-anchor="middle" style="font-size:11px">750 kW BESS</text>
-          <text class="sub" x="950" y="300">two-way</text>
+          <rect class="bg" x="935" y="210" width="319" height="374"/>
+          <text class="tag" x="950" y="232">CHAPTER 3</text>
+          <text class="name" x="950" y="257">DER + MICROGRIDS →</text>
+          <text class="dev t-prim" x="1005" y="374" text-anchor="middle">TWO-WAY</text>
+          <path d="M980 385 H1030" stroke="var(--v-primary)" stroke-width="1.6" marker-start="url(#arr)" marker-end="url(#arr)"/>
+          <circle cx="1078" cy="402" r="16" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/>
+          <text x="1078" y="406" text-anchor="middle" style="fill:var(--ink);font-size:11px;font-weight:700">M</text>
+          <text class="dev" x="1103" y="397">PCC</text>
+          <text class="dev" x="1103" y="411">METER</text>
+          <path class="sec" d="M1078 418 V458 M1039 498 V458 H1178 V498"/>
+          <rect class="box site" x="975" y="498" width="127" height="43"/>
+          <text class="lbl" x="1038.5" y="524" text-anchor="middle">250 kW PV</text>
+          <rect class="box site" x="1115" y="498" width="127" height="43"/>
+          <text class="lbl" x="1178.5" y="524" text-anchor="middle">750 kW BESS</text>
         </a>
       </svg>
       </div>
-      <figcaption class="map-note">Click a region to open that chapter. Simplified: one feeder, one lateral, one DER site.</figcaption>
-    </figure>
-  </section>
+
+      <div class="strip">
+        <div>
+          <p class="fl">Line legend · same on every chapter</p>
+          <ul class="legend">
+            <li><i style="border-color:var(--v-hv)"></i><span><b><span class="nm-l">Ink</span><span class="nm-d">White</span></b> · generation and high voltage</span></li>
+            <li><i style="border-color:var(--v-primary)"></i><span><b style="color:var(--v-primary)">Orange</b> · primary distribution, ~12 kV</span></li>
+            <li><i style="border-color:var(--v-secondary)"></i><span><b style="color:var(--v-secondary)">Blue</b> · secondary and site voltage, 120/240 V to 480 V</span></li>
+            <li><i style="border-top:7px double var(--v-secondary)"></i><span><b style="color:var(--v-secondary)">Blue, double</b> · DC side of an inverter</span></li>
+            <li><i style="border-color:var(--data);border-top-style:dashed;border-top-width:2px"></i><span><b style="color:var(--data)">Violet, dashed</b> · data and control, never power (chapter 4 colors each kind)</span></li>
+            <li><i style="border-color:var(--fault)"></i><span><b style="color:var(--fault)">Red</b> · faults and alarms, only when something is wrong</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="fl">Notes</p>
+          <ol class="notes">
+            <li>Click a region to open that chapter.</li>
+            <li>Simplified on purpose: one feeder, one lateral, one DER site.</li>
+            <li>Line color means voltage class, never fuel type. Fuel colors appear only in charts.</li>
+          </ol>
+        </div>
+        <div class="tb">
+          <div class="wide">
+            <p class="fl">Title</p>
+            <p class="title" id="sheet-title">Grid Field Guide</p>
+            <p>Plant → meter → control room</p>
+          </div>
+          <div><p class="fl">Drawn by</p><p class="v">F. Lan</p></div>
+          <div class="c2"><p class="fl">Sheets</p><p class="v">4 chapters</p></div>
+          <div><p class="fl">Scale</p><p class="v">Not to scale</p></div>
+          <div class="c2"><p class="fl">Status</p><p class="v status">For learning</p></div>
+          <div class="wide">
+            <p class="fl">Checked</p>
+            <p>Values are typical. Confirm with your utility's engineers before using a number for a real decision.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="zm side r" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
+    <div class="zm bot" aria-hidden="true"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
+  </figure>
 
   <section id="chapters" aria-labelledby="ch-title">
     <div class="section-head">
-      <h2 id="ch-title">Follow the power, then the decisions</h2>
+      <h2 id="ch-title">Sheet index</h2>
       <p>Chapters 1 to 3 follow the electricity. Chapter 4 steps back to show the systems that watch and steer it.</p>
     </div>
 
-    <ol class="chapters">
-      <li class="card" data-ch="1">
-        <div class="thumb"><img class="dk" src="assets/thumbs/01-power-mix.jpg" alt="One-line diagram of a gas plant, wind farm, solar and battery feeding a town bus" loading="lazy" width="640" height="360"><img class="lt" src="assets/thumbs/01-power-mix-light.jpg" alt="" aria-hidden="true" loading="lazy" width="640" height="360"></div>
-        <div class="body">
-          <div class="meta"><span class="num">Chapter 1</span><span>15-minute dispatch</span></div>
-          <h3><a href="apps/01-power-mix/index.html">Power mix</a></h3>
+    <ol class="index">
+      <li class="row" data-ch="1">
+        <div class="num" aria-hidden="true">01</div>
+        <div class="head">
+          <h3><a href="apps/01-power-mix/index.html"><span class="sr">Chapter 1: </span>Power mix</a></h3>
           <p class="q">Where does the power come from?</p>
+          <p class="fl">15-minute dispatch</p>
+        </div>
+        <div class="what">
           <p class="desc">A small town runs on one gas plant. Add wind, solar and a battery, then scrub through a 24-hour day to see who supplies each megawatt, why solar gets curtailed at noon, and how a battery's MW rating differs from its MWh.</p>
-          <ul class="tabs" aria-label="Inside"><li>Diagram</li><li>Playground</li><li>How the math works</li></ul>
-          <p class="bridge">Next: the power reaches a substation. What happens after that?</p>
-          <span class="open" aria-hidden="true">Open chapter →</span>
+          <p class="inc"><span class="fl">Includes</span> · Diagram · Playground · How the math works</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-hv)" title="Generation and high voltage"></span></p>
         </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
-      <li class="card" data-ch="2">
-        <div class="thumb"><img class="dk" src="assets/thumbs/02-distribution.jpg" alt="One-line diagram from a substation through a recloser, fuse and transformers to customers" loading="lazy" width="640" height="360"><img class="lt" src="assets/thumbs/02-distribution-light.jpg" alt="" aria-hidden="true" loading="lazy" width="640" height="360"></div>
-        <div class="body">
-          <div class="meta"><span class="num">Chapter 2</span><span>12 kV primary · 120/240 V</span></div>
-          <h3><a href="apps/02-distribution/index.html">Distribution</a></h3>
+      <li class="row" data-ch="2">
+        <div class="num" aria-hidden="true">02</div>
+        <div class="head">
+          <h3><a href="apps/02-distribution/index.html"><span class="sr">Chapter 2: </span>Distribution</a></h3>
           <p class="q">How does power get from the substation to the meter?</p>
+          <p class="fl">12 kV primary · 120/240 V</p>
+        </div>
+        <div class="what">
           <p class="desc">A clickable one-line diagram of a feeder, overhead and underground. Insert a fault, watch the recloser or fuse respond, then open switches and close a tie to restore as many customers as you can.</p>
-          <ul class="tabs" aria-label="Inside"><li>Diagram</li><li>Playground</li><li>Glossary</li><li>Flashcards</li><li>Quiz</li><li>Build the Circuit</li><li>Reliability</li><li>Costs</li></ul>
-          <p class="bridge">Next: some customers start sending power back.</p>
-          <span class="open" aria-hidden="true">Open chapter →</span>
+          <p class="inc"><span class="fl">Includes</span> · Diagram · Playground · Glossary · Flashcards · Quiz · Build the Circuit · Reliability · Costs</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw" style="border-color:var(--v-secondary)" title="Secondary"></span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span><span class="sw" style="border-color:var(--fault)" title="Faults"></span></p>
         </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
-      <li class="card" data-ch="3">
-        <div class="thumb"><img class="dk" src="assets/thumbs/03-der-microgrids.jpg" alt="Site one-line diagram from the utility recloser and meter to solar and battery inverters" loading="lazy" width="640" height="360"><img class="lt" src="assets/thumbs/03-der-microgrids-light.jpg" alt="" aria-hidden="true" loading="lazy" width="640" height="360"></div>
-        <div class="body">
-          <div class="meta"><span class="num">Chapter 3</span><span>1,000 kW nameplate</span></div>
-          <h3><a href="apps/03-der-microgrids/index.html">DER &amp; microgrids</a></h3>
+      <li class="row" data-ch="3">
+        <div class="num" aria-hidden="true">03</div>
+        <div class="head">
+          <h3><a href="apps/03-der-microgrids/index.html"><span class="sr">Chapter 3: </span>DER + microgrids</a></h3>
           <p class="q">What changes when a customer makes power too?</p>
+          <p class="fl">1,000 kW nameplate</p>
+        </div>
+        <div class="what">
           <p class="desc">A worked example: a municipal site with 250 kW of solar and 750 kW of battery storage tied into one feeder. Follow the interconnection from the utility side to the inverters, see who owns what, and what it costs.</p>
-          <ul class="tabs" aria-label="Inside"><li>Diagram</li><li>Glossary</li><li>Playground</li><li>Costs</li><li>Quiz</li></ul>
-          <p class="bridge">Next: who keeps track of thousands of devices like this one?</p>
-          <span class="open" aria-hidden="true">Open chapter →</span>
+          <p class="inc"><span class="fl">Includes</span> · Diagram · Glossary · Playground · Costs · Quiz</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw" style="border-color:var(--v-secondary)" title="Site voltage"></span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span></p>
         </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
-      <li class="card" data-ch="4">
-        <div class="thumb"><img class="dk" src="assets/thumbs/04-grid-operations.jpg" alt="Layered diagram of utility systems from wholesale markets through ADMS and head-ends to field devices" loading="lazy" width="640" height="360"><img class="lt" src="assets/thumbs/04-grid-operations-light.jpg" alt="" aria-hidden="true" loading="lazy" width="640" height="360"></div>
-        <div class="body">
-          <div class="meta"><span class="num">Chapter 4</span><span>50 quiz questions</span></div>
-          <h3><a href="apps/04-grid-operations/index.html">Grid operations</a></h3>
+      <li class="row" data-ch="4">
+        <div class="num" aria-hidden="true">04</div>
+        <div class="head">
+          <h3><a href="apps/04-grid-operations/index.html"><span class="sr">Chapter 4: </span>Grid operations</a></h3>
           <p class="q">How do the software systems run all of it?</p>
-          <p class="desc">A layered model from wholesale markets down to field devices: what OMS, FLISR, SCADA, DERMS and MDMS each do, what data moves between them, and how fast. Then step through five situations, from a storm outage to a heat-wave peak.</p>
-          <ul class="tabs" aria-label="Inside"><li>Explore the model</li><li>Real-life scenarios</li><li>Concepts quiz</li></ul>
-          <p class="bridge">Last chapter. The bar at the top of every chapter brings you back here.</p>
-          <span class="open" aria-hidden="true">Open chapter →</span>
+          <p class="fl">50 quiz questions</p>
         </div>
+        <div class="what">
+          <p class="desc">A layered model from wholesale markets down to field devices: what OMS, FLISR, SCADA, DERMS and MDMS each do, what data moves between them, and how fast. Then step through five situations, from a storm outage to a heat-wave peak.</p>
+          <p class="inc"><span class="fl">Includes</span> · Explore the model · Real-life scenarios · Concepts quiz</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw" style="border-color:var(--fault)" title="Faults"></span></p>
+        </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
     </ol>
+  </section>
 
-    <div class="how">
-      <div><h3>Go in order, or jump in</h3><p>Each chapter builds on the one before it, but every chapter stands on its own. The bar at the top of each one moves you between them.</p></div>
-      <div><h3>Click everything</h3><p>Every diagram is live. Click a piece of equipment to see what it does, then try it in the Playground.</p></div>
-      <div><h3>Simplified on purpose</h3><p>Voltages, costs and device behavior are typical values for learning. Check with your utility's engineers before using a number for a real decision.</p></div>
+  <section aria-labelledby="notes-title">
+    <div class="section-head plain">
+      <h2 id="notes-title" style="font-size:clamp(26px,2.4vw,32px)">General notes</h2>
+    </div>
+    <div class="gnotes">
+      <div><p class="fl">Note 1</p><h3>Go in order, or jump in</h3><p>Each chapter builds on the one before it, but every chapter stands on its own. The bar at the top of each one moves you between them.</p></div>
+      <div><p class="fl">Note 2</p><h3>Click everything</h3><p>Every diagram is live. Click a piece of equipment to see what it does, then try it in the Playground.</p></div>
+      <div><p class="fl">Note 3</p><h3>Simplified on purpose</h3><p>Voltages, costs and device behavior are typical values for learning. Check with your utility's engineers before using a number for a real decision.</p></div>
     </div>
   </section>
 </main>
@@ -339,30 +453,30 @@ footer a{color:var(--paper)}
 <footer id="about">
   <div class="wrap">
     <p>Built by Frank Lan while learning how the electric grid works, from equipment on the pole to the systems in the control room. Each chapter is one self-contained HTML file with no build step.</p>
-    <p><a href="https://github.com/franklan-pm/grid-field-guide">Source on GitHub</a></p>
+    <a class="gh" href="https://github.com/franklan-pm/grid-field-guide">Source on GitHub →</a>
   </div>
 </footer>
 
 <script>
 // The theme toggle is handled by shared/theme.js.
 
-// Hovering a map region highlights its chapter card, and the other way around.
+// Hovering a sheet region highlights its row in the sheet index, and the other way around.
 (function(){
-  var zones=document.querySelectorAll('.zone[data-ch]'), cards=document.querySelectorAll('.card[data-ch]');
+  var zones=document.querySelectorAll('.zone[data-ch]'), rows=document.querySelectorAll('.row[data-ch]');
   function hot(ch,on){
     zones.forEach(function(z){z.classList.toggle('hot',on&&z.dataset.ch===ch)});
-    cards.forEach(function(c){c.classList.toggle('hot',on&&c.dataset.ch===ch)});
+    rows.forEach(function(r){r.classList.toggle('hot',on&&r.dataset.ch===ch)});
   }
-  [].forEach.call(zones,function(el){
+  function bind(el,focus){
     el.addEventListener('mouseenter',function(){hot(el.dataset.ch,true)});
     el.addEventListener('mouseleave',function(){hot(el.dataset.ch,false)});
-    el.addEventListener('focus',function(){hot(el.dataset.ch,true)});
-    el.addEventListener('blur',function(){hot(el.dataset.ch,false)});
-  });
-  [].forEach.call(cards,function(el){
-    el.addEventListener('mouseenter',function(){hot(el.dataset.ch,true)});
-    el.addEventListener('mouseleave',function(){hot(el.dataset.ch,false)});
-  });
+    if(focus){
+      el.addEventListener('focusin',function(){hot(el.dataset.ch,true)});
+      el.addEventListener('focusout',function(){hot(el.dataset.ch,false)});
+    }
+  }
+  [].forEach.call(zones,function(el){bind(el,true)});
+  [].forEach.call(rows,function(el){bind(el,true)});
 })();
 </script>
 </body>

@@ -6,7 +6,9 @@
 
 ---
 
-> **Update (Grid Field Guide, phase 2):** this chapter now uses the collection's shared theme. Colors come from `../../shared/theme.css`; the chapter's own names (`--bg1`, `--cyan`, `--amber`…) are aliases onto it, and `--edge`/`--well` were renamed `--box-edge`/`--ops-well`. Fonts are Space Grotesk and IBM Plex Mono instead of Inter and JetBrains Mono. The light/dark toggle moved to the chapter bar (`../../shared/nav.js`), and the theme key is now `gfg-theme`. The quiz key is now `gfg-ops-quiz-v1` (the old `grid-quiz-v1` is still read once). Sections 4.1, 4.5 and 6 below describe the earlier standalone version.
+> **Update (Grid Field Guide, drawing-sheet restyle, 2026):** the navy control-room look is replaced by the guide-wide engineering drawing sheet (vellum light by default, blueprint dark). Colors are role tokens from `../../shared/theme.css` (see `../../docs/colors.md`); the chapter's own aliases (`--bg1`, `--cyan`, `--amber`, `--box-edge`, `--bus`…) are gone. Each data kind has its own color and dash pattern (section 5.2), electric power on the physical strip follows the voltage-class colors, and the OT zone and DMZ are a gold dash-dot boundary. Fonts are Barlow Condensed, IBM Plex Sans and B612 Mono. Tabs, pills, panels and quiz options use the shared styles. Data, scenarios, quiz content and the `gfg-ops-quiz-v1` key are unchanged.
+>
+> **Earlier update (Grid Field Guide, phase 2):** this chapter now uses the collection's shared theme. Colors come from `../../shared/theme.css`; the chapter's own names (`--bg1`, `--cyan`, `--amber`…) are aliases onto it, and `--edge`/`--well` were renamed `--box-edge`/`--ops-well`. Fonts are Space Grotesk and IBM Plex Mono instead of Inter and JetBrains Mono. The light/dark toggle moved to the chapter bar (`../../shared/nav.js`), and the theme key is now `gfg-theme`. The quiz key is now `gfg-ops-quiz-v1` (the old `grid-quiz-v1` is still read once). Sections 4.1, 4.5 and 6 below describe the earlier standalone version.
 
 ## 1. What this project is
 
@@ -46,7 +48,7 @@ The project owner is a utility employee learning grid modernization. Writing ass
 |---|---|
 | Keep everything in **one self-contained HTML file** | The owner opens it locally from OneDrive and shares it. No server, build step or install. |
 | **Data-driven rendering** (NODES, FLOWS, SCEN, QUIZ arrays) | Content (the domain knowledge) can be edited without touching layout code. |
-| **Keep v1's visual identity** (navy "control room" look, monospace text) | The owner liked it; the revision was about correctness, not restyling. |
+| **Keep v1's visual identity** (navy "control room" look, monospace text) | The owner liked it; the revision was about correctness, not restyling. *Superseded in 2026 by the guide-wide drawing-sheet restyle (see the note at the top).* |
 | **Dark mode by default**, with a toggle saved in localStorage | Owner preference (see timeline step 6). |
 | **Scenarios as a separate tab**, sharing the same SVG | Reduces overload. Reusing one diagram keeps the mental map consistent across tabs. |
 | Quiz **hides the diagram until answered** | Showing highlights before answering would give the answer away. |
@@ -203,16 +205,18 @@ Principles the content follows throughout:
 
 ### 5.2 Flow color semantics
 
-| Color | Kind | Meaning |
-|---|---|---|
-| Cyan | `tel` | Telemetry and status |
-| Amber | `ctl` | Control commands |
-| Purple | `plan` | Forecasts, schedules, limits |
-| Pink | `biz` | Business and customer records |
-| Grey | `bus` | Communications wiring (no direction) |
-| Green | — | Electric power, physical strip only |
+Each kind has a color token and a dash pattern, so color is never the only cue.
 
-Two-way exchanges use arrowheads at both ends, with the dominant kind's color and a label explaining both directions.
+| Token | Color | Kind | Pattern | Meaning |
+|---|---|---|---|---|
+| `--data-tel` | Teal | `tel` | dotted `2 4`, open arrowheads | Telemetry and status |
+| `--data-ctl` | Magenta | `ctl` | long dash `8 4`, filled arrowheads | Control commands |
+| `--data-plan` | Violet | `plan` | dash-dot `8 3 2 3`, open arrowheads | Forecasts, schedules, limits |
+| `--data-biz` | Olive | `biz` | short dash `4 2`, open arrowheads | Business and customer records |
+| `--ink-3` | Grey | `bus` | faint dots `1.5 4.5`, no arrowheads | Communications wiring (no direction) |
+| `--v-hv` / `--v-primary` / `--v-secondary` | Ink / orange / blue | — | solid, travelling highlight | Electric power on the physical strip, by voltage class |
+
+Two-way exchanges use arrowheads at both ends, with the dominant kind's color and a label explaining both directions. The OT zone and DMZ are drawn in `--zone-sec` (gold dash-dot with a soft tint); the enterprise IT column has a soft `--data-biz` tint. Markers are generated from `KINDS` in the script.
 
 ### 5.3 What was wrong in v1 and how it was fixed
 
@@ -271,7 +275,7 @@ The content reflects **general North American utility practice and public standa
 | Add a scenario | Append to `SCEN`. Steps reference node IDs and flow keys; run the validation snippet in 4.8. |
 | Add quiz questions | Append to the **end** of `QUIZ` (see 4.5). Correct answer first. Add `n` and `f` for "Show this in the model". |
 | Add a quiz topic | Add to `QCATS` and use the key in `c`. Topic buttons are generated automatically. |
-| Change colors | Edit the tokens in both the light (`:root`) and dark (`:root[data-theme="dark"]` and the media-query block) sets. |
+| Change colors | Edit the role tokens in `../../shared/theme.css` (all three blocks), not this file. See `../../docs/colors.md`. |
 
 ## 7. Known limitations and ideas
 
@@ -296,4 +300,4 @@ The content reflects **general North American utility practice and public standa
 | `README.md` | Short overview (what, who, how) and the "What changed from the first version" list. |
 | `HANDOFF.md` | This document. |
 | `index.html` | Redirect to the tool so the GitHub Pages root URL (https://franklan-pm.github.io/grid-mod-operations/) opens it. Update it if the main file is renamed. |
-| `docs/screenshot.png` | README image of the Explore tab (dark mode, 2× scale). Retake after visual changes with headless Chrome: `chrome --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=1500,1665 --virtual-time-budget=5000 --screenshot=docs/screenshot.png <file URL of the HTML>`. |
+| `docs/screenshot.png` | README image of the Explore tab (vellum light theme, the default; 2× scale). Retake after visual changes with headless Chrome: `chrome --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=1500,1665 --virtual-time-budget=5000 --screenshot=docs/screenshot.png <file URL of the HTML>`. |
