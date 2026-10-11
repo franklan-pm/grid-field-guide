@@ -2,7 +2,7 @@
    Load this in <head>, before any stylesheet, WITHOUT defer, so the right theme
    paints first:
      <script src="../../shared/theme.js"></script>
-   Default is dark. The reader's choice is saved under 'gfg-theme' and shared by
+   Default is light (vellum). The reader's choice is saved under 'gfg-theme' and shared by
    every page in the guide. 'grid-theme' (the old Grid Operations key) is read once
    so an earlier choice carries over. */
 (function () {
@@ -10,8 +10,8 @@
   function read() {
     try {
       var t = localStorage.getItem(KEY) || localStorage.getItem(OLD);
-      return t === 'light' || t === 'dark' ? t : 'dark';
-    } catch (e) { return 'dark'; }
+      return t === 'light' || t === 'dark' ? t : 'light';
+    } catch (e) { return 'light'; }
   }
   function sync() {
     var t = document.documentElement.getAttribute('data-theme');

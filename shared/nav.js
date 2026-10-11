@@ -95,8 +95,8 @@
               : '<a class="next" href="' + home + '" aria-label="Back to all chapters"><span class="t">All chapters</span>↑</a>') +
       '</div>' +
       '<div class="theme" role="group" aria-label="Color theme">' +
-        '<button type="button" data-theme-set="light" aria-pressed="false">☀<span class="t"> Light</span></button>' +
-        '<button type="button" data-theme-set="dark" aria-pressed="true">☾<span class="t"> Dark</span></button>' +
+        '<button type="button" data-theme-set="light" aria-pressed="true">☀<span class="t"> Light</span></button>' +
+        '<button type="button" data-theme-set="dark" aria-pressed="false">☾<span class="t"> Dark</span></button>' +
       '</div></div>' +
     '</nav>';
 
