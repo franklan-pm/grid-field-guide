@@ -9,13 +9,14 @@
 <script src="../../shared/theme.js"></script>
 <link rel="stylesheet" href="../../shared/theme.css">
 <style>
+  /* Tabs, panels, buttons, chips, cards and quiz options come from shared/theme.css;
+     only chapter-specific layout lives here. Line colors follow docs/colors.md:
+     orange = primary, blue = secondary, violet dashed = SCADA data, red = faults only. */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:
-      radial-gradient(ellipse at 20% -10%, var(--glow) 0%, transparent 55%),
-      var(--ink-navy);
-    color:var(--paper);
+    background:var(--ground);
+    color:var(--ink);
     font-family:var(--f-body);
     min-height:100vh;
     padding:28px 18px 60px;
@@ -25,235 +26,183 @@
   /* header */
   .eyebrow{
     font-family:var(--f-mono);
-    font-size:14px;
-    letter-spacing:.14em;
-    color:var(--signal-amber);
+    font-size:12px;
+    letter-spacing:.12em;
+    color:var(--ink-3);
     text-transform:uppercase;
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
   h1{
     font-family:var(--f-display);
     font-weight:700;
-    font-size:clamp(26px,4vw,38px);
-    margin:0 0 6px;
-    letter-spacing:-0.01em;
+    font-size:clamp(32px,5vw,48px);
+    line-height:1;
+    text-transform:uppercase;
+    margin:0 0 12px;
+    letter-spacing:.01em;
   }
-  .sub{color:var(--muted);font-size:17px;max-width:640px;line-height:1.5;margin-bottom:26px;}
+  .sub{color:var(--ink-2);font-size:17px;max-width:640px;line-height:1.55;margin-bottom:26px;}
 
-  /* tabs */
-  .tabs{
-    display:flex;
-    gap:2px;
-    background:var(--panel-navy-2);
-    border:1px solid var(--edge);
-    border-radius:var(--radius);
-    padding:4px;
-    margin-bottom:22px;
-    flex-wrap:wrap;
-  }
-  .tab{
-    flex:1 1 auto;
-    min-width:120px;
-    text-align:center;
-    padding:10px 12px;
-    font-family:var(--f-mono);
-    font-size:15px;
-    letter-spacing:.03em;
-    color:var(--muted);
-    background:transparent;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    transition:background .15s, color .15s;
-  }
-  .tab:hover{color:var(--paper);}
-  .tab.active{
-    background:var(--signal-amber);
-    color:var(--on-amber);
-    font-weight:600;
-  }
-
-  .panel{
-    background:var(--panel-navy);
-    border:1px solid var(--edge);
-    border-radius:var(--radius);
-    padding:22px;
-    display:none;
-  }
+  /* tabs and panels: look from shared/theme.css */
+  .tabs{margin-bottom:22px;}
+  .panel{display:none;}
   .panel.active{display:block;}
 
   /* ---- diagram ---- */
   .diagram-head{display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
-  .diagram-head h2{font-family:var(--f-display);font-size:20px;margin:0;}
-  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--f-mono); font-size:14px; color:var(--muted);}
+  .diagram-head h2{font-family:var(--f-display);font-weight:600;font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin:0;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-family:var(--f-mono); font-size:12.5px; color:var(--ink-2);}
   .legend span{display:inline-flex; align-items:center; gap:6px;}
-  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
-  #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;}
+  .swatch{width:18px;height:3px;display:inline-block;}
+  #diagramSvg{width:100%; height:auto; display:block; margin:6px 0 4px; cursor:default;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;border:1px solid var(--band);}
   .node{cursor:pointer;}
-  .node:hover rect, .node:hover circle{ filter:brightness(1.35); }
-  .node.selected rect, .node.selected circle{ stroke:var(--signal-amber); stroke-width:3; }
-  .diagram-hint{font-family:var(--f-mono); font-size:14px; color:var(--muted); margin-bottom:14px;}
+  /* hover and selection thicken the strokes and bolden the label; colors keep their meaning */
+  .node:hover rect:not([fill="transparent"]), .node:hover circle, .node:hover polygon{ stroke-width:3; }
+  .node.selected rect:not([fill="transparent"]), .node.selected circle, .node.selected polygon{ stroke-width:3.5; }
+  .node.selected line:not(.hit){ stroke-width:5; }
+  .diagram-hint{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-3); margin-bottom:14px;}
   .legend svg{display:inline-block; vertical-align:middle;}
   .node text{pointer-events:none;}
-  .node.selected rect[fill="transparent"]{stroke:none;}
-  .node.selected line:not(.hit){filter:brightness(1.3) drop-shadow(0 0 3px color-mix(in srgb, var(--signal-amber) 60%, transparent));}
-  .node:hover text{fill:var(--paper);}
-  .node.selected text{fill:var(--signal-amber);}
+  .node:hover text{fill:var(--ink);}
+  .node.selected text{fill:var(--ink);font-weight:700;}
   .hit{stroke:transparent; stroke-width:16; fill:none;}
-  .read-head{font-family:var(--f-display); font-size:18px; margin:26px 0 4px;}
-  .read-intro{font-size:15.5px; color:var(--muted); margin:0 0 12px; line-height:1.5;}
+  .read-head{font-family:var(--f-display); font-weight:600; font-size:20px; text-transform:uppercase; letter-spacing:.03em; margin:26px 0 4px;}
+  .read-intro{font-size:15.5px; color:var(--ink-2); margin:0 0 12px; line-height:1.5;}
   .read-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;}
-  .read-card{background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:14px 16px;}
-  .read-card h4{font-family:var(--f-display); font-size:16.5px; margin:0 0 6px; color:var(--paper);}
-  .read-card p{font-size:15.5px; line-height:1.55; margin:0 0 8px; opacity:.92;}
+  .read-card h4{font-size:18px; color:var(--ink);}
+  .read-card p{font-size:15.5px; line-height:1.55; margin:0 0 8px; color:var(--ink-2);}
   .read-card p:last-child{margin-bottom:0;}
 
   #infoCard{
-    background:var(--panel-navy-2);
-    border:1px solid var(--edge);
-    border-left:3px solid var(--signal-amber);
-    border-radius:8px;
+    background:var(--sheet);
+    border:1px solid var(--ink);
+    border-left:4px solid var(--ink);
     padding:16px 18px;
     min-height:96px;
   }
-  #infoCard .placeholder{color:var(--muted); font-size:16px;}
-  .info-title{font-family:var(--f-display); font-weight:600; font-size:19px; margin:0 0 3px;}
-  .info-tag{font-family:var(--f-mono); font-size:14px; color:var(--signal-amber); text-transform:uppercase; letter-spacing:.06em;}
-  .info-body{font-size:16.5px; line-height:1.55; color:var(--paper); margin-top:8px;}
-  .info-note{font-size:15px; color:var(--muted); margin-top:10px; border-top:1px dashed var(--edge-2); padding-top:9px;}
+  #infoCard .placeholder{color:var(--ink-3); font-size:16px;}
+  .info-title{font-family:var(--f-display); font-weight:600; font-size:22px; margin:0 0 3px;}
+  .info-tag{font-family:var(--f-mono); font-size:11.5px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.1em;}
+  .info-body{font-size:16.5px; line-height:1.55; color:var(--ink); margin-top:8px;}
+  .info-note{font-size:15px; color:var(--ink-3); margin-top:10px; border-top:1px solid var(--band); padding-top:9px;}
 
   /* ---- glossary ---- */
   .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
-  .chip{
-    font-family:var(--f-mono); font-size:14.5px;
-    padding:6px 12px; border-radius:20px;
-    border:1px solid var(--edge-2); color:var(--muted); cursor:pointer; background:transparent;
-  }
-  .chip.active{background:var(--line-cyan); color:var(--on-accent); border-color:var(--line-cyan); font-weight:600;}
   .gl-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:12px;}
-  .gl-card{background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:14px 16px;}
-  .gl-card h3{font-family:var(--f-display); font-size:17.5px; margin:0 0 4px;}
-  .gl-card .cat{font-family:var(--f-mono); font-size:13px; color:var(--copper); text-transform:uppercase; letter-spacing:.05em;}
-  .gl-card p{font-size:15.5px; color:var(--paper); line-height:1.5; margin:8px 0 0; opacity:.9;}
+  .gl-card h3{font-size:19px; margin:0 0 4px;}
+  .gl-card p{font-size:15.5px; color:var(--ink-2); line-height:1.5; margin:8px 0 0;}
 
   /* ---- flashcards ---- */
   .fc-wrap{display:flex; flex-direction:column; align-items:center; gap:16px;}
-  .fc-progress{font-family:var(--f-mono); font-size:14.5px; color:var(--muted);}
+  .fc-progress{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-3);}
   .flashcard{
     width:100%; max-width:460px; height:230px;
-    background:var(--panel-navy-2);
-    border:1px solid var(--edge);
-    border-radius:12px;
+    background:var(--sheet);
+    border:2px solid var(--ink);
     display:flex; align-items:center; justify-content:center; text-align:center;
     padding:24px; cursor:pointer; user-select:none;
     position:relative;
   }
-  .flashcard .side-label{position:absolute; top:12px; left:14px; font-family:var(--f-mono); font-size:13px; color:var(--muted); letter-spacing:.08em;}
-  .flashcard h3{font-family:var(--f-display); font-size:24px; margin:0;}
+  .flashcard .side-label{position:absolute; top:12px; left:14px; font-family:var(--f-mono); font-size:11px; color:var(--ink-3); letter-spacing:.1em;}
+  .flashcard h3{font-family:var(--f-display); font-weight:600; font-size:30px; margin:0;}
   .flashcard p{font-size:17px; line-height:1.55; margin:0;}
-  .fc-controls{display:flex; gap:10px;}
-  .btn{
-    font-family:var(--f-mono); font-size:15px; letter-spacing:.03em;
-    padding:9px 16px; border-radius:7px; border:1px solid var(--edge-2);
-    background:transparent; color:var(--paper); cursor:pointer;
-  }
-  .btn:hover{border-color:var(--line-cyan);}
-  .btn.primary{background:var(--signal-amber); color:var(--on-amber); border-color:var(--signal-amber); font-weight:600;}
-  .btn.good{border-color:var(--good); color:var(--good);}
-  .btn.bad{border-color:var(--bad); color:var(--bad);}
+  .fc-controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
 
   /* ---- quiz ---- */
   .quiz-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;}
-  .score-pill{font-family:var(--f-mono); font-size:14.5px; color:var(--muted); background:var(--panel-navy-2); border:1px solid var(--edge); padding:6px 12px; border-radius:20px;}
-  .q-text{font-family:var(--f-display); font-size:20px; margin:0 0 16px; line-height:1.4;}
+  .score-pill{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-2); background:var(--sheet); border:1px solid var(--ink); padding:6px 12px;}
+  .q-text{font-size:24px; margin:0 0 16px; line-height:1.3;}
   .q-options{display:grid; gap:9px;}
-  .q-option{
-    text-align:left; padding:12px 14px; border-radius:8px; border:1px solid var(--edge-2);
-    background:var(--panel-navy-2); color:var(--paper); font-size:16.5px; cursor:pointer; font-family:var(--f-body);
-  }
-  .q-option:hover{border-color:var(--line-cyan);}
-  .q-option.correct{border-color:var(--good); background:var(--good-bg);}
-  .q-option.incorrect{border-color:var(--bad); background:var(--bad-bg);}
-  .q-explain{margin-top:14px; font-size:16px; color:var(--muted); line-height:1.5; display:none;}
+  .q-option{text-align:left; padding:12px 14px; font-size:16.5px; cursor:pointer; font-family:var(--f-body);}
+  .q-explain{margin-top:14px; font-size:16px; color:var(--ink-2); line-height:1.5; display:none;}
   .q-footer{margin-top:16px; display:flex; justify-content:flex-end;}
   .quiz-done{text-align:center; padding:20px 0;}
-  .quiz-done .big{font-family:var(--f-display); font-size:36px; color:var(--signal-amber);}
+  .quiz-done .big{font-family:var(--f-display); font-weight:700; font-size:44px; color:var(--ink);}
 
   /* ---- sequence game ---- */
-  .seq-instructions{font-size:16px; color:var(--muted); margin-bottom:16px; line-height:1.5;}
+  .seq-instructions{font-size:16px; color:var(--ink-2); margin-bottom:16px; line-height:1.5;}
   .seq-slots{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; min-height:52px;}
   .seq-slot{
-    flex:1 1 100px; min-height:52px; border:1px dashed var(--edge-2); border-radius:8px;
+    flex:1 1 100px; min-height:52px; border:1px dashed var(--band);
     display:flex; align-items:center; justify-content:center; text-align:center;
-    font-family:var(--f-mono); font-size:14.5px; color:var(--muted); padding:6px;
+    font-family:var(--f-mono); font-size:12.5px; color:var(--ink-3); padding:6px;
   }
-  .seq-slot.filled{border-style:solid; background:var(--panel-navy-2); color:var(--paper); font-family:var(--f-body); font-size:15px;}
-  .seq-slot.correct{border-color:var(--good); color:var(--good);}
-  .seq-slot.wrong{border-color:var(--bad); color:var(--bad);}
+  .seq-slot.filled{border:1px solid var(--ink); background:var(--sheet); color:var(--ink); font-family:var(--f-body); font-size:15px;}
+  .seq-slot.correct{border:2px solid var(--ok); color:var(--ok);}
+  .seq-slot.wrong{border:2px solid var(--fault); color:var(--fault);}
   .seq-pool{display:flex; gap:9px; flex-wrap:wrap;}
   .seq-item{
-    padding:10px 14px; border-radius:8px; border:1px solid var(--copper); color:var(--paper);
-    background:var(--amber-bg); cursor:pointer; font-size:15.5px;
+    padding:10px 14px; border:1px solid var(--ink); color:var(--ink);
+    background:var(--sheet); cursor:pointer; font-size:15.5px; font-family:var(--f-body);
   }
-  .seq-item:hover{background:var(--amber-bg);}
+  .seq-item:hover{background:var(--hover-fill);}
   .seq-item.used{opacity:.25; pointer-events:none;}
   .seq-result{margin-top:16px; font-size:16.5px;}
 
   /* ---- reliability ---- */
   .metric-defs{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:22px;}
-  .metric-card{background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:14px 16px;}
-  .metric-card .m-name{font-family:var(--f-display); font-weight:600; font-size:17.5px; color:var(--signal-amber);}
-  .metric-card .m-formula{font-family:var(--f-mono); font-size:14.5px; color:var(--line-cyan); margin:6px 0;}
-  .metric-card p{font-size:15.5px; line-height:1.5; margin:6px 0 0; opacity:.9;}
+  .metric-card{background:var(--sheet); border:1px solid var(--band); padding:14px 16px;}
+  .metric-card .m-name{font-family:var(--f-display); font-weight:700; font-size:22px; letter-spacing:.03em; color:var(--ink);}
+  .metric-card .m-formula{font-family:var(--f-mono); font-size:12.5px; color:var(--ink-2); margin:6px 0; padding:6px 8px; border:1px solid var(--band);}
+  .metric-card p{font-size:15.5px; line-height:1.5; margin:6px 0 0; color:var(--ink-2);}
   .calc-row{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center;}
-  .calc-row input{
-    background:var(--panel-navy-2); border:1px solid var(--edge-2); border-radius:6px; color:var(--paper);
-    padding:8px 10px; font-family:var(--f-mono); font-size:15px; width:100%;
+  .calc-row input, .rel-total{
+    background:var(--sheet); border:1px solid var(--ink); border-radius:0; color:var(--ink);
+    padding:8px 10px; font-family:var(--f-mono); font-size:14px; width:100%;
   }
-  .calc-row .rm{background:transparent; border:1px solid var(--edge-2); color:var(--bad); border-radius:6px; cursor:pointer; padding:8px 10px; font-family:var(--f-mono); font-size:14.5px;}
-  .calc-labels{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-family:var(--f-mono); font-size:13.5px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
-  .calc-results{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:18px;}
-  .result-pill{background:var(--panel-navy-2); border:1px solid var(--signal-amber); border-radius:8px; padding:12px 14px; text-align:center;}
-  .result-pill .val{font-family:var(--f-display); font-size:24px; color:var(--signal-amber); font-weight:600;}
-  .result-pill .lbl{font-family:var(--f-mono); font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+  .rel-label{font-family:var(--f-mono); font-size:11px; letter-spacing:.08em; color:var(--ink-3); display:block; margin-bottom:6px;}
+  .calc-row .rm{background:transparent; border:1px solid var(--ink); border-radius:0; color:var(--ink-2); cursor:pointer; padding:8px 10px; font-family:var(--f-mono); font-size:13px;}
+  .calc-row .rm:hover{background:var(--hover-fill); color:var(--ink);}
+  .calc-labels{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; font-family:var(--f-mono); font-size:11px; color:var(--ink-3); margin-bottom:6px; text-transform:uppercase; letter-spacing:.08em;}
+  .calc-results{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:0; margin-top:18px; border:2px solid var(--ink);}
+  .calc-results:empty{display:none;}
+  .result-pill{background:var(--sheet); padding:12px 14px; text-align:center;}
+  .result-pill + .result-pill{border-left:1px solid var(--ink);}
+  .result-pill .val{font-family:var(--f-display); font-size:30px; color:var(--ink); font-weight:700;}
+  .result-pill .lbl{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; margin-top:2px;}
 
   /* ---- cost reference ---- */
-  .cost-note{font-size:15.5px; color:var(--muted); line-height:1.55; margin-bottom:18px; border-left:3px solid var(--copper); padding:8px 14px; background:var(--panel-navy-2); border-radius:0 8px 8px 0;}
+  .cost-note{font-size:15.5px; color:var(--ink-2); line-height:1.55; margin-bottom:18px; border:1px solid var(--band); border-left:4px solid var(--ink); padding:10px 14px; background:var(--sheet);}
   .cost-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
-  .cost-card{background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;}
+  .cost-card{background:var(--sheet); border:1px solid var(--band); padding:14px 16px; display:flex; gap:12px; align-items:flex-start;}
   .cost-icon{flex:0 0 auto; width:44px; height:44px;}
-  .cost-body h3{font-family:var(--f-display); font-size:17px; margin:0 0 4px;}
-  .cost-range{font-family:var(--f-mono); font-size:15.5px; color:var(--signal-amber); font-weight:600;}
-  .cost-body p{font-size:14.5px; color:var(--muted); line-height:1.5; margin:6px 0 0;}
+  .cost-body h3{font-family:var(--f-display); font-weight:600; font-size:19px; margin:0 0 4px;}
+  .cost-range{font-family:var(--f-mono); font-size:13.5px; color:var(--ink); font-weight:700;}
+  .cost-body p{font-size:14.5px; color:var(--ink-2); line-height:1.5; margin:6px 0 0;}
 
   /* ---- playground ---- */
-  .pg-legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px; margin-bottom:16px;}
-  .pg-legend-card{background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:8px; padding:10px 12px;}
-  .pg-legend-card b{font-family:var(--f-display); font-size:15.5px; display:block; margin-bottom:3px;}
-  .pg-legend-card span{font-size:14.5px; color:var(--muted); line-height:1.45;}
+  .pg-legend{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:0; margin-bottom:16px; border:1px solid var(--ink); overflow:hidden;}
+  .pg-legend-card{background:var(--sheet); padding:10px 12px; border-left:1px solid var(--ink); border-top:1px solid var(--ink); margin:-1px 0 0 -1px;}
+  .pg-legend-card b{font-family:var(--f-display); font-weight:600; font-size:17px; display:block; margin-bottom:3px;}
+  .pg-legend-card span{font-size:14.5px; color:var(--ink-2); line-height:1.45;}
   .pg-controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  /* Insert Fault is the one red control: it creates the fault */
   .pg-toggle{
-    font-family:var(--f-mono); font-size:15px; padding:9px 16px; border-radius:7px;
-    border:1px solid var(--bad); background:transparent; color:var(--bad); cursor:pointer;
+    font:600 15px/1.1 var(--f-display); letter-spacing:.06em; text-transform:uppercase; padding:9px 16px; border-radius:0;
+    border:2px solid var(--fault); background:transparent; color:var(--fault); cursor:pointer;
   }
-  .pg-toggle.active{background:var(--bad); color:#fff; font-weight:600;}
-  .pg-counter{margin-left:auto; font-family:var(--f-mono); font-size:15px; color:var(--paper); background:var(--panel-navy-2); border:1px solid var(--edge); border-radius:20px; padding:8px 14px;}
-  #pgSvg{width:100%; height:auto; display:block; margin:10px 0;}
+  .pg-toggle.active{background:var(--fault); color:var(--on-ink);}
+  .pg-counter{margin-left:auto; font-family:var(--f-mono); font-size:13px; color:var(--ink); background:var(--sheet); border:1px solid var(--ink); padding:8px 14px;}
+  #pgSvg{width:100%; height:auto; display:block; margin:10px 0;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;border:1px solid var(--band);}
   #pgSvg.fault-mode{cursor:crosshair;}
   .pg-hint{
-    background:var(--panel-navy-2); border:1px solid var(--edge); border-left:3px solid var(--line-cyan);
-    border-radius:8px; padding:13px 16px; font-size:16px; line-height:1.55; margin-top:6px;
+    background:var(--sheet); border:1px solid var(--band); border-left:4px solid var(--ink);
+    padding:13px 16px; font-size:16px; line-height:1.55; margin-top:6px;
   }
-  .pg-hint.warn{border-left-color:var(--bad); color:var(--bad-soft);}
+  .pg-hint.warn{border-left-color:var(--fault); color:var(--fault);}
   .pg-dev{cursor:pointer;}
-  .pg-dev:hover rect{filter:brightness(1.4);}
+  .pg-dev:hover line{stroke-width:4;}
   .pg-node{cursor:pointer;}
-  .pg-node:hover circle.pg-node-dot{filter:brightness(1.4);}
+  .pg-node:hover circle.pg-node-dot{r:8;}
   @keyframes pgPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
   .pg-locked{animation:pgPulse 1s ease-in-out infinite;}
   @media (prefers-reduced-motion: reduce){ .pg-locked{animation:none;} }
 
-  footer{text-align:center; color:var(--muted); font-family:var(--f-mono); font-size:14px; margin-top:24px;}
+  footer{text-align:center; color:var(--ink-3); font-family:var(--f-mono); font-size:12px; margin-top:28px; padding-top:14px; border-top:1px solid var(--band);}
   @media (prefers-reduced-motion: reduce){ * { transition:none !important; } }
 </style>
 <script src="../../shared/nav.js" defer></script>
@@ -266,7 +215,7 @@
 
   <div class="tabs">
     <button class="tab active" data-tab="diagram">◇ Diagram</button>
-    <button class="tab" data-tab="playground">⚡ Playground</button>
+    <button class="tab" data-tab="playground">⚡&#xFE0E; Playground</button>
     <button class="tab" data-tab="glossary">≡ Glossary</button>
     <button class="tab" data-tab="flashcards">⟲ Flashcards</button>
     <button class="tab" data-tab="quiz">? Quiz</button>
@@ -280,11 +229,11 @@
     <div class="diagram-head">
       <h2>One-line diagram: substation to customer</h2>
       <div class="legend">
-        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--soft)" stroke-width="2.5"/></svg>overhead (OH) = solid</span>
-        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--soft)" stroke-width="2.5" stroke-dasharray="6 4"/></svg>underground (UG) = dashed</span>
-        <span><i class="swatch" style="background:var(--signal-amber)"></i>primary (~12kV)</span>
-        <span><i class="swatch" style="background:var(--line-cyan)"></i>secondary (120/240V)</span>
-        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--violet)" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/></svg>SCADA comms / monitoring</span>
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--ink-2)" stroke-width="2.5"/></svg>overhead (OH) = solid</span>
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--ink-2)" stroke-width="2.5" stroke-dasharray="7 5"/></svg>underground (UG) = dashed</span>
+        <span><i class="swatch" style="background:var(--v-primary)"></i>primary (~12kV)</span>
+        <span><i class="swatch" style="background:var(--v-secondary)"></i>secondary (120/240V)</span>
+        <span><svg width="26" height="8"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--data)" stroke-width="2" stroke-dasharray="4 3"/></svg>SCADA comms / monitoring</span>
       </div>
     </div>
     <div class="diagram-hint">Color = voltage level · line style = overhead vs. underground. Click any labeled symbol or line below.</div>
@@ -301,7 +250,7 @@
       </div>
       <div class="read-card">
         <h4>Overhead vs. underground: one rule</h4>
-        <p><strong>Solid = overhead, dashed = underground</strong>, applied the same way to primary and secondary. Color separates <span style="color:var(--signal-amber)">primary (orange, ~12kV)</span> from <span style="color:var(--line-cyan)">secondary (blue, 120/240V)</span>, so color and line style each carry exactly one meaning.</p>
+        <p><strong>Solid = overhead, dashed = underground</strong>, applied the same way to primary and secondary. Color separates <span style="color:var(--v-primary)">primary (orange, ~12kV)</span> from <span style="color:var(--v-secondary)">secondary (blue, 120/240V)</span>, so color and line style each carry exactly one meaning.</p>
         <p>The <strong>riser pole</strong> marks the literal point where an overhead conductor becomes a cable and goes into the ground. It’s a real piece of hardware worth knowing, since it’s where crews actually do the transition splice.</p>
       </div>
       <div class="read-card">
@@ -315,7 +264,7 @@
       </div>
       <div class="read-card">
         <h4>SCADA</h4>
-        <p>The control center has monitoring/control links (dotted) into the recloser and the switch. Those are the two points where an operator can see status and, for the switch, operate it remotely from the office.</p>
+        <p>The control center has monitoring/control links (violet, dashed) into the recloser and the switch. Those are the two points where an operator can see status and, for the switch, operate it remotely from the office.</p>
         <p>Not every device on a feeder is SCADA-equipped. The fuse and transformers here are not, which is realistic: fuses are purely local, non-communicating protective devices.</p>
       </div>
       <div class="read-card">
@@ -338,7 +287,7 @@
     </div>
 
     <div class="pg-controls">
-      <button class="pg-toggle" id="pgFaultMode">⚡ Insert Fault</button>
+      <button class="pg-toggle" id="pgFaultMode">⚡&#xFE0E; Insert Fault</button>
       <button class="btn" id="pgReset">Reset to normal</button>
       <span class="pg-counter" id="pgCounter">285 / 285 customers powered</span>
     </div>
@@ -414,8 +363,8 @@
     <div class="diagram-head"><h2>Try it: build a year of outages</h2></div>
     <p class="seq-instructions">Set your system's total customer count, then add outage events (customers affected × how long it lasted) to see how they move SAIDI/SAIFI/CAIDI. This is the same math utilities run for a whole year of events.</p>
     <div style="margin-bottom:16px;">
-      <label style="font-family:var(--f-mono); font-size:14.5px; color:var(--muted); display:block; margin-bottom:6px;">TOTAL CUSTOMERS ON THE SYSTEM</label>
-      <input type="number" id="relTotalCustomers" value="10000" min="1" style="background:var(--panel-navy-2); border:1px solid var(--edge-2); border-radius:6px; color:var(--paper); padding:9px 12px; font-family:var(--f-mono); font-size:15.5px; width:180px;">
+      <label class="rel-label" for="relTotalCustomers">TOTAL CUSTOMERS ON THE SYSTEM</label>
+      <input type="number" id="relTotalCustomers" class="rel-total" value="10000" min="1" style="width:180px;">
     </div>
     <div class="calc-labels"><span>Customers affected</span><span>Duration (minutes)</span><span>What happened</span><span></span></div>
     <div id="relRows"></div>
@@ -506,13 +455,13 @@ function eq(id){ return EQUIP.find(e=>e.id===id); }
 
 function buildDiagram(){
   const svg = document.getElementById('diagramSvg');
-  const AMBER = 'var(--signal-amber)', CYAN = 'var(--line-cyan)', HW = 'var(--soft)', POLE = 'var(--muted-2)', SCADA = 'var(--violet)', FILL = 'var(--panel-navy-2)';
+  const PRI = 'var(--v-primary)', SEC = 'var(--v-secondary)', HV = 'var(--v-hv)', HW = 'var(--ink)', POLE = 'var(--ink-3)', SCADA = 'var(--data)', FILL = 'var(--sheet)';
   const UG = 'stroke-dasharray="7 5"';
   const parts = [];
 
   function node(id, shape){ return `<g class="node" data-id="${id}">${shape}</g>`; }
-  function label(x,y,text,anchor='middle',fill='var(--soft)',size=11){
-    return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="${size}" fill="${fill}">${text}</text>`;
+  function label(x,y,text,anchor='middle',fill='var(--ink-2)',size=11){
+    return `<text x="${x}" y="${y}" text-anchor="${anchor}" style="font-family:var(--f-mono)" font-size="${size}" fill="${fill}">${text}</text>`;
   }
   function house(cx, y, color, dashed){
     return `<polygon points="${cx},${y} ${cx+20},${y+18} ${cx+14},${y+18} ${cx+14},${y+34} ${cx-14},${y+34} ${cx-14},${y+18} ${cx-20},${y+18}" fill="${FILL}" stroke="${color}" stroke-width="2" ${dashed?'stroke-dasharray="4 3"':''}/>`;
@@ -520,23 +469,23 @@ function buildDiagram(){
   const FY = 196; // feeder elevation
 
   // ---- SCADA control center + comms (drawn first so everything sits on top)
-  parts.push(`<path d="M860,82 L860,118 L230,118 L230,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="1 5" stroke-linecap="round"/>`);
-  parts.push(`<path d="M620,118 L620,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="1 5" stroke-linecap="round"/>`);
+  parts.push(`<path d="M860,82 L860,118 L230,118 L230,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="4 3"/>`);
+  parts.push(`<path d="M620,118 L620,184" fill="none" stroke="${SCADA}" stroke-width="1.6" stroke-dasharray="4 3"/>`);
   parts.push(label(425,112,'monitoring / control','middle',SCADA,10));
   parts.push(node('scada', `
-    <rect x="780" y="24" width="160" height="58" rx="8" fill="${FILL}" stroke="${SCADA}" stroke-width="2"/>
-    ${label(860,48,'SCADA','middle','var(--violet-soft)',13)}
+    <rect x="780" y="24" width="160" height="58" fill="${FILL}" stroke="${SCADA}" stroke-width="2"/>
+    ${label(860,48,'SCADA','middle','var(--ink)',13)}
     ${label(860,67,'control center','middle',SCADA,11)}
   `));
 
   // ---- FEEDER: 3-phase overhead primary backbone
   parts.push(node('feeder', `
-    <line x1="170" y1="${FY}" x2="930" y2="${FY}" stroke="${AMBER}" stroke-width="3.5"/>
-    <polyline points="920,${FY-7} 932,${FY} 920,${FY+7}" fill="none" stroke="${AMBER}" stroke-width="2.5"/>
+    <line x1="170" y1="${FY}" x2="930" y2="${FY}" stroke="${PRI}" stroke-width="3.5"/>
+    <polyline points="920,${FY-7} 932,${FY} 920,${FY+7}" fill="none" stroke="${PRI}" stroke-width="2.5"/>
     <line class="hit" x1="170" y1="${FY}" x2="930" y2="${FY}"/>
-    ${label(470,FY-14,'FEEDER (PRIMARY, ~12kV, 3φ, OH)','middle','var(--amber-soft)')}
+    ${label(470,FY-14,'FEEDER (PRIMARY, ~12kV, 3φ, OH)','middle','var(--v-primary)')}
   `));
-  parts.push(label(955,FY+4,'…','middle','var(--amber-soft)',14));
+  parts.push(label(955,FY+4,'…','middle','var(--v-primary)',14));
 
   // overhead poles along the feeder (short ticks)
   parts.push(node('pole', [290,450,540,850].map(x=>
@@ -544,57 +493,57 @@ function buildDiagram(){
 
   // ---- SUBSTATION
   parts.push(node('substation', `
-    <rect x="40" y="168" width="130" height="56" rx="6" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
-    <circle cx="80" cy="196" r="12" fill="none" stroke="${AMBER}" stroke-width="2"/>
-    <circle cx="96" cy="196" r="12" fill="none" stroke="${AMBER}" stroke-width="2"/>
-    ${label(140,200,'SUB','middle','var(--paper)',12)}
+    <rect x="40" y="168" width="130" height="56" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
+    <circle cx="80" cy="196" r="12" fill="none" stroke="${HV}" stroke-width="2"/>
+    <circle cx="96" cy="196" r="12" fill="none" stroke="${PRI}" stroke-width="2"/>
+    ${label(140,200,'SUB','middle','var(--ink)',12)}
   `));
   parts.push(label(105,244,'SUBSTATION'));
 
   // ---- RECLOSER (N.C.)
   parts.push(node('recloser', `
-    <rect x="216" y="184" width="28" height="24" rx="4" fill="var(--amber-bg)" stroke="${AMBER}" stroke-width="2"/>
-    <line x1="223" y1="190" x2="237" y2="202" stroke="${AMBER}" stroke-width="2"/>
-    <line x1="237" y1="190" x2="223" y2="202" stroke="${AMBER}" stroke-width="2"/>
+    <rect x="216" y="184" width="28" height="24" fill="${FILL}" stroke="${PRI}" stroke-width="2"/>
+    <line x1="223" y1="190" x2="237" y2="202" stroke="${PRI}" stroke-width="2"/>
+    <line x1="237" y1="190" x2="223" y2="202" stroke="${PRI}" stroke-width="2"/>
     ${label(230,228,'RECLOSER (N.C.)')}
   `));
 
   // ---- SWITCH (N.C.)
   parts.push(node('switch', `
-    <rect x="607" y="184" width="26" height="24" rx="4" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
-    <line x1="612" y1="202" x2="628" y2="190" stroke="${HW}" stroke-width="2"/>
+    <rect x="607" y="184" width="26" height="24" fill="${FILL}" stroke="${PRI}" stroke-width="2"/>
+    <line x1="612" y1="202" x2="628" y2="190" stroke="${PRI}" stroke-width="2"/>
     ${label(620,228,'SWITCH (N.C.)')}
   `));
 
   // ---- OVERHEAD LATERAL branch (x=360)
   const LX = 360;
-  parts.push(`<circle cx="${LX}" cy="${FY}" r="4" fill="${AMBER}"/>`);
+  parts.push(`<circle cx="${LX}" cy="${FY}" r="4" fill="${PRI}"/>`);
   parts.push(node('lateral', `
-    <line x1="${LX}" y1="${FY}" x2="${LX}" y2="262" stroke="${AMBER}" stroke-width="2.5"/>
-    <line x1="${LX}" y1="278" x2="${LX}" y2="318" stroke="${AMBER}" stroke-width="2.5"/>
+    <line x1="${LX}" y1="${FY}" x2="${LX}" y2="262" stroke="${PRI}" stroke-width="2.5"/>
+    <line x1="${LX}" y1="278" x2="${LX}" y2="318" stroke="${PRI}" stroke-width="2.5"/>
     <line class="hit" x1="${LX}" y1="${FY}" x2="${LX}" y2="318"/>
-    ${label(LX+14,244,'LATERAL (1φ TAP, OH)','start','var(--amber-soft)')}
+    ${label(LX+14,244,'LATERAL (1φ TAP, OH)','start','var(--v-primary)')}
   `));
   parts.push(node('fuse', `
-    <rect x="${LX-15}" y="262" width="30" height="16" rx="8" fill="var(--amber-bg)" stroke="${AMBER}" stroke-width="2"/>
+    <rect x="${LX-15}" y="262" width="30" height="16" fill="${FILL}" stroke="${PRI}" stroke-width="2"/>
     ${label(LX+24,275,'FUSE','start')}
   `));
   parts.push(node('transformer', `
-    <circle cx="${LX}" cy="338" r="20" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
-    <circle cx="${LX}" cy="338" r="8" fill="none" stroke="${HW}" stroke-width="1.5"/>
+    <circle cx="${LX}" cy="329" r="11" fill="${FILL}" stroke="${PRI}" stroke-width="2"/>
+    <circle cx="${LX}" cy="347" r="11" fill="none" stroke="${SEC}" stroke-width="2"/>
     ${label(LX+30,342,'POLE TRANSFORMER','start')}
   `));
   parts.push(node('service', `
-    <line x1="${LX}" y1="358" x2="${LX}" y2="418" stroke="${CYAN}" stroke-width="2.5"/>
+    <line x1="${LX}" y1="358" x2="${LX}" y2="418" stroke="${SEC}" stroke-width="2.5"/>
     <line class="hit" x1="${LX}" y1="358" x2="${LX}" y2="418"/>
-    ${label(LX+14,392,'SERVICE DROP (OH)','start','var(--cyan-soft)')}
-    ${house(LX,418,CYAN,false)}
+    ${label(LX+14,392,'SERVICE DROP (OH)','start','var(--v-secondary)')}
+    ${house(LX,418,SEC,false)}
     ${label(LX,470,'CUSTOMER')}
   `));
 
   // ---- UNDERGROUND branch via riser pole (x=740)
   const RX = 740;
-  parts.push(`<circle cx="${RX}" cy="${FY}" r="4" fill="${AMBER}"/>`);
+  parts.push(`<circle cx="${RX}" cy="${FY}" r="4" fill="${PRI}"/>`);
   parts.push(node('riser', `
     <rect x="${RX-3}" y="${FY}" width="6" height="52" fill="${POLE}"/>
     <rect x="${RX-12}" y="${FY+4}" width="24" height="4" fill="${POLE}"/>
@@ -602,24 +551,24 @@ function buildDiagram(){
     ${label(RX+16,228,'RISER POLE (OH → UG)','start')}
   `));
   parts.push(node('cable', `
-    <line x1="${RX}" y1="248" x2="${RX}" y2="296" stroke="${AMBER}" stroke-width="2.5" ${UG}/>
+    <line x1="${RX}" y1="248" x2="${RX}" y2="296" stroke="${PRI}" stroke-width="2.5" ${UG}/>
     <line class="hit" x1="${RX}" y1="248" x2="${RX}" y2="296"/>
-    ${label(RX+16,270,'UG PRIMARY CABLE (in conduit)','start','var(--amber-soft)')}
+    ${label(RX+16,270,'UG PRIMARY CABLE (in conduit)','start','var(--v-primary)')}
   `));
   parts.push(node('vault', `
-    <rect x="${RX-78}" y="296" width="156" height="96" rx="8" fill="${FILL}" stroke="${HW}" stroke-width="1.5" stroke-dasharray="5 4"/>
-    ${label(RX,314,'VAULT (UNDERGROUND)','middle','var(--paper)',11)}
+    <rect x="${RX-78}" y="296" width="156" height="96" fill="${FILL}" stroke="var(--band)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    ${label(RX,314,'VAULT (UNDERGROUND)','middle','var(--ink)',11)}
   `));
   parts.push(node('transformer', `
-    <circle cx="${RX}" cy="348" r="18" fill="${FILL}" stroke="${HW}" stroke-width="2"/>
-    <circle cx="${RX}" cy="348" r="7" fill="none" stroke="${HW}" stroke-width="1.5"/>
-    ${label(RX,382,'VAULT XFMR')}
+    <circle cx="${RX}" cy="340" r="10" fill="${FILL}" stroke="${PRI}" stroke-width="2"/>
+    <circle cx="${RX}" cy="356" r="10" fill="none" stroke="${SEC}" stroke-width="2"/>
+    ${label(RX,384,'VAULT XFMR')}
   `));
   parts.push(node('servicelateral', `
-    <line x1="${RX}" y1="392" x2="${RX}" y2="438" stroke="${CYAN}" stroke-width="2.5" ${UG}/>
+    <line x1="${RX}" y1="392" x2="${RX}" y2="438" stroke="${SEC}" stroke-width="2.5" ${UG}/>
     <line class="hit" x1="${RX}" y1="392" x2="${RX}" y2="438"/>
-    ${label(RX+14,418,'SERVICE LATERAL (UG)','start','var(--cyan-soft)')}
-    ${house(RX,438,CYAN,false)}
+    ${label(RX+14,418,'SERVICE LATERAL (UG)','start','var(--v-secondary)')}
+    ${house(RX,438,SEC,false)}
     ${label(RX,490,'CUSTOMER')}
   `));
 
@@ -640,7 +589,7 @@ function showInfo(id){
   card.innerHTML = `
     <div class="info-tag">${e.cat}</div>
     <h3 class="info-title">${e.name}</h3>
-    <div class="info-note" style="border:none;padding:0;margin:2px 0 0;color:var(--muted)">${e.tag}</div>
+    <div class="info-note" style="border:none;padding:0;margin:2px 0 0">${e.tag}</div>
     <div class="info-body">${e.long}</div>
   `;
 }
@@ -755,7 +704,7 @@ function renderQuiz(){
     body.innerHTML = `
       <div class="quiz-done">
         <div class="big">${quizScore} / ${quizOrder.length}</div>
-        <p style="color:var(--muted)">Nice work. Retake with a fresh shuffle any time.</p>
+        <p style="color:var(--ink-2)">Nice work. Retake with a fresh shuffle any time.</p>
         <button class="btn primary" id="quizRestart">Retake quiz</button>
       </div>`;
     document.getElementById('quizRestart').addEventListener('click', ()=>{
@@ -846,8 +795,8 @@ function checkSequence(){
     else { s.classList.add('wrong'); allCorrect=false; }
   });
   document.getElementById('seqResult').innerHTML = allCorrect
-    ? '<span style="color:var(--good)">✓ That’s the standard overhead path: Substation → Feeder → Lateral → Distribution Transformer → Service Drop.</span>'
-    : '<span style="color:var(--bad)">Not quite the standard order — check which piece steps voltage down last, right before the customer. Hit Reset to try again.</span>';
+    ? '<span style="color:var(--ok)">✓ That’s the standard overhead path: Substation → Feeder → Lateral → Distribution Transformer → Service Drop.</span>'
+    : '<span style="color:var(--fault)">Not quite the standard order — check which piece steps voltage down last, right before the customer. Hit Reset to try again.</span>';
 }
 document.getElementById('seqReset').addEventListener('click', buildSequenceGame);
 buildSequenceGame();
@@ -907,19 +856,19 @@ renderReliability();
 
 /* ---------------- COST REFERENCE ---------------- */
 const COSTS = [
-  {name:'Wood Distribution Pole', range:'$2,000 – $8,000 installed', note:'The bare pole is often just a few hundred dollars — installation labor, equipment, and traffic control is most of the cost.', icon:`<line x1="22" y1="4" x2="22" y2="40" stroke="${'var(--copper)'}" stroke-width="4"/><line x1="10" y1="10" x2="34" y2="10" stroke="var(--copper)" stroke-width="3"/>`},
-  {name:'Pole-Mounted Transformer', range:'$1,500 – $20,000', note:'Small single-phase residential units sit at the low end; larger three-phase units run higher.', icon:`<circle cx="22" cy="22" r="16" fill="none" stroke="var(--copper)" stroke-width="3"/><circle cx="22" cy="22" r="7" fill="none" stroke="var(--copper)" stroke-width="2"/>`},
-  {name:'Pad-Mounted Transformer', range:'$20,000 – $70,000', note:'Ground-level steel cabinet used in underground systems; sized well above pole-mount units.', icon:`<rect x="6" y="14" width="32" height="24" rx="3" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
-  {name:'New Distribution Substation', range:'$2M – $30M+', note:'Scales steeply with voltage class and MVA capacity; large or high-voltage sites can exceed $50M.', icon:`<rect x="6" y="10" width="32" height="26" rx="3" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><circle cx="16" cy="23" r="6" fill="none" stroke="var(--signal-amber)" stroke-width="2"/><circle cx="28" cy="23" r="6" fill="none" stroke="var(--signal-amber)" stroke-width="2"/>`},
-  {name:'Overhead Primary Line (per mile)', range:'$150,000 – $800,000', note:'Rural, low-density construction sits at the low end; dense urban terrain pushes it much higher.', icon:`<line x1="4" y1="26" x2="40" y2="26" stroke="var(--signal-amber)" stroke-width="3"/><line x1="12" y1="26" x2="12" y2="10" stroke="var(--muted-2)" stroke-width="3"/><line x1="30" y1="26" x2="30" y2="10" stroke="var(--muted-2)" stroke-width="3"/>`},
-  {name:'Underground Primary Cable (per mile)', range:'$500,000 – $2,000,000+', note:'Converting existing overhead to underground in dense areas often runs $1M–$6M/mile.', icon:`<rect x="4" y="20" width="36" height="10" rx="5" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
-  {name:'Fuse Cutout', range:'Hardware: a few hundred dollars · Installed unit cost: can run into the tens of thousands', note:'Utility unit-cost filings bundle in labor, bucket truck time, and traffic control — not just the hardware.', icon:`<rect x="12" y="10" width="20" height="10" rx="5" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><line x1="22" y1="20" x2="22" y2="36" stroke="var(--signal-amber)" stroke-width="3"/>`},
-  {name:'Recloser', range:'$20,000 – $30,000', note:'Device cost only; add for communications/SCADA integration if it\u2019s remotely controlled.', icon:`<rect x="8" y="12" width="28" height="20" rx="3" fill="none" stroke="var(--signal-amber)" stroke-width="3"/><line x1="15" y1="18" x2="29" y2="26" stroke="var(--signal-amber)" stroke-width="2"/><line x1="29" y1="18" x2="15" y2="26" stroke="var(--signal-amber)" stroke-width="2"/>`},
-  {name:'Manual Air-Break Switch (overhead)', range:'$5,000 – $20,000 installed', note:'Rough planning figure; varies with pole work, access, and voltage class.', icon:`<rect x="8" y="14" width="24" height="18" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="13" y1="27" x2="25" y2="17" stroke="var(--line-cyan)" stroke-width="2"/>`},
-  {name:'Padmount Switchgear (underground)', range:'$50,000 – $150,000+', note:'Multi-way underground switching cabinets cost more than a simple overhead switch.', icon:`<rect x="6" y="10" width="32" height="26" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="14" y1="10" x2="14" y2="36" stroke="var(--line-cyan)" stroke-width="2"/><line x1="30" y1="10" x2="30" y2="36" stroke="var(--line-cyan)" stroke-width="2"/>`},
-  {name:'Underground Vault (precast)', range:'$25,000 – $50,000 installed', note:'Structure only — the equipment inside (transformer, switchgear) is priced separately.', icon:`<rect x="6" y="14" width="32" height="22" rx="3" fill="none" stroke="var(--copper)" stroke-width="3" stroke-dasharray="4 3"/>`},
-  {name:'Conduit (installed, per linear foot)', range:'$100 – $200 / ft', note:'Trenching and surface restoration usually cost more than the pipe itself.', icon:`<rect x="4" y="20" width="36" height="8" rx="4" fill="none" stroke="var(--copper)" stroke-width="3"/>`},
-  {name:'SCADA / Automation Add-on (per device)', range:'$10,000 – $40,000', note:'Remote terminal unit, communications, and integration layered on top of a switch or recloser.', icon:`<rect x="10" y="14" width="24" height="16" rx="3" fill="none" stroke="var(--line-cyan)" stroke-width="3"/><line x1="16" y1="14" x2="16" y2="6" stroke="var(--line-cyan)" stroke-width="2"/><line x1="28" y1="14" x2="28" y2="6" stroke="var(--line-cyan)" stroke-width="2"/>`}
+  {name:'Wood Distribution Pole', range:'$2,000 – $8,000 installed', note:'The bare pole is often just a few hundred dollars — installation labor, equipment, and traffic control is most of the cost.', icon:`<line x1="22" y1="4" x2="22" y2="40" stroke="var(--ink)" stroke-width="4"/><line x1="10" y1="10" x2="34" y2="10" stroke="var(--ink)" stroke-width="3"/>`},
+  {name:'Pole-Mounted Transformer', range:'$1,500 – $20,000', note:'Small single-phase residential units sit at the low end; larger three-phase units run higher.', icon:`<circle cx="22" cy="15" r="10" fill="none" stroke="var(--v-primary)" stroke-width="3"/><circle cx="22" cy="29" r="10" fill="none" stroke="var(--v-secondary)" stroke-width="3"/>`},
+  {name:'Pad-Mounted Transformer', range:'$20,000 – $70,000', note:'Ground-level steel cabinet used in underground systems; sized well above pole-mount units.', icon:`<rect x="6" y="14" width="32" height="24" fill="none" stroke="var(--ink)" stroke-width="3"/><circle cx="19" cy="26" r="5" fill="none" stroke="var(--v-primary)" stroke-width="2"/><circle cx="26" cy="26" r="5" fill="none" stroke="var(--v-secondary)" stroke-width="2"/>`},
+  {name:'New Distribution Substation', range:'$2M – $30M+', note:'Scales steeply with voltage class and MVA capacity; large or high-voltage sites can exceed $50M.', icon:`<rect x="6" y="10" width="32" height="26" fill="none" stroke="var(--ink)" stroke-width="3"/><circle cx="17" cy="23" r="6" fill="none" stroke="var(--v-hv)" stroke-width="2"/><circle cx="27" cy="23" r="6" fill="none" stroke="var(--v-primary)" stroke-width="2"/>`},
+  {name:'Overhead Primary Line (per mile)', range:'$150,000 – $800,000', note:'Rural, low-density construction sits at the low end; dense urban terrain pushes it much higher.', icon:`<line x1="4" y1="26" x2="40" y2="26" stroke="var(--v-primary)" stroke-width="3"/><line x1="12" y1="26" x2="12" y2="10" stroke="var(--ink-3)" stroke-width="3"/><line x1="30" y1="26" x2="30" y2="10" stroke="var(--ink-3)" stroke-width="3"/>`},
+  {name:'Underground Primary Cable (per mile)', range:'$500,000 – $2,000,000+', note:'Converting existing overhead to underground in dense areas often runs $1M–$6M/mile.', icon:`<line x1="4" y1="25" x2="40" y2="25" stroke="var(--v-primary)" stroke-width="3" stroke-dasharray="7 5"/><line x1="4" y1="34" x2="40" y2="34" stroke="var(--ink-3)" stroke-width="1"/>`},
+  {name:'Fuse Cutout', range:'Hardware: a few hundred dollars · Installed unit cost: can run into the tens of thousands', note:'Utility unit-cost filings bundle in labor, bucket truck time, and traffic control — not just the hardware.', icon:`<rect x="12" y="10" width="20" height="10" fill="none" stroke="var(--v-primary)" stroke-width="3"/><line x1="22" y1="20" x2="22" y2="36" stroke="var(--v-primary)" stroke-width="3"/>`},
+  {name:'Recloser', range:'$20,000 – $30,000', note:'Device cost only; add for communications/SCADA integration if it\u2019s remotely controlled.', icon:`<rect x="8" y="12" width="28" height="20" fill="none" stroke="var(--v-primary)" stroke-width="3"/><line x1="15" y1="18" x2="29" y2="26" stroke="var(--v-primary)" stroke-width="2"/><line x1="29" y1="18" x2="15" y2="26" stroke="var(--v-primary)" stroke-width="2"/>`},
+  {name:'Manual Air-Break Switch (overhead)', range:'$5,000 – $20,000 installed', note:'Rough planning figure; varies with pole work, access, and voltage class.', icon:`<rect x="8" y="14" width="24" height="18" fill="none" stroke="var(--v-primary)" stroke-width="3"/><line x1="13" y1="27" x2="25" y2="17" stroke="var(--v-primary)" stroke-width="2"/>`},
+  {name:'Padmount Switchgear (underground)', range:'$50,000 – $150,000+', note:'Multi-way underground switching cabinets cost more than a simple overhead switch.', icon:`<rect x="6" y="10" width="32" height="26" fill="none" stroke="var(--ink)" stroke-width="3"/><line x1="14" y1="10" x2="14" y2="36" stroke="var(--v-primary)" stroke-width="2"/><line x1="30" y1="10" x2="30" y2="36" stroke="var(--v-primary)" stroke-width="2"/>`},
+  {name:'Underground Vault (precast)', range:'$25,000 – $50,000 installed', note:'Structure only — the equipment inside (transformer, switchgear) is priced separately.', icon:`<rect x="6" y="14" width="32" height="22" fill="none" stroke="var(--ink-2)" stroke-width="3" stroke-dasharray="4 3"/>`},
+  {name:'Conduit (installed, per linear foot)', range:'$100 – $200 / ft', note:'Trenching and surface restoration usually cost more than the pipe itself.', icon:`<rect x="4" y="20" width="36" height="8" fill="none" stroke="var(--ink)" stroke-width="3"/>`},
+  {name:'SCADA / Automation Add-on (per device)', range:'$10,000 – $40,000', note:'Remote terminal unit, communications, and integration layered on top of a switch or recloser.', icon:`<rect x="10" y="14" width="24" height="16" fill="none" stroke="var(--data)" stroke-width="3"/><line x1="16" y1="14" x2="16" y2="6" stroke="var(--data)" stroke-width="2"/><line x1="28" y1="14" x2="28" y2="6" stroke="var(--data)" stroke-width="2"/>`}
 ];
 
 function renderCosts(){
@@ -1076,36 +1025,39 @@ function pgFollowupAdvice(){
 
 function pgIcon(dev){
   const closed = !dev.open;
-  const color = dev.kind==='tie' ? (closed ? 'var(--orchid)' : 'var(--orchid-dim)') : (dev.locked ? 'var(--bad)' : (closed ? 'var(--signal-amber)' : 'var(--muted-2)'));
+  // closed = carrying primary (orange); open = de-energized gap (grey); locked out = fault (red)
+  const color = dev.locked ? 'var(--fault)' : (closed ? 'var(--v-primary)' : 'var(--dead)');
   const lockedClass = dev.locked ? ' pg-locked' : '';
   const bladeRot = closed ? 0 : -28;
   return `<g class="pg-dev${lockedClass}" data-dev="${dev.id}" transform="translate(${dev.x},70)">
     <circle cx="-16" cy="0" r="3" fill="${color}"/>
     <circle cx="16" cy="0" r="3" fill="${color}"/>
-    <line x1="-16" y1="0" x2="16" y2="0" stroke="${color}" stroke-width="2" stroke-dasharray="2 4"/>
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="${color}" stroke-width="1" opacity=".45"/>
     <line x1="-16" y1="0" x2="16" y2="0" stroke="${color}" stroke-width="3" transform="rotate(${bladeRot} -16 0)"/>
-    <text x="0" y="-16" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="14" fill="var(--soft)">${dev.label}</text>
+    <text x="0" y="-16" text-anchor="middle" style="font-family:var(--f-mono)" font-size="14" fill="var(--ink-2)">${dev.label}</text>
   </g>`;
 }
 function pgNodeSvg(n){
   const trunkFaulted = pgTrunkFault && pgTrunkFault.nodeId===n.id;
   const lateralFaulted = pgLateralFault && pgLateralFault.nodeId===n.id;
-  const trunkColor = n.energized ? 'var(--signal-amber)' : 'var(--slate)';
-  const latColor = n.customersPowered ? 'var(--line-cyan)' : 'var(--slate)';
+  const trunkColor = n.energized ? 'var(--v-primary)' : 'var(--dead)';
+  // the lateral and its fuse are primary (orange); the customer's service is secondary (blue)
+  const latColor = n.customersPowered ? 'var(--v-primary)' : 'var(--dead)';
+  const svcColor = n.customersPowered ? 'var(--v-secondary)' : 'var(--dead)';
   return `
   <g class="pg-node" data-node="${n.id}" data-part="trunk" transform="translate(${n.x},70)">
     <circle class="pg-node-dot" r="6" fill="${trunkColor}"/>
-    <text x="0" y="-16" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="14" fill="var(--soft)">${n.id}</text>
+    <text x="0" y="-16" text-anchor="middle" style="font-family:var(--f-mono)" font-size="14" fill="var(--ink-2)">${n.id}</text>
     ${trunkFaulted ? `<text x="0" y="24" text-anchor="middle" font-size="18" data-node="${n.id}" data-part="repair-trunk">🔥</text>` : ''}
   </g>
   <line x1="${n.x}" y1="76" x2="${n.x}" y2="140" stroke="${latColor}" stroke-width="2"/>
   <g class="pg-node" data-node="${n.id}" data-part="lateral" transform="translate(${n.x},150)">
-    <rect x="-14" y="-8" width="28" height="14" rx="7" fill="none" stroke="${n.fuseBlown?'var(--bad)':latColor}" stroke-width="2"/>
-    ${n.fuseBlown ? `<line x1="-10" y1="-5" x2="10" y2="2" stroke="var(--bad)" stroke-width="2"/><line x1="10" y1="-5" x2="-10" y2="2" stroke="var(--bad)" stroke-width="2"/>` : ''}
-    <polygon points="0,18 12,30 9,30 9,44 -9,44 -9,30 -12,30" fill="none" stroke="${latColor}" stroke-width="2"/>
-    <text x="0" y="62" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="14" fill="${n.customersPowered ? 'var(--soft)' : 'var(--muted)'}">${n.customers} cust.</text>
+    <rect x="-14" y="-8" width="28" height="14" fill="var(--sheet)" stroke="${n.fuseBlown?'var(--fault)':latColor}" stroke-width="2"/>
+    ${n.fuseBlown ? `<line x1="-10" y1="-5" x2="10" y2="2" stroke="var(--fault)" stroke-width="2"/><line x1="10" y1="-5" x2="-10" y2="2" stroke="var(--fault)" stroke-width="2"/>` : ''}
+    <polygon points="0,18 12,30 9,30 9,44 -9,44 -9,30 -12,30" fill="var(--sheet)" stroke="${svcColor}" stroke-width="2"/>
+    <text x="0" y="62" text-anchor="middle" style="font-family:var(--f-mono)" font-size="14" fill="${n.customersPowered ? 'var(--ink-2)' : 'var(--ink-3)'}">${n.customers} cust.</text>
     ${lateralFaulted ? `<text x="20" y="10" font-size="18" data-node="${n.id}" data-part="repair-lateral">🔥</text>` : ''}
-    ${n.fuseBlown && !lateralFaulted ? `<text x="20" y="0" font-size="15" fill="var(--line-cyan)" data-node="${n.id}" data-part="replace-fuse" style="cursor:pointer;">↻ replace</text>` : ''}
+    ${n.fuseBlown && !lateralFaulted ? `<text x="20" y="0" font-size="15" fill="var(--ink)" text-decoration="underline" data-node="${n.id}" data-part="replace-fuse" style="cursor:pointer;font-family:var(--f-mono)">↻ replace</text>` : ''}
   </g>`;
 }
 
@@ -1122,11 +1074,11 @@ function pgRender(){
     if(a.kind==='node') energized = PG_NODES_BY_ID[a.node].energized;
     else if(b.kind==='node') energized = PG_NODES_BY_ID[b.node].energized;
     else if(a.kind==='source' || b.kind==='source') energized = true; // the stub between a substation and its recloser is always live
-    const col = energized ? 'var(--signal-amber)' : 'var(--slate-2)';
+    const col = energized ? 'var(--v-primary)' : 'var(--dead)';
     parts.push(`<line x1="${pgChainX(a)}" y1="70" x2="${pgChainX(b)}" y2="70" stroke="${col}" stroke-width="3"/>`);
   }
-  parts.push(`<text x="20" y="45" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="15" fill="var(--muted)">SUB A</text>`);
-  parts.push(`<text x="1140" y="45" text-anchor="end" font-family="IBM Plex Mono, ui-monospace, Menlo, monospace" font-size="15" fill="var(--muted)">SUB B</text>`);
+  parts.push(`<text x="20" y="45" style="font-family:var(--f-mono)" font-size="15" fill="var(--ink-3)">SUB A</text>`);
+  parts.push(`<text x="1140" y="45" text-anchor="end" style="font-family:var(--f-mono)" font-size="15" fill="var(--ink-3)">SUB B</text>`);
   Object.values(PG_DEVICES).forEach(d=> parts.push(pgIcon(d)));
   PG_NODES.forEach(n=> parts.push(pgNodeSvg(n)));
   svg.innerHTML = parts.join('');

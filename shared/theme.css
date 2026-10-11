@@ -65,6 +65,11 @@
   --f-mono:'B612 Mono', ui-monospace, Menlo, Consolas, monospace;
   --radius:0;
 
+  /* UI tints, derived from the role tokens so both themes follow */
+  --hover-fill:color-mix(in srgb, var(--ink) 6%, transparent);
+  --ok-bg:color-mix(in srgb, var(--ok) 12%, var(--sheet));
+  --fault-bg:color-mix(in srgb, var(--fault) 12%, var(--sheet));
+
   /* ---- Transition aliases: old names pointed at the role tokens. ----
      They only keep pages working while each chapter is re-pointed by meaning
      (restyle phases 3 and 4). Some are knowingly wrong, e.g. wind or telemetry
@@ -92,14 +97,12 @@
   --pink:var(--ink-3);              /* chapter 4 business records */
   --orchid:var(--v-primary);        --orchid-dim:var(--dead);   /* chapter 2 feeder tie */
 
-  --good-bg:color-mix(in srgb, var(--ok) 12%, var(--sheet));
-  --bad-bg:color-mix(in srgb, var(--fault) 12%, var(--sheet));
+  --good-bg:var(--ok-bg);  --bad-bg:var(--fault-bg);
   --amber-bg:color-mix(in srgb, var(--v-primary) 12%, var(--sheet));
   --solar-bg:color-mix(in srgb, var(--fuel-solar) 16%, var(--sheet));
 
   --on-amber:var(--on-ink);   --on-accent:var(--on-ink);
   --pill-bg:var(--ink);       --pill-fg:var(--on-ink);     /* selected = ink-filled */
-  --hover-fill:color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 html{background:var(--ground)}
@@ -115,14 +118,16 @@ html{background:var(--ground)}
   /* Headings */
   h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em}
 
-  /* Tabs: a ruled strip; the selected tab is ink-filled */
-  .tabs{display:flex;flex-wrap:wrap;gap:0;border:2px solid var(--ink);background:var(--sheet);border-radius:0;padding:0}
-  .tab,.tabs > button{flex:1 1 auto;min-width:120px;padding:10px 14px;margin:0;
-    font:600 16px/1.1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;
-    color:var(--ink-2);background:transparent;border:0;border-left:1px solid var(--ink);border-radius:0;cursor:pointer}
-  .tab:first-child,.tabs > button:first-child{border-left:0}
+  /* Tabs: a ruled grid of cells (rules survive wrapping); the selected tab is ink-filled */
+  .tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:0;
+    border:2px solid var(--ink);background:var(--sheet);border-radius:0;padding:0;overflow:hidden}
+  .tab,.tabs > button{min-width:0;padding:10px 8px;margin:0 -1px -1px 0;
+    font:600 15.5px/1.15 var(--f-display);letter-spacing:.04em;text-transform:uppercase;text-align:center;
+    color:var(--ink-2);background:transparent;border:0;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);border-radius:0;cursor:pointer}
   .tab:hover,.tabs > button:hover{color:var(--ink);background:var(--hover-fill)}
   .tab.active,.tabs > button[aria-selected="true"]{background:var(--ink);color:var(--on-ink)}
+  .tab:focus-visible,.tabs > button:focus-visible{outline-offset:-4px}
+  .tab.active:focus-visible,.tabs > button[aria-selected="true"]:focus-visible{outline-color:var(--on-ink)}
 
   /* Panels and cards: ruled boxes, square, no shadow */
   .panel{background:var(--sheet);border:1px solid var(--ink);border-radius:0;box-shadow:none;padding:22px}
@@ -147,8 +152,8 @@ html{background:var(--ground)}
   .q-text{font-family:var(--f-display);font-weight:600}
   .opt,.q-option,.qz-opts button{border:1px solid var(--band);border-radius:0;background:var(--sheet);color:var(--ink)}
   .opt:hover,.q-option:hover,.qz-opts button:hover:not(:disabled){border-color:var(--ink)}
-  .opt.correct,.q-option.correct{border-color:var(--ok);background:var(--good-bg)}
-  .opt.wrong,.q-option.incorrect{border-color:var(--fault);background:var(--bad-bg)}
+  .opt.correct,.q-option.correct{border-color:var(--ok);background:var(--ok-bg)}
+  .opt.wrong,.q-option.incorrect{border-color:var(--fault);background:var(--fault-bg)}
   .quizbox{border:1px solid var(--ink);border-radius:0;background:var(--sheet)}
   .qz-topics button{border:1px solid var(--ink);border-radius:0}
   .qz-topics button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
