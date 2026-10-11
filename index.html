@@ -88,8 +88,9 @@ svg text{font-family:var(--f-mono);fill:var(--ink-3);font-size:11px;letter-spaci
 .t-prim{fill:var(--v-primary);font-weight:700}
 .t-sec{fill:var(--v-secondary);font-weight:700}
 /* power-flow direction: a travelling highlight, never marching dashes (dashes mean data) */
-.flow{fill:none;stroke:var(--flow-hi);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:40 1600;animation:flow 4s linear infinite}
-@keyframes flow{from{stroke-dashoffset:40}to{stroke-dashoffset:-760}}
+/* a lighter (or, on blueprint, deeper) tint of each line's own color, set per path */
+.flow{fill:none;stroke-width:1.4;stroke-linecap:butt;stroke-dasharray:14 100;animation:flow 3s linear infinite}
+@keyframes flow{from{stroke-dashoffset:14}to{stroke-dashoffset:-100}}
 
 /* bottom strip: legend, notes, title block */
 .strip{display:grid;grid-template-columns:347fr 274fr 333fr;border-top:1px solid var(--ink)}
@@ -307,7 +308,8 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
 
         <!-- the feeder itself, interrupted by the recloser and switch -->
         <path class="prim" d="M459 402 H528 M549 402 H628 M649 402 H1062"/>
-        <path class="flow" d="M305 402 H1062"/>
+        <path class="flow" pathLength="100" d="M305 402 H412" style="stroke:color-mix(in srgb, var(--v-hv) 30%, var(--sheet))"/>
+        <path class="flow" pathLength="100" d="M459 402 H1062" style="stroke:color-mix(in srgb, var(--v-primary) 30%, var(--sheet))"/>
 
         <!-- Chapter 3: DER and microgrids -->
         <a class="zone" data-ch="3" href="apps/03-der-microgrids/index.html" aria-label="Chapter 3: DER and microgrids">
