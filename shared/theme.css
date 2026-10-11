@@ -1,110 +1,158 @@
 /* Grid Field Guide — shared theme.
    Every page loads this before its own <style>:
      <link rel="stylesheet" href="../../shared/theme.css">
-   Dark is the default (bare :root). Light applies when <html data-theme="light">,
-   which shared/theme.js sets from the reader's saved choice.
-   Color meanings are documented in docs/colors.md. Add a token here rather than
-   a hex value in a chapter, so both themes stay in step. */
+   Two sheets: "blueprint" (dark, bare :root) and "vellum" (light), which applies
+   when <html data-theme="light">, set by shared/theme.js from the reader's choice.
+   Tokens are named by MEANING, not by color, and each meaning is the same in every
+   chapter (see docs/colors.md). Add a token here rather than a hex value in a
+   chapter, so both themes stay in step. */
 
 :root{
-  /* surfaces */
-  --ink-navy:#0B1E33;      /* page background */
-  --ink-deep:#06131F;      /* chapter bar, footer */
-  --panel-navy:#12314F;    /* raised panels */
-  --panel-navy-2:#0F2946;  /* panels, cards */
-  --well:#0A2038;          /* inset wells: formulas, bars */
-  --box-off:#1D3A54;       /* inactive diagram box */
-  --box-hi:#EAF2F5;        /* bright neutral diagram box (customer load) */
-  --on-box-hi:#0B1E33;
-  --glow:#163a5c;          /* top-left page glow */
-  --edge:#1D4266;          /* borders, grid lines */
-  --edge-2:#2A5478;        /* stronger borders */
+  /* surfaces and text — blueprint */
+  --ground:#0F2C4C;        /* page and sheet background */
+  --sheet:#0F2C4C;         /* boxes, panels, title block, quiz cards */
+  --ink:#EAF0F6;           /* main text, strong rules, borders */
+  --ink-2:#BFCDDB;         /* secondary text */
+  --ink-3:#93AAC1;         /* captions, axes, field labels */
+  --band:#5D7EA1;          /* dashed region outlines, soft dividers */
+  --grid:#1B3E63;          /* drafting grid lines */
+  --on-ink:#0F2C4C;        /* text on an ink-filled button or selected tab */
 
-  /* text */
-  --paper:#EAF2F5;         /* main text */
-  --text-2:#C3D6E3;        /* secondary text */
-  --soft:#9FC0D6;          /* diagram labels, generation lines */
-  --muted:#7E9BB4;         /* captions, axes */
-  --muted-2:#5B7C94;       /* quiet notes, de-energized */
-  --slate:#3A4D5E;         /* dead / de-energized line */
-  --slate-2:#2A3B4A;
+  /* lines: one meaning each, in every chapter */
+  --v-hv:#EAF0F6;          /* generation and high voltage (same as --ink) */
+  --v-primary:#F59B4C;     /* primary distribution, ~12 kV */
+  --v-secondary:#7FB2F0;   /* secondary and site voltage, 120/240 V to 480 V */
+  --data:#B9A3F5;          /* data and control. Always dashed. Never power. */
+  --fault:#FF7468;         /* faults, alarms, lockouts, unserved load, wrong answers */
+  --dead:#4F6B88;          /* de-energized or open sections */
+  --flow-hi:#FFE0BF;       /* travelling highlight showing power-flow direction */
 
-  /* accents (each has a soft = brighter text tint, and a dim = inactive) */
-  --signal-amber:#F5A623;  --amber-soft:#F5C877;  --signal-amber-dim:#8A6323;  --amber-hover:#FFB940;
-  --line-cyan:#8FE0EC;     --cyan-soft:#BDEFF6;   --line-cyan-dim:#4C7C8C;
-  --violet:#B9A9F2;        --violet-soft:#E4DCFF;
-  --copper:#D98457;
-  --good:#6FCF97;          --good-dim:#3F8F63;
-  --bad:#EB5B5B;           --bad-soft:#FFB3B3;
-  --solar:#F5C542;         --solar-soft:#F7E48A;
-  --battery:#8FD6C4;       --battery-soft:#A9E6D6;
-  --pink:#F08FB8;          /* business + customer records (chapter 4) */
-  --orchid:#E39CE0;        --orchid-dim:#6B5A6B;   /* feeder tie (chapter 2) */
-  --flow-hi:#FFD08A;       /* moving highlight on a live feeder */
+  /* charts only, never on a one-line diagram */
+  --fuel-gas:#C99A78;  --fuel-wind:#C9D3DD;  --fuel-solar:#F2C94C;  --fuel-battery:#8FD6B4;
 
-  /* tinted backgrounds for status cards */
-  --good-bg:#12331F;  --bad-bg:#341515;  --amber-bg:#241408;  --solar-bg:#4A3A10;
+  /* UI feedback: correct answers and success states only */
+  --ok:#7FD3A0;
 
-  /* text on a filled accent */
-  --on-amber:#1A1102;
-  --on-accent:#0B1E33;
-  --pill-bg:#8fe3f0;  --pill-fg:#0b2240;
-  --hover-fill:rgba(143,224,236,.06);
-
-  /* type */
-  --f-display:'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-body:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-mono:'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
-
-  --radius:10px;
   color-scheme:dark;
 }
 
-/* Light set. Kept in two places so it also applies with JavaScript off. */
+/* Vellum. Kept in two places so it also applies with JavaScript off. */
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
-    --ink-navy:#eef3f8; --ink-deep:#ffffff; --panel-navy:#ffffff; --panel-navy-2:#f5f8fc;
-    --well:#e8eff6; --box-off:#e4ecf4; --box-hi:#ffffff; --on-box-hi:#0b2240; --glow:#dbe8f3; --edge:#c9d6e3; --edge-2:#9fb4c9;
-    --paper:#0b2240; --text-2:#2d4a66; --soft:#4a6782; --muted:#557089; --muted-2:#6a8399;
-    --slate:#b7c5d3; --slate-2:#cfd9e3;
-    --signal-amber:#b06800; --amber-soft:#8f5400; --signal-amber-dim:#d4b47c; --amber-hover:#8f5400;
-    --line-cyan:#08809a; --cyan-soft:#066a80; --line-cyan-dim:#8fb3bd;
-    --violet:#5f4bcc; --violet-soft:#4b3aa8;
-    --copper:#b5592c;
-    --good:#1b8a4e; --good-dim:#7cc39c;
-    --bad:#c43d3d; --bad-soft:#a32b2b;
-    --solar:#9a7400; --solar-soft:#7a5c00;
-    --battery:#1f8a75; --battery-soft:#17705f;
-    --pink:#b23c75; --orchid:#9b3a96; --orchid-dim:#c9b3c8;
-    --flow-hi:#ffe2b0;
-    --good-bg:#e2f3e9; --bad-bg:#fbe4e4; --amber-bg:#fbeedb; --solar-bg:#f8f0d4;
-    --on-amber:#ffffff; --on-accent:#ffffff;
-    --pill-bg:#08809a; --pill-fg:#ffffff;
-    --hover-fill:rgba(8,128,154,.07);
+    --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
+    --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
+    --v-hv:#18202B; --v-primary:#C2510C; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
+    --flow-hi:#F2A66E;
+    --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#B88A00; --fuel-battery:#2F7D55;
+    --ok:#1B7A45;
     color-scheme:light;
   }
 }
 :root[data-theme="light"]{
-  --ink-navy:#eef3f8; --ink-deep:#ffffff; --panel-navy:#ffffff; --panel-navy-2:#f5f8fc;
-  --well:#e8eff6; --box-off:#e4ecf4; --box-hi:#ffffff; --on-box-hi:#0b2240; --glow:#dbe8f3; --edge:#c9d6e3; --edge-2:#9fb4c9;
-  --paper:#0b2240; --text-2:#2d4a66; --soft:#4a6782; --muted:#557089; --muted-2:#6a8399;
-  --slate:#b7c5d3; --slate-2:#cfd9e3;
-  --signal-amber:#b06800; --amber-soft:#8f5400; --signal-amber-dim:#d4b47c; --amber-hover:#8f5400;
-  --line-cyan:#08809a; --cyan-soft:#066a80; --line-cyan-dim:#8fb3bd;
-  --violet:#5f4bcc; --violet-soft:#4b3aa8;
-  --copper:#b5592c;
-  --good:#1b8a4e; --good-dim:#7cc39c;
-  --bad:#c43d3d; --bad-soft:#a32b2b;
-  --solar:#9a7400; --solar-soft:#7a5c00;
-  --battery:#1f8a75; --battery-soft:#17705f;
-  --pink:#b23c75; --orchid:#9b3a96; --orchid-dim:#c9b3c8;
-  --flow-hi:#ffe2b0;
-  --good-bg:#e2f3e9; --bad-bg:#fbe4e4; --amber-bg:#fbeedb; --solar-bg:#f8f0d4;
-  --on-amber:#ffffff; --on-accent:#ffffff;
-  --pill-bg:#08809a; --pill-fg:#ffffff;
-  --hover-fill:rgba(8,128,154,.07);
+  --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
+  --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
+  --v-hv:#18202B; --v-primary:#C2510C; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
+  --flow-hi:#F2A66E;
+  --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#B88A00; --fuel-battery:#2F7D55;
+  --ok:#1B7A45;
   color-scheme:light;
 }
 
-html{background:var(--ink-navy)}
+:root{
+  /* type */
+  --f-display:'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-body:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono:'B612 Mono', ui-monospace, Menlo, Consolas, monospace;
+  --radius:0;
+
+  /* ---- Transition aliases: old names pointed at the role tokens. ----
+     They only keep pages working while each chapter is re-pointed by meaning
+     (restyle phases 3 and 4). Some are knowingly wrong, e.g. wind or telemetry
+     still showing as --v-secondary. Remove the whole block in phase 5. */
+  --ink-navy:var(--ground);   --ink-deep:var(--ground);
+  --panel-navy:var(--sheet);  --panel-navy-2:var(--sheet);  --well:var(--sheet);  --box-off:var(--sheet);
+  --box-hi:var(--sheet);      --on-box-hi:var(--ink);
+  --glow:var(--ground);       /* no glows on a drawing sheet */
+  --edge:var(--band);         --edge-2:var(--ink);
+  --paper:var(--ink);         /* old --paper is the TEXT color, not the background */
+  --text-2:var(--ink-2);      --soft:var(--ink-2);  --muted:var(--ink-3);  --muted-2:var(--ink-3);
+  --slate:var(--dead);        --slate-2:color-mix(in srgb, var(--dead) 50%, var(--ground));
+
+  --signal-amber:var(--v-primary);  --amber-soft:var(--v-primary);
+  --signal-amber-dim:color-mix(in srgb, var(--v-primary) 45%, var(--ground));
+  --amber-hover:color-mix(in srgb, var(--v-primary) 80%, var(--ink));
+  --line-cyan:var(--v-secondary);   --cyan-soft:var(--v-secondary);
+  --line-cyan-dim:color-mix(in srgb, var(--v-secondary) 45%, var(--ground));
+  --violet:var(--data);             --violet-soft:var(--data);
+  --bad:var(--fault);               --bad-soft:var(--fault);
+  --good:var(--ok);                 --good-dim:color-mix(in srgb, var(--ok) 45%, var(--ground));
+  --copper:var(--fuel-gas);
+  --solar:var(--fuel-solar);        --solar-soft:var(--fuel-solar);
+  --battery:var(--fuel-battery);    --battery-soft:var(--fuel-battery);
+  --pink:var(--ink-3);              /* chapter 4 business records */
+  --orchid:var(--v-primary);        --orchid-dim:var(--dead);   /* chapter 2 feeder tie */
+
+  --good-bg:color-mix(in srgb, var(--ok) 12%, var(--sheet));
+  --bad-bg:color-mix(in srgb, var(--fault) 12%, var(--sheet));
+  --amber-bg:color-mix(in srgb, var(--v-primary) 12%, var(--sheet));
+  --solar-bg:color-mix(in srgb, var(--fuel-solar) 16%, var(--sheet));
+
+  --on-amber:var(--on-ink);   --on-accent:var(--on-ink);
+  --pill-bg:var(--ink);       --pill-fg:var(--on-ink);     /* selected = ink-filled */
+  --hover-fill:color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+html{background:var(--ground)}
 [hidden]{display:none!important}
+
+/* ---- Shared components ----
+   In a cascade layer, so a chapter's own unlayered rules still win. Each chapter
+   adopts these by deleting its local versions (restyle phases 3 and 4). */
+@layer gfg{
+  /* Focus: 2px ink ring, 2px offset, on every control */
+  :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  /* Headings */
+  h1,h2,h3{font-family:var(--f-display);font-weight:600;letter-spacing:.01em}
+
+  /* Tabs: a ruled strip; the selected tab is ink-filled */
+  .tabs{display:flex;flex-wrap:wrap;gap:0;border:2px solid var(--ink);background:var(--sheet);border-radius:0;padding:0}
+  .tab,.tabs > button{flex:1 1 auto;min-width:120px;padding:10px 14px;margin:0;
+    font:600 16px/1.1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-2);background:transparent;border:0;border-left:1px solid var(--ink);border-radius:0;cursor:pointer}
+  .tab:first-child,.tabs > button:first-child{border-left:0}
+  .tab:hover,.tabs > button:hover{color:var(--ink);background:var(--hover-fill)}
+  .tab.active,.tabs > button[aria-selected="true"]{background:var(--ink);color:var(--on-ink)}
+
+  /* Panels and cards: ruled boxes, square, no shadow */
+  .panel{background:var(--sheet);border:1px solid var(--ink);border-radius:0;box-shadow:none;padding:22px}
+  .card,.read-card,.gl-card{background:var(--sheet);border:1px solid var(--band);border-radius:0;box-shadow:none;padding:14px 16px}
+  .read-card h4,.gl-card h3{font-family:var(--f-display);font-weight:600;margin:0 0 6px}
+
+  /* Buttons: secondary is a 2px ink outline; primary is ink-filled */
+  .btn{font:600 15px/1.1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;
+    padding:9px 16px;border:2px solid var(--ink);border-radius:0;background:transparent;color:var(--ink);cursor:pointer}
+  .btn:hover{background:var(--hover-fill)}
+  .btn.primary{background:var(--ink);color:var(--on-ink)}
+  .btn.primary:hover{background:color-mix(in srgb, var(--ink) 85%, var(--ground))}
+  .btn:disabled{opacity:.45;cursor:default}
+
+  /* Pills and chips: square toggles; selected is ink-filled */
+  .chip,.pills button{font:400 13px/1.2 var(--f-mono);padding:6px 10px;border:1px solid var(--ink);border-radius:0;
+    background:transparent;color:var(--ink-2);cursor:pointer}
+  .chip:hover,.pills button:hover{color:var(--ink);background:var(--hover-fill)}
+  .chip.active,.pills button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+
+  /* Quiz: ruled option rows; right/wrong use --ok/--fault only as feedback */
+  .q-text{font-family:var(--f-display);font-weight:600}
+  .opt,.q-option,.qz-opts button{border:1px solid var(--band);border-radius:0;background:var(--sheet);color:var(--ink)}
+  .opt:hover,.q-option:hover,.qz-opts button:hover:not(:disabled){border-color:var(--ink)}
+  .opt.correct,.q-option.correct{border-color:var(--ok);background:var(--good-bg)}
+  .opt.wrong,.q-option.incorrect{border-color:var(--fault);background:var(--bad-bg)}
+  .quizbox{border:1px solid var(--ink);border-radius:0;background:var(--sheet)}
+  .qz-topics button{border:1px solid var(--ink);border-radius:0}
+  .qz-topics button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+
+  /* Glossary: term in display face, category in mono furniture lettering */
+  .gl-card .cat{font:400 12px/1.3 var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+}
