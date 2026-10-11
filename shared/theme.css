@@ -25,7 +25,6 @@
   --data:#B9A3F5;          /* data and control. Always dashed. Never power. */
   --fault:#FF7468;         /* faults, alarms, lockouts, unserved load, wrong answers */
   --dead:#4F6B88;          /* de-energized or open sections */
-  --flow-hi:#FFE0BF;       /* travelling highlight showing power-flow direction */
 
   /* data kinds, for diagrams about data (chapter 4). Always dashed, never power;
      each kind also keeps its own dash pattern, so color is never the only cue. */
@@ -50,7 +49,6 @@
     --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
     --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
     --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
-    --flow-hi:#F2A66E;
     --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B; --zone-sec:#8A6400;
     --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
     --ok:#1B7A45;
@@ -61,7 +59,6 @@
   --ground:#F5F3EE; --sheet:#FFFFFF; --ink:#18202B; --ink-2:#3F4753; --ink-3:#5B6270;
   --band:#9C978C; --grid:#E4E0D5; --on-ink:#F5F3EE;
   --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
-  --flow-hi:#F2A66E;
   --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B; --zone-sec:#8A6400;
   --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
   --ok:#1B7A45;
@@ -80,39 +77,24 @@
   --ok-bg:color-mix(in srgb, var(--ok) 12%, var(--sheet));
   --fault-bg:color-mix(in srgb, var(--fault) 12%, var(--sheet));
 
-  /* ---- Transition aliases: old names pointed at the role tokens. ----
-     They only keep pages working while each chapter is re-pointed by meaning
-     (restyle phases 3 and 4). Some are knowingly wrong, e.g. wind or telemetry
-     still showing as --v-secondary. Remove the whole block in phase 5. */
+  /* ---- Legacy aliases, kept only for chapter 5 (apps/05-batteries, still in draft on the
+     chapter-5-batteries branch). Nothing else uses them. Delete this block when chapter 5
+     is restyled onto the role tokens above. ---- */
   --ink-navy:var(--ground);   --ink-deep:var(--ground);
   --panel-navy:var(--sheet);  --panel-navy-2:var(--sheet);  --well:var(--sheet);  --box-off:var(--sheet);
-  --box-hi:var(--sheet);      --on-box-hi:var(--ink);
-  --glow:var(--ground);       /* no glows on a drawing sheet */
+  --glow:var(--ground);
   --edge:var(--band);         --edge-2:var(--ink);
-  --paper:var(--ink);         /* old --paper is the TEXT color, not the background */
-  --text-2:var(--ink-2);      --soft:var(--ink-2);  --muted:var(--ink-3);  --muted-2:var(--ink-3);
-  --slate:var(--dead);        --slate-2:color-mix(in srgb, var(--dead) 50%, var(--ground));
-
+  --paper:var(--ink);         --text-2:var(--ink-2);  --muted:var(--ink-3);  --muted-2:var(--ink-3);
   --signal-amber:var(--v-primary);  --amber-soft:var(--v-primary);
-  --signal-amber-dim:color-mix(in srgb, var(--v-primary) 45%, var(--ground));
-  --amber-hover:color-mix(in srgb, var(--v-primary) 80%, var(--ink));
-  --line-cyan:var(--v-secondary);   --cyan-soft:var(--v-secondary);
+  --line-cyan:var(--v-secondary);
   --line-cyan-dim:color-mix(in srgb, var(--v-secondary) 45%, var(--ground));
-  --violet:var(--data);             --violet-soft:var(--data);
-  --bad:var(--fault);               --bad-soft:var(--fault);
-  --good:var(--ok);                 --good-dim:color-mix(in srgb, var(--ok) 45%, var(--ground));
-  --copper:var(--fuel-gas);
-  --solar:var(--fuel-solar);        --solar-soft:var(--fuel-solar);
+  --violet:var(--data);
+  --bad:var(--fault);         --good:var(--ok);
+  --copper:var(--fuel-gas);   --solar:var(--fuel-solar);
   --battery:var(--fuel-battery);    --battery-soft:var(--fuel-battery);
-  --pink:var(--ink-3);              /* chapter 4 business records */
-  --orchid:var(--v-primary);        --orchid-dim:var(--dead);   /* chapter 2 feeder tie */
-
-  --good-bg:var(--ok-bg);  --bad-bg:var(--fault-bg);
-  --amber-bg:color-mix(in srgb, var(--v-primary) 12%, var(--sheet));
-  --solar-bg:color-mix(in srgb, var(--fuel-solar) 16%, var(--sheet));
-
+  --good-bg:var(--ok-bg);     --bad-bg:var(--fault-bg);
   --on-amber:var(--on-ink);   --on-accent:var(--on-ink);
-  --pill-bg:var(--ink);       --pill-fg:var(--on-ink);     /* selected = ink-filled */
+  --pill-bg:var(--ink);       --pill-fg:var(--on-ink);
 }
 
 html{background:var(--ground)}

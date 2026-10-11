@@ -11,13 +11,14 @@ Four interactive chapters that follow electricity from the power plant to the cu
 | 3 | DER & microgrids | What changes when a customer makes power too? | `apps/03-der-microgrids` |
 | 4 | Grid operations | How do the software systems run all of it? | `apps/04-grid-operations` |
 
-Every page is plain HTML with no build step. Open `index.html` in a browser, or serve the folder with any static server.
+The guide is styled as an engineering drawing sheet: vellum (light, the default) and blueprint (dark). Every page is plain HTML with no build step. Open `index.html` in a browser, or serve the folder with any static server.
 
-- `index.html`: home page
-- `shared/theme.css`: every color (dark and light sets) and font stack. Chapters use these tokens instead of hex values.
-- `shared/theme.js`: light/dark switch. Saves the choice under `gfg-theme` for the whole guide. Load it in `<head>` before the stylesheet.
+- `index.html`: home page, drawn as the sheet: the one-line diagram with zone markers, line legend, notes and title block, then the sheet index of chapters
+- `shared/theme.css`: every color as a token named by meaning (vellum and blueprint values), the font stacks, and the shared components (tabs, buttons, pills, panels, cards, quiz). Chapters use these tokens instead of hex values.
+- `shared/theme.js`: light/dark switch. Opens in light unless the reader chose otherwise; saves the choice under `gfg-theme` for the whole guide. Load it in `<head>` before the stylesheet.
 - `shared/nav.js`: the chapter bar at the top of every chapter, with the theme toggle. The chapter list lives here.
-- `docs/colors.md`: what each color means in each chapter, and where they clash
+- `docs/colors.md`: the fixed color mapping (one meaning per color in every chapter), line styles, data kinds, chart colors and contrast notes
+- `docs/design/`: the home-page mockups for the drawing-sheet design
 - `assets/thumbs/`: 640×360 detail views of each chapter's region of the home-page sheet, one blueprint (dark) and one vellum (`-light`) per chapter. Not shown on the home page itself.
 
 Each chapter page starts with:

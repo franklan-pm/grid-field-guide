@@ -44,7 +44,10 @@ h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4v
   background-size:24px 24px}
 svg{font-family:var(--f-mono)}
 #dia{display:block;width:100%;min-width:1180px;height:auto}
-.node{cursor:pointer;outline:none}
+.node{cursor:pointer}
+/* keyboard focus: the shared 2px ink ring, drawn around the box */
+.node:focus{outline:none}
+.node:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .node > rect.box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.2;transition:stroke-width .15s}
 .node:hover > rect.box,.node:focus-visible > rect.box{stroke-width:2.2}
 .node.sel > rect.box{stroke-width:3;fill:color-mix(in srgb, var(--ink) 6%, var(--sheet))}
