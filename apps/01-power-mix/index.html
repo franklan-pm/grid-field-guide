@@ -105,7 +105,7 @@
     background-size:24px 24px;border:1px solid var(--band);}
   .node{cursor:pointer;}
   .node:hover rect.box{stroke-width:2.6;}
-  .node.selected rect.box{stroke-width:3.5;fill:var(--hover-fill);}
+  .node.selected rect.box{stroke-width:3.5;}
   .node:focus{outline:none;}
   .node:focus-visible rect.box{stroke-width:3.5;stroke-dasharray:none;}
   .node text{pointer-events:none;}
@@ -162,7 +162,7 @@
       <div class="legend">
         <span><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--v-hv)" stroke-width="3"/></svg>generation + high voltage</span>
         <span><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="var(--v-secondary)" stroke-width="6"/><line x1="1" y1="5" x2="25" y2="5" stroke="var(--ground)" stroke-width="2"/></svg>DC side of an inverter</span>
-        <span><i class="sw" style="background:var(--c-gas)"></i><i class="sw" style="background:var(--c-wind)"></i><i class="sw" style="background:var(--c-solar)"></i><i class="sw" style="background:var(--c-batt)"></i>fuel swatches, as in the charts</span>
+        <span><i class="sw" style="background:var(--c-gas)"></i><i class="sw" style="background:var(--c-wind)"></i><i class="sw" style="background:var(--c-solar)"></i><i class="sw" style="background:var(--c-batt)"></i>fuel colors, as in the charts (lines stay ink)</span>
       </div>
     </div>
     <div class="hint">Line thickness = megawatts flowing right now · arrowheads show direction. Click any box.</div>
@@ -718,13 +718,15 @@ const DG = {
   gas:  { x:30,  y:40,  w:200, h:74, y0:77,  fuel:'var(--c-gas)', name:'Gas plant' },
   wind: { x:30,  y:162, w:200, h:90, y0:207, fuel:'var(--c-wind)', name:'Wind farm' },
   solar:{ x:30,  y:312, w:200, h:90, y0:357, fuel:'var(--c-solar)', name:'Solar PV' },
-  inv:  { x:292, y:334, w:66,  h:46, y0:357, name:'DC/AC' },
+  inv:  { x:292, y:334, w:66,  h:46, y0:357, tint:'var(--c-solar)', name:'DC/AC' },
   load: { x:780, y:90,  w:190, h:90, y0:135, name:'Town' },
-  pcs:  { x:652, y:310, w:66,  h:46, y0:333, name:'DC/AC' },
+  pcs:  { x:652, y:310, w:66,  h:46, y0:333, tint:'var(--c-batt)', name:'DC/AC' },
   bess: { x:780, y:296, w:190, h:74, y0:333, fuel:'var(--c-batt)', name:'Battery' },
 };
 // Line color is voltage class, never fuel: every AC line into or out of the bus is
 // generation / high voltage (--v-hv); the DC legs are the blue double line.
+// Fuel identity rides on everything else: a tinted source box with a fuel bar down its
+// left edge, a fuel tag behind each source's MW reading, and fuel marks in the bus sum.
 const HV = 'var(--v-hv)', DCC = 'var(--v-secondary)';
 function buildDiagram(){
   const svg = $('dgSvg');
@@ -746,14 +748,16 @@ function buildDiagram(){
   g += seg('fl-load', BUSX, 780, 135, HV);
   g += seg('fl-bac', BUSX, 652, 333, HV, false, 636) + seg('fl-bdc', 718, 780, 333, DCC, true);
   g += xf(420, 77) + xf(420, 207) + xf(450, 357) + xf(600, 333);
-  ['gas','wind','sac','load','bac'].forEach(k => g += `<text id="lb-${k}" text-anchor="middle" fill="var(--ink)" style="font-family:var(--f-mono)" font-size="13.5" font-weight="700"></text>`);
+  const LBF = { gas:'var(--c-gas)', wind:'var(--c-wind)', sac:'var(--c-solar)', bac:'var(--c-batt)' };
+  ['gas','wind','sac','load','bac'].forEach(k => g += (LBF[k] ? `<rect id="lbbg-${k}" fill="color-mix(in srgb, ${LBF[k]} 22%, var(--sheet))" stroke="${LBF[k]}" stroke-width="1.2"/>` : '') +
+    `<text id="lb-${k}" text-anchor="middle" fill="var(--ink)" style="font-family:var(--f-mono)" font-size="13.5" font-weight="700"></text>`);
   g += `<text x="261" y="344" text-anchor="middle" fill="${DCC}" style="font-family:var(--f-mono)" font-size="11">DC</text><text x="749" y="320" text-anchor="middle" fill="${DCC}" style="font-family:var(--f-mono)" font-size="11">DC</text>`;
   // nodes: ink outlines; a source gets a small fuel swatch so it can be matched to the charts
   Object.entries(DG).forEach(([k, n]) => {
     const small = k === 'inv' || k === 'pcs';
     g += `<g class="node" data-k="${k}" tabindex="0" role="button" aria-label="${n.name}">
-      <rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>
-      ${n.fuel ? `<rect x="${n.x+n.w-18}" y="${n.y+10}" width="10" height="10" fill="${n.fuel}"/>` : ''}
+      <rect class="box" x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="${n.fuel ? `color-mix(in srgb, ${n.fuel} 16%, var(--sheet))` : n.tint ? `color-mix(in srgb, ${n.tint} 9%, var(--sheet))` : 'var(--sheet)'}" stroke="var(--ink)" stroke-width="1.6"/>
+      ${n.fuel ? `<rect x="${n.x}" y="${n.y}" width="7" height="${n.h}" fill="${n.fuel}"/>` : ''}
       ${small ? `<text x="${n.x+n.w/2}" y="${n.y+28}" text-anchor="middle" fill="var(--ink)" style="font-family:var(--f-display)" font-size="17" font-weight="600">DC/AC</text>` :
       `<text x="${n.x+14}" y="${n.y+24}" fill="var(--ink)" style="font-family:var(--f-display)" font-size="19" font-weight="600">${n.name}</text>
        <text id="nd-${k}-a" x="${n.x+14}" y="${n.y+45}" fill="var(--ink-3)" style="font-family:var(--f-mono)" font-size="12"></text>
@@ -784,7 +788,16 @@ function setFlow(id, mw, back){
     ar.style.opacity = w ? 1 : 0;
   }
 }
-function label(id, x, y, txt){ const el = $(id); el.setAttribute('x', x); el.setAttribute('y', y); el.textContent = txt; }
+let _lbCtx;
+function label(id, x, y, txt){
+  const el = $(id); el.setAttribute('x', x); el.setAttribute('y', y); el.textContent = txt;
+  const bg = $(id.replace('lb-', 'lbbg-')); if (!bg) return;
+  _lbCtx = _lbCtx || document.createElement('canvas').getContext('2d');
+  _lbCtx.font = `700 13.5px ${getComputedStyle(document.body).getPropertyValue('--f-mono')}`;
+  const w = _lbCtx.measureText(txt).width + 12, anchor = el.getAttribute('text-anchor');
+  const left = anchor === 'start' ? x - 6 : anchor === 'end' ? x - w + 6 : x - w / 2;
+  bg.setAttribute('x', left); bg.setAttribute('y', y - 14); bg.setAttribute('width', w); bg.setAttribute('height', 19);
+}
 function curtLine(id, built, mw, calm){
   const el = $(id); if (!el) return;
   if (!built){ el.textContent = ''; return; }
@@ -833,7 +846,8 @@ function renderDiagram(){
   });
   fitNodeText();
   const inTot = n.g + n.w + n.s + Math.max(n.p, 0), outTot = n.d - n.uns + Math.max(-n.p, 0);
-  $('dg-bal').textContent = `in: gas ${f1(n.g)} + wind ${f1(n.w)} + solar ${f1(n.s)} + battery ${f1(Math.max(n.p,0))} = ${f1(inTot)} MW`;
+  const fm = c => `<tspan fill="${c}" font-size="15">■</tspan> `;
+  $('dg-bal').innerHTML = `in: ${fm('var(--c-gas)')}gas ${f1(n.g)} + ${fm('var(--c-wind)')}wind ${f1(n.w)} + ${fm('var(--c-solar)')}solar ${f1(n.s)} + ${fm('var(--c-batt)')}battery ${f1(Math.max(n.p,0))} = ${f1(inTot)} MW`;
   $('dg-bal2').textContent = `out: town ${f1(n.d - n.uns)} + battery charging ${f1(Math.max(-n.p,0))} = ${f1(outTot)} MW`;
   renderInfo();
 }

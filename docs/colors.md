@@ -59,7 +59,7 @@ Regions in chapter 4 are told apart by soft tints, not line color:
 
 ## Charts only
 
-These never appear on a one-line diagram. On diagrams, sources are told apart by labels and symbols, and a source box may carry a small fuel swatch so readers can match it to the chart.
+These never color a **line** on a one-line diagram: lines are always voltage class. They do carry fuel identity everywhere else, so readers can follow a source from the diagram to the charts. In chapter 1, each source box has a soft fuel tint and a solid fuel bar down its left edge, its inverter a lighter tint, its MW reading a fuel-colored tag, and the bus sum a fuel mark before each source. Fuel colors are never used for text.
 
 | Token | Vellum | Blueprint |
 |---|---|---|
