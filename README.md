@@ -18,7 +18,7 @@ Every page is plain HTML with no build step. Open `index.html` in a browser, or 
 - `shared/theme.js`: light/dark switch. Saves the choice under `gfg-theme` for the whole guide. Load it in `<head>` before the stylesheet.
 - `shared/nav.js`: the chapter bar at the top of every chapter, with the theme toggle. The chapter list lives here.
 - `docs/colors.md`: what each color means in each chapter, and where they clash
-- `assets/thumbs/`: card images for the home page, one dark and one light per chapter
+- `assets/thumbs/`: 640×360 detail views of each chapter's region of the home-page sheet, one blueprint (dark) and one vellum (`-light`) per chapter. Not shown on the home page itself.
 
 Each chapter page starts with:
 
