@@ -1,6 +1,6 @@
 # Chapter 5 · Batteries: progress note
 
-Status as of 2026-10-11: **restyled to the drawing-sheet design on the shared theme; still not listed in the guide.** The page now loads `../../shared/theme.css` and `theme.js` (the inlined theme copy is gone) and uses only role tokens. The stand-in chapter bar stays until the chapter is added to `shared/nav.js`.
+Status as of 2026-10-11: **restyled to the drawing-sheet design on the shared theme and merged to `main` (PR #2); linked into the home page and chapter bar on branch `link-chapter-5` (2026-10-12).** The page now loads `../../shared/theme.css` and `theme.js` (the inlined theme copy is gone) and uses only role tokens. The stand-in chapter bar was removed when the chapter was added to `shared/nav.js`.
 Plan and research: `docs/chapter-5-batteries-plan.md`. Preview: https://claude.ai/artifact/RgpDqzRFUCvwTzTSh65iJE
 
 ## Where the work is
@@ -49,10 +49,10 @@ Tested in dark and light, at desktop and 400 px wide: no script errors, no sidew
 
 ## Integration checklist (when ready)
 
-1. ~~Replace the `STANDALONE` block in `<head>` with the shared theme links.~~ Done in the restyle. Still to do: add `<script src="../../shared/nav.js" defer></script>` at the end of `<head>`.
-2. Delete the stand-in `.iso-bar` at the top of `<body>` and its CSS.
-3. Add `{ dir: '05-batteries', short: 'Batteries', title: 'Batteries' }` to `CHAPTERS` in `shared/nav.js`.
-4. Change "Chapter n of 4" to "of 5" in chapters 1–4.
-5. Add a fifth chapter card (and map zone, if it fits) to the home page `index.html`, with dark and light thumbnails.
+1. ~~Replace the `STANDALONE` block in `<head>` with the shared theme links.~~ Done in the restyle. ~~Add the `nav.js` script.~~ Done.
+2. ~~Delete the stand-in `.iso-bar` at the top of `<body>` and its CSS.~~ Done.
+3. ~~Add `{ dir: '05-batteries', short: 'Batteries', title: 'Batteries' }` to `CHAPTERS` in `shared/nav.js`.~~ Done.
+4. ~~Change "Chapter n of 4" to "of 5" in chapters 1–4.~~ Done.
+5. ~~Add a fifth chapter card and map zone to the home page.~~ Done (the sheet's viewBox is now 1600 wide; the zone sits right of chapter 3). Still to do: dark and light thumbnails in `assets/thumbs/` (`05-batteries.jpg`, `05-batteries-light.jpg`).
 6. ~~Add chapter 5 colors to `docs/colors.md`.~~ Done in the restyle.
-7. Merge `chapter-5-batteries` into `main`.
+7. ~~Merge into `main`.~~ Done (PR #2).

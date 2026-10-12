@@ -2,7 +2,7 @@
 
 **Live site:** https://franklan.net/
 
-Four interactive chapters that follow electricity from the power plant to the customer's meter, then up into the control room that runs it. Written for program managers and other non-engineers who work around the grid.
+Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room that runs it, and into the batteries that store it. Written for program managers and other non-engineers who work around the grid.
 
 | # | Chapter | Question | Folder |
 |---|---|---|---|
@@ -10,6 +10,7 @@ Four interactive chapters that follow electricity from the power plant to the cu
 | 2 | Distribution | How does power get from the substation to the meter? | `apps/02-distribution` |
 | 3 | DER & microgrids | What changes when a customer makes power too? | `apps/03-der-microgrids` |
 | 4 | Grid operations | How do the software systems run all of it? | `apps/04-grid-operations` |
+| 5 | Batteries | How do batteries move energy in time? | `apps/05-batteries` |
 
 The guide is styled as an engineering drawing sheet: vellum (light, the default) and blueprint (dark). Every page is plain HTML with no build step. Open `index.html` in a browser, or serve the folder with any static server.
 
