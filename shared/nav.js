@@ -8,7 +8,8 @@
     { dir: '01-power-mix',       short: 'Power mix',        title: 'Power mix' },
     { dir: '02-distribution',    short: 'Distribution',     title: 'Distribution' },
     { dir: '03-der-microgrids',  short: 'DER & microgrids', title: 'DER & microgrids' },
-    { dir: '04-grid-operations', short: 'Grid operations',  title: 'Grid operations' }
+    { dir: '04-grid-operations', short: 'Grid operations',  title: 'Grid operations' },
+    { dir: '05-batteries',       short: 'Batteries',        title: 'Batteries' }
   ];
 
   var path = location.pathname;

@@ -9,6 +9,7 @@
 
 <script src="../../shared/theme.js"></script>
 <link rel="stylesheet" href="../../shared/theme.css">
+<script src="../../shared/nav.js" defer></script>
 
 <style>
   /* Tabs, panels, buttons and quiz options come from shared/theme.css. Line colors follow
@@ -22,19 +23,6 @@
   body{ background:var(--ground); color:var(--ink); font-family:var(--f-body); min-height:100vh; padding:28px 18px 60px; font-size:17px; }
   .wrap{max-width:1040px;margin:0 auto;}
   a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
-
-  /* stand-in for the shared chapter bar (shared/nav.js) while this chapter is not yet listed in the guide */
-  .iso-bar{display:flex;align-items:center;gap:16px;min-height:46px;margin:-28px -18px 26px;
-    padding:6px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));
-    background:var(--ground);border-bottom:2px solid var(--ink);font:400 12px/1.2 var(--f-mono);color:var(--ink);}
-  .iso-bar .home{font:700 17px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:8px}
-  .iso-bar .where{flex:1;text-align:center;color:var(--ink-3);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
-  .iso-bar .theme{display:inline-flex;border:1px solid var(--ink)}
-  .iso-bar .theme button{border:0;background:transparent;color:var(--ink);font:400 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;cursor:pointer;margin:0;border-radius:0}
-  .iso-bar .theme button + button{border-left:1px solid var(--ink)}
-  .iso-bar .theme button:hover{background:var(--hover-fill)}
-  .iso-bar .theme button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);font-weight:700}
-  @media (max-width:560px){ .iso-bar .where{display:none} .iso-bar{justify-content:space-between} }
 
   .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;}
   h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1;text-transform:uppercase;margin:0 0 12px;letter-spacing:.01em;}
@@ -282,13 +270,6 @@
 </style>
 </head>
 <body>
-<!-- Stand-in for the shared chapter bar. Delete when this chapter is added to CHAPTERS in shared/nav.js (nav.js then adds the real one). -->
-<div class="iso-bar">
-  <span class="home"><svg width="28" height="18" viewBox="0 0 28 18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="19" cy="9" r="7" fill="none" stroke="var(--v-primary)" stroke-width="2"/></svg>Grid Field Guide</span>
-  <span class="where">Chapter 5 preview · standalone build, not yet linked into the guide</span>
-  <span class="theme" role="group" aria-label="Color theme"><button type="button" data-theme-set="light" aria-label="Light theme" aria-pressed="true">☀ Light</button><button type="button" data-theme-set="dark" aria-label="Dark theme" aria-pressed="false">☾ Dark</button></span>
-</div>
-
 <div class="wrap">
   <div class="eyebrow">Chapter 5 of 5 · How do batteries move energy in time?</div>
   <h1>Battery Storage Field Guide</h1>

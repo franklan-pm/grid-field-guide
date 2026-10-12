@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grid Field Guide</title>
-<meta name="description" content="Four interactive chapters that follow electricity from the power plant to the meter, then up into the control room that runs it.">
+<meta name="description" content="Five interactive chapters that follow electricity from the power plant to the meter, up into the control room that runs it, and into the batteries that store it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap">
@@ -215,7 +215,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
   <section class="intro" aria-labelledby="title">
     <h1 id="title">Follow the power, then the decisions.</h1>
     <div>
-      <p class="lede">Four interactive chapters that follow electricity from the power plant to the customer's meter, then up into the control room. For program managers and other non-engineers who work around the grid. No engineering degree required.</p>
+      <p class="lede">Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room, and into the batteries that store it. For program managers and other non-engineers who work around the grid. No engineering degree required.</p>
       <div class="cta">
         <a class="btn primary" href="apps/01-power-mix/index.html">Start with chapter 1 <span aria-hidden="true">→</span></a>
         <a class="btn" href="#chapters">Sheet index</a>
@@ -228,7 +228,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
     <div class="zm side l" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
     <div class="inner">
       <div class="scroll" tabindex="0" aria-label="One-line diagram of the guide; scrolls sideways on small screens">
-      <svg viewBox="0 0 1310 602" role="group" aria-label="One-line diagram of the four chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, and control-room systems above monitor and control the field equipment.">
+      <svg viewBox="0 0 1600 602" role="group" aria-label="One-line diagram of the five chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, and a battery rack behind an inverter sits beside the DER site.">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--v-primary)"/></marker>
         </defs>
@@ -328,6 +328,40 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
           <rect class="box site" x="1115" y="498" width="127" height="43"/>
           <text class="lbl" x="1178.5" y="524" text-anchor="middle">750 kW BESS</text>
         </a>
+
+        <!-- Chapter 5: batteries. Opens up the BESS from chapter 3: AC to the inverter (PCS), DC to the rack. -->
+        <path class="sec" d="M1242 519.5 H1298"/>
+        <a class="zone" data-ch="5" href="apps/05-batteries/index.html" aria-label="Chapter 5: Batteries">
+          <rect class="bg" x="1274" y="210" width="272" height="374"/>
+          <text class="tag" x="1289" y="232">CHAPTER 5</text>
+          <text class="name" x="1289" y="257">BATTERIES →</text>
+          <!-- BMS: watches every cell, talks to the inverter -->
+          <rect class="box sys" x="1298" y="300" width="100" height="50"/>
+          <text class="lbl" x="1310" y="322">BMS</text>
+          <text class="sub" x="1310" y="338">cell safety</text>
+          <path class="data" d="M1398 325 H1428 M1348 350 V494"/>
+          <!-- PCS (inverter): AC on the left, DC on the right -->
+          <rect class="box site" x="1298" y="494" width="100" height="51"/>
+          <text class="lbl" x="1310" y="516">PCS</text>
+          <text class="sub" x="1310" y="532">inverter</text>
+          <path d="M1398 519.5 H1428" stroke="var(--v-secondary)" stroke-width="7" fill="none"/>
+          <path d="M1398 519.5 H1428" stroke="var(--sheet)" stroke-width="3" fill="none"/>
+          <text class="dev t-sec" x="1413" y="507" text-anchor="middle">DC</text>
+          <!-- rack of modules, each a row of cells (fuel-battery tint) -->
+          <rect class="box" x="1428" y="290" width="104" height="255"/>
+          <text class="dev" x="1438" y="309">RACK</text>
+          <g fill="color-mix(in srgb, var(--fuel-battery) 35%, var(--sheet))" stroke="var(--fuel-battery)" stroke-width="1.2">
+            <rect x="1438" y="322" width="84" height="46"/><rect x="1438" y="378" width="84" height="46"/>
+            <rect x="1438" y="434" width="84" height="46"/><rect x="1438" y="490" width="84" height="46"/>
+          </g>
+          <g fill="var(--fuel-battery)">
+            <path d="M1447 332h9v26h-9zM1461 332h9v26h-9zM1475 332h9v26h-9zM1489 332h9v26h-9zM1503 332h9v26h-9z"/>
+            <path d="M1447 388h9v26h-9zM1461 388h9v26h-9zM1475 388h9v26h-9zM1489 388h9v26h-9zM1503 388h9v26h-9z"/>
+            <path d="M1447 444h9v26h-9zM1461 444h9v26h-9zM1475 444h9v26h-9zM1489 444h9v26h-9zM1503 444h9v26h-9z"/>
+            <path d="M1447 500h9v26h-9zM1461 500h9v26h-9zM1475 500h9v26h-9zM1489 500h9v26h-9zM1503 500h9v26h-9z"/>
+          </g>
+          <text class="dev" x="1289" y="566">RACK · MODULE · CELL</text>
+        </a>
       </svg>
       </div>
 
@@ -358,7 +392,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
             <p>Plant → meter → control room</p>
           </div>
           <div><p class="fl">Drawn by</p><p class="v">F. Lan</p></div>
-          <div class="c2"><p class="fl">Sheets</p><p class="v">4 chapters</p></div>
+          <div class="c2"><p class="fl">Sheets</p><p class="v">5 chapters</p></div>
           <div><p class="fl">Scale</p><p class="v">Not to scale</p></div>
           <div class="c2"><p class="fl">Status</p><p class="v status">For learning</p></div>
           <div class="wide">
@@ -375,7 +409,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
   <section id="chapters" aria-labelledby="ch-title">
     <div class="section-head">
       <h2 id="ch-title">Sheet index</h2>
-      <p>Chapters 1 to 3 follow the electricity. Chapter 4 steps back to show the systems that watch and steer it.</p>
+      <p>Chapters 1 to 3 follow the electricity. Chapter 4 steps back to show the systems that watch and steer it. Chapter 5 opens up the battery, the one device that moves energy through time.</p>
     </div>
 
     <ol class="index">
@@ -432,6 +466,20 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
           <p class="desc">A layered model from wholesale markets down to field devices: what OMS, FLISR, SCADA, DERMS and MDMS each do, what data moves between them, and how fast. Then step through five situations, from a storm outage to a heat-wave peak.</p>
           <p class="inc"><span class="fl">Includes</span> · Explore the model · Real-life scenarios · Concepts quiz</p>
           <p class="lines"><span class="fl">Lines</span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw" style="border-color:var(--fault)" title="Faults"></span></p>
+        </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
+      </li>
+      <li class="row" data-ch="5">
+        <div class="num" aria-hidden="true">05</div>
+        <div class="head">
+          <h3><a href="apps/05-batteries/index.html"><span class="sr">Chapter 5: </span>Batteries</a></h3>
+          <p class="q">How do batteries move energy in time?</p>
+          <p class="fl">25 quiz questions</p>
+        </div>
+        <div class="what">
+          <p class="desc">Start inside one lithium-ion cell, then build up to the rack, inverter and feeder. Size a battery for a home, a grocery store or a small factory, see how heat and cycling wear it out, test whether it pays back, and learn how it is kept from catching fire.</p>
+          <p class="inc"><span class="fl">Includes</span> · Basics · Diagram · Playground · Glossary · Quiz · Costs · Safety</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-secondary)" title="AC and site voltage"></span><span class="sw" style="border-top:7px double var(--v-secondary)" title="DC side of the inverter"></span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span></p>
         </div>
         <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
