@@ -76,25 +76,6 @@
   --hover-fill:color-mix(in srgb, var(--ink) 6%, transparent);
   --ok-bg:color-mix(in srgb, var(--ok) 12%, var(--sheet));
   --fault-bg:color-mix(in srgb, var(--fault) 12%, var(--sheet));
-
-  /* ---- Legacy aliases, kept only for chapter 5 (apps/05-batteries, still in draft on the
-     chapter-5-batteries branch). Nothing else uses them. Delete this block when chapter 5
-     is restyled onto the role tokens above. ---- */
-  --ink-navy:var(--ground);   --ink-deep:var(--ground);
-  --panel-navy:var(--sheet);  --panel-navy-2:var(--sheet);  --well:var(--sheet);  --box-off:var(--sheet);
-  --glow:var(--ground);
-  --edge:var(--band);         --edge-2:var(--ink);
-  --paper:var(--ink);         --text-2:var(--ink-2);  --muted:var(--ink-3);  --muted-2:var(--ink-3);
-  --signal-amber:var(--v-primary);  --amber-soft:var(--v-primary);
-  --line-cyan:var(--v-secondary);
-  --line-cyan-dim:color-mix(in srgb, var(--v-secondary) 45%, var(--ground));
-  --violet:var(--data);
-  --bad:var(--fault);         --good:var(--ok);
-  --copper:var(--fuel-gas);   --solar:var(--fuel-solar);
-  --battery:var(--fuel-battery);    --battery-soft:var(--fuel-battery);
-  --good-bg:var(--ok-bg);     --bad-bg:var(--fault-bg);
-  --on-amber:var(--on-ink);   --on-accent:var(--on-ink);
-  --pill-bg:var(--ink);       --pill-fg:var(--on-ink);
 }
 
 html{background:var(--ground)}

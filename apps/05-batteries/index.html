@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Batteries · Grid Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
+
+<style>
+  /* Tabs, panels, buttons and quiz options come from shared/theme.css. Line colors follow
+     docs/colors.md: DC side of the inverter = blue double line, AC at site voltage = blue,
+     utility feeder = orange, data = teal (monitoring) and magenta (control). Fuel colors
+     (solar yellow, battery green) live in charts and as fills, never as line colors. */
+  :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--ground); color:var(--ink); font-family:var(--f-body); min-height:100vh; padding:28px 18px 60px; font-size:17px; }
+  .wrap{max-width:1040px;margin:0 auto;}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+
+  /* stand-in for the shared chapter bar (shared/nav.js) while this chapter is not yet listed in the guide */
+  .iso-bar{display:flex;align-items:center;gap:16px;min-height:46px;margin:-28px -18px 26px;
+    padding:6px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));
+    background:var(--ground);border-bottom:2px solid var(--ink);font:400 12px/1.2 var(--f-mono);color:var(--ink);}
+  .iso-bar .home{font:700 17px/1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .iso-bar .where{flex:1;text-align:center;color:var(--ink-3);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .iso-bar .theme{display:inline-flex;border:1px solid var(--ink)}
+  .iso-bar .theme button{border:0;background:transparent;color:var(--ink);font:400 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;cursor:pointer;margin:0;border-radius:0}
+  .iso-bar .theme button + button{border-left:1px solid var(--ink)}
+  .iso-bar .theme button:hover{background:var(--hover-fill)}
+  .iso-bar .theme button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);font-weight:700}
+  @media (max-width:560px){ .iso-bar .where{display:none} .iso-bar{justify-content:space-between} }
+
+  .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1;text-transform:uppercase;margin:0 0 12px;letter-spacing:.01em;}
+  .sub{color:var(--ink-2);font-size:18px;max-width:720px;line-height:1.55;margin-bottom:26px;}
+  .sub b{color:var(--ink);}
+
+  /* tabs and panels: look from shared/theme.css */
+  .tabs{margin-bottom:22px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 6px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 6px;}
+  p{line-height:1.55;}
+  .intro{font-size:16px;color:var(--ink-2);margin:0 0 16px;line-height:1.5;max-width:780px;}
+  .intro b{color:var(--ink);}
+
+  /* ---- basics ---- */
+  .cell-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+  .cell-bar .seg{flex:0 0 auto;}
+  .cell-bar .seg button{min-width:96px;font-size:13px;padding:8px 12px;}
+  .soc{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:13px;color:var(--ink-2);flex:1 1 260px;}
+  .soc-track{flex:1;height:12px;background:var(--grid);border:1px solid var(--ink);overflow:hidden;min-width:100px;}
+  .soc-fill{display:block;height:100%;width:25%;background:var(--fuel-battery);transition:width .3s;}
+  .soc b{color:var(--ink);min-width:44px;text-align:right;}
+  .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+  .dot.sm{width:8px;height:8px;}
+  .cell-wrap svg.chart{min-width:600px;}
+  .basics-steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px;}
+  .basics-steps ol{margin:6px 0 0;padding-left:22px;}
+  .basics-steps li{font-size:15.5px;line-height:1.5;margin-bottom:6px;}
+  .idea-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+  .idea{background:var(--sheet);border:1px solid var(--band);padding:14px 16px;}
+  .idea p{font-size:15px;margin:0;line-height:1.5;color:var(--ink-2);}
+  @media (max-width:820px){ .basics-steps,.idea-grid{grid-template-columns:1fr;} }
+
+  /* ---- diagram ---- */
+  .diagram-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .legend{display:flex;gap:8px 14px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend svg{display:inline-block;vertical-align:middle;}
+  .swatch{width:18px;height:3px;display:inline-block;}
+  .sw{width:14px;height:10px;display:inline-block;}
+  .svg-scroll{overflow-x:auto;}
+  #diagramSvg{width:100%;min-width:640px;height:auto;display:block;margin:6px 0 4px;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;border:1px solid var(--band);}
+  .node{cursor:pointer;outline:none;}
+  .node:hover .box,.node:focus-visible .box{stroke-width:3;}
+  .node.selected .box{stroke-width:3.5;}
+  .node.selected text{font-weight:700;}
+  .node:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+  .diagram-hint{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-3);margin-bottom:14px;}
+  .flow-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:4px 0 10px;}
+  .flow-row .seg{flex:0 0 auto;}
+  .flow-note{font-size:15px;color:var(--ink-2);flex:1 1 300px;line-height:1.45;}
+  /* power-flow direction: arrowheads plus a travelling highlight tinted from the wire's own color (pathLength=100);
+     never marching dashes, since dashes mean data. Data lines are dashed in their kind's color and pattern. */
+  .flow-hi{stroke-linecap:butt;stroke-dasharray:14 100;animation:flowhi 2.2s linear infinite;}
+  .flow-hi.rev{animation-direction:reverse;}
+  @keyframes flowhi{from{stroke-dashoffset:14;}to{stroke-dashoffset:-100;}}
+  .data-flow{fill:none;stroke-width:2;animation:flowdata 2s linear infinite;}
+  .data-flow.tel{stroke:var(--data-tel);stroke-dasharray:2 4;}
+  .data-flow.ctl{stroke:var(--data-ctl);stroke-dasharray:8 4;stroke-width:2.2;}
+  .data-flow.rev{animation-direction:reverse;}
+  @keyframes flowdata{to{stroke-dashoffset:-48;}}
+  @media (prefers-reduced-motion: reduce){ .flow-hi{display:none;} .data-flow{animation:none;} }
+
+  #infoCard{background:var(--sheet);border:1px solid var(--ink);border-left:4px solid var(--ink);padding:16px 18px;min-height:96px;}
+  #infoCard .placeholder{color:var(--ink-3);font-size:16px;}
+  .info-title{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0 0 3px;}
+  .info-tag{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;}
+  .info-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px;}
+  @media (max-width:760px){ .info-cols{grid-template-columns:1fr;} }
+  .info-cols h4{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);font-weight:400;text-transform:uppercase;letter-spacing:.08em;margin:0 0 4px;}
+  .info-cols p{margin:0;font-size:15.5px;}
+  .info-cols .cost{color:var(--ink);font-weight:600;}
+  .chlink{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);margin-top:10px;}
+
+  .safety{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;margin-top:22px;}
+  @media (max-width:820px){ .safety{grid-template-columns:1fr;} }
+  .safety p{font-size:15.5px;margin:0 0 10px;}
+  .trend{background:var(--sheet);border:1px solid var(--ink);border-top:4px solid var(--zone-sec);padding:14px 16px;}
+  .trend .big{font-family:var(--f-display);font-size:38px;font-weight:700;color:var(--ink);line-height:1;}
+  .trend .lbl{font-size:14.5px;color:var(--ink-2);margin-top:6px;line-height:1.45;}
+  .std{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);line-height:1.6;}
+  .std b{color:var(--ink);font-weight:700;}
+
+  /* ---- glossary ---- */
+  .search-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .search-row input,.search-row select{background:var(--sheet);border:1px solid var(--ink);border-radius:0;color:var(--ink);padding:10px 12px;font-family:var(--f-body);font-size:16px;}
+  .search-row input{flex:1 1 220px;}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .term-card{background:var(--sheet);border:1px solid var(--band);padding:14px 16px;}
+  .term-card .info-tag{font-size:11px;}
+  .term-card h3{margin:4px 0 6px;}
+  .term-card p{font-size:15px;color:var(--ink-2);margin:0;line-height:1.5;}
+  .empty{color:var(--ink-3);font-size:15px;}
+
+  /* ---- tables, notes ---- */
+  .table-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;background:var(--sheet);border:1px solid var(--ink);}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--band);font-size:15px;vertical-align:top;line-height:1.45;}
+  th{font-family:var(--f-mono);font-size:11px;font-weight:400;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--ink);}
+  td.num{font-family:var(--f-mono);font-size:13.5px;color:var(--ink);font-weight:700;white-space:nowrap;}
+  .subtotal-row td{font-weight:600;color:var(--ink);border-top:2px solid var(--ink);}
+  .caveat{margin-top:16px;padding:12px 14px;background:var(--sheet);border:1px solid var(--band);border-left:4px solid var(--ink);font-size:14px;color:var(--ink-2);line-height:1.5;}
+  .caveat b{color:var(--ink);}
+  .hint-box{margin-top:14px;padding:13px 16px;background:var(--sheet);border:1px solid var(--band);border-left:4px solid var(--ink);font-size:15px;line-height:1.5;}
+  .hint-box.ok{border-left-color:var(--ok);}
+  .hint-box p{margin:0 0 6px;} .hint-box p:last-child{margin:0;}
+  .hint-box .quiet{color:var(--ink-3);font-size:14px;}
+
+  /* ---- playground ---- */
+  .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 18px;}
+  .subtabs button{flex:1 1 150px;text-align:left;background:var(--sheet);border:1px solid var(--ink);border-radius:0;color:var(--ink);padding:10px 14px;cursor:pointer;font-family:var(--f-display);font-size:18px;font-weight:600;letter-spacing:.02em;}
+  .subtabs button small{display:block;font-family:var(--f-body);font-weight:400;font-size:13.5px;letter-spacing:0;color:var(--ink-3);margin-top:2px;}
+  .subtabs button:hover{background:var(--hover-fill);}
+  .subtabs button.on{background:var(--ink);color:var(--on-ink);}
+  .subtabs button.on small{color:var(--on-ink);opacity:.8;}
+  .tool{display:none;} .tool.on{display:block;}
+
+  .pg-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start;}
+  .ctl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px 22px;margin-bottom:14px;align-items:start;}
+  .ctl-grid .ctrl{margin-bottom:0;}
+  .ctl-break{grid-column:1/-1;height:0;margin-top:-14px;}
+  #payDemandBox{display:contents;}
+  .pg-grid > *{min-width:0;}
+  .ctl-grid .check-row{margin:0;align-self:center;}
+  .ctl-grid .ctrl-group{grid-column:1/-1;margin:4px 0 -4px;}
+  @media (max-width:860px){ .pg-grid{grid-template-columns:1fr;} }
+  .controls{background:var(--sheet);border:1px solid var(--ink);padding:16px 18px;}
+  .ctrl{margin-bottom:16px;}
+  .ctrl:last-child{margin-bottom:0;}
+  .ctrl label,.ctrl .lab{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);margin-bottom:6px;}
+  .ctrl label b,.ctrl .lab b{color:var(--ink);font-weight:700;white-space:nowrap;}
+  .ctrl input[type=range]{width:100%;accent-color:var(--ink);}
+  .ctrl .note{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.45;}
+  .seg{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--ink);}
+  .seg button{flex:1 1 auto;font-family:var(--f-mono);font-size:12.5px;padding:7px 8px;border-radius:0;border:0;background:transparent;color:var(--ink-2);cursor:pointer;margin:0;}
+  .seg button + button{border-left:1px solid var(--ink);}
+  .seg button:hover{color:var(--ink);background:var(--hover-fill);}
+  .seg button.on{background:var(--ink);color:var(--on-ink);font-weight:700;}
+  .check-row{display:flex;align-items:flex-start;gap:8px;font-family:var(--f-mono);font-size:13px;color:var(--ink-2);margin:4px 0 14px;line-height:1.4;}
+  .check-row input{margin-top:2px;accent-color:var(--ink);}
+  .check-row input:disabled + span{opacity:.5;}
+  .ctrl-group{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);font-weight:700;margin:4px 0 10px;}
+
+  /* result pills: a ruled readout; the top rule is the chart color of what it measures */
+  .pills{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px;}
+  .pill{background:var(--sheet);border:1px solid var(--band);border-top:4px solid var(--ink);padding:10px 12px;}
+  .pill .v{font-family:var(--f-display);font-size:28px;font-weight:700;line-height:1.1;}
+  .pill .v small{font-size:15px;color:var(--ink-3);font-weight:500;}
+  .pill .l{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
+  .pill.good{border-top-color:var(--ok);}
+  .pill.bad{border-top-color:var(--ink-3);}
+  .pill.batt{border-top-color:var(--fuel-battery);}
+
+  svg.chart{width:100%;height:auto;display:block;}
+  .chart-wrap{background:var(--sheet);border:1px solid var(--ink);padding:10px 10px 4px;margin-bottom:10px;}
+  .chart-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 4px 6px;}
+  .chart-top h3{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0;}
+  .chart-wrap .legend{font-size:12px;margin:0 4px 6px;}
+  .chart-scroll{overflow-x:auto;}
+  .chart-help{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);}
+  #sunChart,#sunSoc{cursor:crosshair;}
+  #sunChart:focus-visible,#sunSoc:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .chart-wrap.has-tip{position:relative;}
+  .chart-tip{position:absolute;top:64px;z-index:15;min-width:230px;background:var(--sheet);border:1px solid var(--ink);padding:10px 12px;pointer-events:none;font-family:var(--f-mono);font-size:12.5px;}
+  .tip-time{font-family:var(--f-display);font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  .tip-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;color:var(--ink-2);line-height:1.7;}
+  .tip-row i{width:12px;height:10px;display:block;}
+  .tip-row b{color:var(--ink);font-weight:700;text-align:right;}
+  .tip-row.zero{opacity:.45;}
+  .tip-row.tip-sum{border-top:1px solid var(--band);}
+  .tip-row.tip-sum + .tip-row.tip-sum{border-top:0;}
+  .chart-scroll svg.chart{min-width:600px;}
+
+  .tt{position:relative;display:inline-flex;align-items:center;margin-left:6px;cursor:help;}
+  .tt-icon{width:15px;height:15px;border:1px solid var(--ink);color:var(--ink);font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-mono);line-height:1;user-select:none;}
+  .tt:hover .tt-icon,.tt:focus .tt-icon,.tt:focus-within .tt-icon{background:var(--ink);color:var(--on-ink);}
+  .tt-box{display:none;position:absolute;bottom:135%;left:50%;transform:translateX(-50%);width:270px;background:var(--sheet);border:1px solid var(--ink);padding:11px 13px;font-size:13px;line-height:1.5;color:var(--ink);font-family:var(--f-body);text-align:left;z-index:20;font-weight:400;}
+  .tt-box b{color:var(--ink);}
+  .tt:hover .tt-box,.tt:focus .tt-box,.tt:focus-within .tt-box{display:block;}
+  .tt-calc{display:block;margin-top:7px;padding-top:7px;border-top:1px solid var(--band);font-family:var(--f-mono);font-size:12px;color:var(--ink-2);}
+  .tt-calc b{color:var(--ink);}
+  /* pill tooltips span the pill's width, so they never run off the screen edge */
+  .pill{position:relative;}
+  .pill .tt{position:static;vertical-align:-2px;}
+  .pill .tt-icon{text-transform:none;}
+  .tt.tt-left .tt-box{left:auto;right:-10px;transform:none;}
+  .check-row label{cursor:pointer;}
+  .ctrl-group .tt-icon{text-transform:none;letter-spacing:0;}
+  .ctrl-group .tt-box{text-transform:none;letter-spacing:0;font-size:13px;font-weight:400;}
+  .pill .tt-box{left:-1px;right:-1px;width:auto;transform:none;bottom:calc(100% + 6px);text-transform:none;letter-spacing:0;}
+  @media (max-width:700px){ .pills{position:relative;} .pill{position:static;} }
+
+  /* size-it steps: a real sequence, so numbered */
+  .steps{display:grid;gap:10px;margin-top:4px;}
+  .step{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:start;background:var(--sheet);border:1px solid var(--band);padding:12px 14px;}
+  .step .n{width:28px;height:28px;background:var(--ink);color:var(--on-ink);font-family:var(--f-display);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:17px;}
+  .step h4{font-family:var(--f-display);font-weight:600;font-size:18px;margin:2px 0 3px;}
+  .step p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.45;}
+  .step .math{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);margin-top:5px;}
+  .step .res{font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--ink);white-space:nowrap;text-align:right;}
+  .step.final{border:2px solid var(--ink);}
+  .formula{font-family:var(--f-mono);font-size:13px;background:var(--ground);border:1px solid var(--band);padding:10px 12px;margin:12px 0 0;color:var(--ink-2);overflow-x:auto;white-space:nowrap;}
+
+  /* ---- costs ---- */
+  .ladder{display:grid;gap:8px;margin-top:12px;}
+  .rung{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:12px;align-items:center;}
+  .rung .name{font-size:14.5px;line-height:1.3;}
+  .rung .name small{display:block;color:var(--ink-3);font-size:12.5px;}
+  .bar-track{position:relative;height:30px;background:var(--grid);}
+  .bar-solid{position:absolute;left:0;top:0;bottom:0;background:var(--fuel-battery);opacity:.85;}
+  .bar-range{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--fuel-battery) 0 3px,transparent 3px 7px);opacity:.75;}
+  .bar-val{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--f-mono);font-size:12.5px;color:var(--ink);white-space:nowrap;margin-left:8px;}
+  .bar-val.in{margin-left:0;margin-right:6px;background:var(--sheet);padding:2px 6px;}
+  .bar-mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);}
+  @media (max-width:600px){ .rung{grid-template-columns:1fr;gap:4px;} }
+  .ex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px;}
+  @media (max-width:900px){ .ex-grid{grid-template-columns:1fr;} }
+  .ex{background:var(--sheet);border:1px solid var(--band);padding:14px 16px;display:flex;flex-direction:column;}
+  .ex h3{margin-bottom:2px;}
+  .ex .who{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-bottom:8px;}
+  .ex dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14.5px;}
+  .ex dt{color:var(--ink-3);font-family:var(--f-mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;padding-top:3px;}
+  .ex dd{margin:0;line-height:1.4;}
+  .ex .pay{margin-top:10px;font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--ink);}
+  .ex .lesson{font-size:14px;color:var(--ink-2);margin:8px 0 12px;line-height:1.45;flex:1;}
+  .incent{margin-top:22px;background:var(--sheet);border:1px solid var(--band);border-left:4px solid var(--ink);padding:14px 18px;}
+  .incent ul{margin:8px 0 0;padding-left:20px;} .incent li{margin-bottom:6px;font-size:15px;line-height:1.5;}
+  .asof{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);}
+  .sources{font-size:14px;color:var(--ink-2);line-height:1.6;margin-top:22px;}
+  .sources summary{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--ink);}
+  .sources ul{padding-left:20px;}
+
+  /* ---- quiz ---- */
+  .quiz-q{margin-bottom:22px;}
+  .quiz-q h3{margin-bottom:10px;font-size:21px;}
+  .opt{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:15px;font-family:var(--f-body);}
+  .explain{font-size:14.5px;color:var(--ink-2);margin-top:6px;display:none;line-height:1.5;}
+  .explain.show{display:block;}
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  #quizScore{font-family:var(--f-mono);font-size:13px;color:var(--ink);border:1px solid var(--ink);padding:6px 12px;}
+</style>
+</head>
+<body>
+<!-- Stand-in for the shared chapter bar. Delete when this chapter is added to CHAPTERS in shared/nav.js (nav.js then adds the real one). -->
+<div class="iso-bar">
+  <span class="home"><svg width="28" height="18" viewBox="0 0 28 18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="19" cy="9" r="7" fill="none" stroke="var(--v-primary)" stroke-width="2"/></svg>Grid Field Guide</span>
+  <span class="where">Chapter 5 preview · standalone build, not yet linked into the guide</span>
+  <span class="theme" role="group" aria-label="Color theme"><button type="button" data-theme-set="light" aria-label="Light theme" aria-pressed="true">☀ Light</button><button type="button" data-theme-set="dark" aria-label="Dark theme" aria-pressed="false">☾ Dark</button></span>
+</div>
+
+<div class="wrap">
+  <div class="eyebrow">Chapter 5 of 5 · How do batteries move energy in time?</div>
+  <h1>Battery Storage Field Guide</h1>
+  <p class="sub">Solar and wind generate on nature's schedule, not ours. Batteries don't make energy; they <b>move it in time</b>, from cheap midday sun to the expensive evening. Follow the same town as Chapter 1 through <b>a home</b>, <b>a grocery store</b> and <b>a small factory</b> to see what's inside a battery, how long it lasts, how to size one and what it really costs.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="basics" role="tab">± Basics</button>
+    <button class="tab" data-tab="diagram" role="tab">◇ Diagram</button>
+    <button class="tab" data-tab="playground" role="tab">⚡&#xFE0E; Playground</button>
+    <button class="tab" data-tab="glossary" role="tab">≡ Glossary</button>
+    <button class="tab" data-tab="quiz" role="tab">? Quiz</button>
+    <button class="tab" data-tab="costs" role="tab">$ Costs</button>
+    <button class="tab" data-tab="safety" role="tab">△ Safety</button>
+  </div>
+
+  <!-- ================= BASICS ================= -->
+  <section class="panel active" id="panel-basics">
+    <h2>How a battery cell charges and discharges</h2>
+    <p class="intro">Every battery, from a phone to a grid container, is built from <b>cells</b>. Here is one LFP cell, the kind most home and grid batteries now use. Press <b>Charge</b> or <b>Discharge</b> and watch where the lithium goes.</p>
+
+    <div class="cell-bar">
+      <div class="seg" id="cellMode" role="group" aria-label="Cell action"><button data-v="charge">Charge</button><button data-v="discharge">Discharge</button><button data-v="pause">Pause</button></div>
+      <div class="soc" aria-live="polite"><span class="soc-lbl">State of charge</span><span class="soc-track"><span class="soc-fill" id="socFill"></span></span><b id="socVal">25%</b></div>
+    </div>
+    <div class="chart-wrap cell-wrap">
+      <div class="legend">
+        <span><i class="dot" style="background:var(--fuel-battery)"></i>lithium ion (Li⁺), moves inside the cell</span>
+        <span><i class="dot sm" style="background:var(--ink)"></i>electron (e⁻), moves through the wire</span>
+      </div>
+      <div class="chart-scroll"><svg class="chart" id="cellSvg" viewBox="0 0 900 450" role="img" aria-label="Animated lithium-ion cell: ions move through the electrolyte while electrons move through the outside wire"></svg></div>
+    </div>
+    <div class="hint-box" id="cellStatus"></div>
+
+    <div class="basics-steps">
+      <div>
+        <h3>Charging</h3>
+        <ol>
+          <li>The charger (rooftop solar or the grid) pulls electrons out of the <b>cathode</b> and pushes them through the wire into the <b>anode</b>.</li>
+          <li>Lithium ions follow on the inside. They leave the iron phosphate, swim through the <b>electrolyte</b> and slip through the <b>separator</b>.</li>
+          <li>They tuck in between the graphite layers of the anode. The cell is full when the graphite holds all the lithium it can.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Discharging</h3>
+        <ol>
+          <li>Lithium would rather be back in the cathode, so as soon as there's a path, ions leave the graphite and cross back through the electrolyte.</li>
+          <li>Electrons can't cross the separator, so they take the long way round, through your lamp, fridge or the grid. That flow is the electric current you use.</li>
+          <li>Ions and electrons meet again in the cathode. The cell is empty when the graphite has given up its lithium.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="idea-grid">
+      <div class="idea"><h3>Ions inside, electrons outside</h3><p>The separator is the trick. It lets lithium ions through but blocks electrons, so every ion that crosses inside forces one electron to travel through the outside wire. Nothing is burned or used up: the same lithium shuttles back and forth thousands of times.</p></div>
+      <div class="idea"><h3>Why about 3.2 volts?</h3><p>Charging pushes lithium "uphill" into the graphite, like pumping water up into a tank. The height of that hill sets the voltage: about 3.2 V for LFP and 3.6–3.7 V for NMC. A little energy turns into heat each way, which is why you get back roughly 85–90% of what you put in.</p></div>
+      <div class="idea"><h3>Why cells wear out</h3><p>Each cycle, a little lithium gets trapped in a thin film that grows on the anode and in other side reactions. Less lithium shuttling back and forth means less capacity. Heat speeds this up, which is why cooling matters. Try it in <a href="#playground/wear">Wear it out</a>.</p></div>
+    </div>
+
+    <div class="caveat"><b>From one cell to a battery.</b> One cell is small. Wiring cells in a chain (series) adds up their voltage; wiring them side by side (parallel) adds up their capacity. A home battery holds dozens of large cells; a grid container holds thousands. See how they stack up in the <a href="#diagram">Diagram</a>. <span style="display:block;margin-top:6px">Battery makers name the electrodes by what they do while discharging, so the cathode stays the "cathode" even while charging. LFP stands for lithium iron phosphate (LiFePO₄); the anode is graphite, written C₆.</span></div>
+  </section>
+
+  <!-- ================= DIAGRAM ================= -->
+  <section class="panel" id="panel-diagram">
+    <div class="diagram-head">
+      <h2>Inside the box: from cell to grid</h2>
+      <div class="legend">
+        <span><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="var(--v-secondary)" stroke-width="6"/><line x1="1" y1="5" x2="25" y2="5" stroke="var(--ground)" stroke-width="2"/></svg>DC side of the inverter</span>
+        <span><i class="swatch" style="background:var(--v-secondary)"></i>AC, site voltage</span>
+        <span><i class="swatch" style="background:var(--v-primary)"></i>Utility primary (~12 kV)</span>
+        <span><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--data-tel)" stroke-width="2" stroke-dasharray="2 4"/></svg>Monitoring (telemetry)</span>
+        <span><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--data-ctl)" stroke-width="2" stroke-dasharray="8 4"/></svg>Control (setpoints)</span>
+        <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" fill="color-mix(in srgb, var(--zone-sec) 12%, transparent)" stroke="var(--zone-sec)" stroke-width="2"/></svg>Safety layer</span>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="seg" id="flowMode" role="group" aria-label="Battery direction"><button data-v="out" class="on">Discharging (evening)</button><button data-v="in">Charging (midday)</button></div>
+      <span class="flow-note" id="flowNote"></span>
+    </div>
+    <div class="diagram-hint">Click any part to see what it does, what happens if it fails, and roughly what it costs.</div>
+    <div class="svg-scroll"><svg id="diagramSvg" viewBox="0 0 1100 480" role="group" aria-label="Exploded diagram of a battery energy storage system"></svg></div>
+    <div id="infoCard" aria-live="polite"><div class="placeholder">Start at the cell on the left and work right: each step is a bigger, more capable piece built from the one before.</div></div>
+
+  </section>
+
+  <!-- ================= PLAYGROUND ================= -->
+  <section class="panel" id="panel-playground">
+    <h2>Playground</h2>
+    <p class="intro">Four small tools, one question each. Numbers are realistic in scale but simplified; change one thing at a time and watch what moves.</p>
+    <div class="subtabs" role="tablist">
+      <button data-sub="sun" class="on">Shift the sun<small>Move midday solar into the evening</small></button>
+      <button data-sub="wear">Wear it out<small>How long does a battery last?</small></button>
+      <button data-sub="size">Size it<small>Four steps from goal to nameplate</small></button>
+      <button data-sub="pay">Pay it back<small>Savings, cost and payback</small></button>
+    </div>
+
+    <!-- ---------- Shift the sun ---------- -->
+    <div class="tool on" id="tool-sun">
+      <div class="controls ctl-grid">
+          <div class="ctrl"><div class="lab">Who</div><div class="seg" id="sunScale"><button data-v="home" class="on">A home</button><button data-v="town">The whole town</button></div></div>
+          <div class="ctrl"><div class="lab">Day</div><div class="seg" id="sunDay"><button data-v="summer" class="on">Sunny June day</button><button data-v="winter">December day</button></div></div>
+          <div class="ctl-break" aria-hidden="true"></div>
+          <div class="ctrl"><label for="sunSolar">Solar size <b id="sunSolarV"></b></label><input type="range" id="sunSolar"></div>
+          <div class="ctrl"><label for="sunKwh"><span>Battery energy (tank)<span class="tt" tabindex="0"><span class="tt-icon">i</span><span class="tt-box"><b>Energy (kWh)</b> is how much the battery can hold: the size of the tank. It sets how many evening hours it can cover.</span></span></span> <b id="sunKwhV"></b></label><input type="range" id="sunKwh"></div>
+          <div class="ctrl"><label for="sunKw"><span>Battery power (pipe)<span class="tt" tabindex="0"><span class="tt-icon">i</span><span class="tt-box"><b>Power (kW)</b> is how fast it can charge or discharge: the size of the pipe. It sets how much load it can carry at once.</span></span></span> <b id="sunKwV"></b></label><input type="range" id="sunKw"><div class="note" id="sunDur"></div></div>
+      </div>
+      <div class="pills" id="sunPills"></div>
+          <div class="chart-wrap has-tip">
+            <div class="chart-top"><h3 id="sunTitle">Where the home's power comes from, hour by hour</h3><span class="chart-help">Point at the chart to read the values</span></div>
+            <div class="legend">
+              <span><i class="sw" style="background:var(--fuel-solar)"></i>solar used directly</span>
+              <span><i class="sw" style="background:var(--fuel-battery)"></i>battery discharging</span>
+              <span><i class="sw" style="background:var(--ink-3)"></i>from the grid</span>
+              <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--fuel-battery) 0 3px,transparent 3px 6px)"></i>battery charging</span>
+              <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--fuel-solar) 0 3px,transparent 3px 6px)"></i>solar left over</span>
+              <span><i class="sw" style="background:var(--ink);height:3px"></i>demand</span>
+            </div>
+            <div class="chart-scroll"><svg class="chart" id="sunChart" viewBox="0 0 960 300" role="img" aria-label="24-hour chart of solar, battery and grid supply. Use the arrow keys to read values at each time."></svg></div>
+            <div class="chart-tip" id="sunTip" hidden></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-top"><h3>Battery state of charge</h3></div>
+            <div class="chart-scroll"><svg class="chart" id="sunSoc" viewBox="0 0 960 110" role="img" aria-label="Battery state of charge over the day"></svg></div>
+          </div>
+          <div class="hint-box" id="sunHint"></div>
+          <div class="caveat">Batteries earn money from the gap between cheap midday power and expensive evening power. The more batteries a grid builds, the smaller that gap gets. In California, evening peak prices fell by about a third from mid-2025 to mid-2026, and most batteries there now earn more from being <b>available</b> (resource adequacy) than from the price gap. That's also why grid batteries there are mostly <b>4 hours</b>: long enough to cover the whole evening after the sun drops.</div>
+    </div>
+
+    <!-- ---------- Wear it out ---------- -->
+    <div class="tool" id="tool-wear">
+      <div class="controls ctl-grid">
+          <div class="ctrl"><div class="lab">Chemistry</div><div class="seg" id="wearChem"><button data-v="lfp" class="on">LFP</button><button data-v="nmc">NMC</button><button data-v="na">Sodium-ion</button><button data-v="pb">Lead-acid</button></div><div class="note" id="wearChemNote"></div></div>
+          <div class="ctrl"><label for="wearDod"><span>Depth of each cycle<span class="tt" tabindex="0"><span class="tt-icon">i</span><span class="tt-box"><b>Depth of discharge</b>: how much of the capacity each cycle uses. 100% to 10% is a 90% cycle. Shallower cycles wear the battery more slowly.</span></span></span> <b id="wearDodV"></b></label><input type="range" id="wearDod" min="20" max="100" step="5" value="90"></div>
+          <div class="ctrl"><label for="wearCpd">Cycles per day <b id="wearCpdV"></b></label><input type="range" id="wearCpd" min="0.25" max="2" step="0.25" value="1"><div class="note">Most home and grid batteries cycle about once a day. Demand-charge batteries may cycle less.</div></div>
+          <div class="ctrl"><label for="wearTemp">Average cell temperature <b id="wearTempV"></b></label><input type="range" id="wearTemp" min="5" max="45" step="5" value="25"></div>
+          <label class="check-row"><input type="checkbox" id="wearCal" checked><span>Include calendar aging (slow loss with time, even when idle)</span></label>
+      </div>
+      <div class="pills" id="wearPills"></div>
+          <div class="chart-wrap">
+            <div class="chart-top"><h3>Capacity left over the years</h3><span class="legend" id="wearLegend" style="margin:0"></span></div>
+            <div class="chart-scroll"><svg class="chart" id="wearChart" viewBox="0 0 960 300" role="img" aria-label="Capacity remaining by year for four chemistries"></svg></div>
+          </div>
+          <div class="hint-box" id="wearHint"></div>
+    </div>
+
+    <!-- ---------- Size it ---------- -->
+    <div class="tool" id="tool-size">
+      <div class="pg-grid">
+        <div>
+          <div class="steps" id="sizeSteps"></div>
+          <div class="formula">Nameplate kWh ≈ (kW × hours) ÷ (DoD × efficiency) × (1 + margin)</div>
+          <div class="chart-wrap" style="margin-top:12px">
+            <div class="chart-top"><h3>Pipe and tank</h3><span class="legend" style="margin:0"><span><i class="sw" style="background:var(--fuel-battery)"></i>usable</span><span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--ink-3) 0 3px,transparent 3px 6px)"></i>held back</span><span><i class="sw" style="background:var(--fuel-battery);opacity:.4"></i>aging margin</span></span></div>
+            <svg class="chart" id="sizeSvg" viewBox="0 0 520 250" style="max-width:640px" role="img" aria-label="Battery drawn as a tank (energy) with an outlet pipe (power)"></svg>
+          </div>
+        </div>
+        <div class="controls">
+          <div class="ctrl"><div class="lab">Site</div><div class="seg" id="sizeSite"><button data-v="home" class="on">Home</button><button data-v="grocery">Grocery store</button><button data-v="factory">Small factory</button></div></div>
+          <div class="ctrl"><div class="lab">Step 1 · Goal</div><div class="seg" id="sizeGoal"></div><div class="note" id="sizeGoalNote"></div></div>
+          <div class="ctrl"><label for="sizeKw">Step 2 · Power to carry <b id="sizeKwV"></b></label><input type="range" id="sizeKw"></div>
+          <div class="ctrl"><label for="sizeH">Step 3 · Hours needed <b id="sizeHV"></b></label><input type="range" id="sizeH"></div>
+          <div class="ctrl-group">Step 4 · Adjust for reality</div>
+          <label class="check-row"><input type="checkbox" id="sizeUsable"><span>Product is already rated in usable kWh (common for home batteries)</span></label>
+          <div class="ctrl" id="sizeDodRow"><label for="sizeDod">Usable depth of discharge <b id="sizeDodV"></b></label><input type="range" id="sizeDod" min="70" max="100" step="5" value="90"></div>
+          <div class="ctrl"><label for="sizeEff">Discharge efficiency <b id="sizeEffV"></b></label><input type="range" id="sizeEff" min="85" max="99" step="1" value="95"></div>
+          <div class="ctrl"><label for="sizeMargin">Aging margin <b id="sizeMarginV"></b></label><input type="range" id="sizeMargin" min="0" max="40" step="5" value="20"><div class="note">Extra capacity so the battery still meets the goal after years of fade.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- Pay it back ---------- -->
+    <div class="tool" id="tool-pay">
+      <div class="controls ctl-grid">
+          <div class="ctrl"><div class="lab">Site (loads the worked example)</div><div class="seg" id="paySite"><button data-v="home" class="on">Home</button><button data-v="grocery">Grocery store</button><button data-v="factory">Small factory</button></div></div>
+          <div class="ctrl"><label for="payKwh">Battery size <b id="payKwhV"></b></label><input type="range" id="payKwh"></div>
+          <div class="ctrl"><label for="payCost">Installed cost <b id="payCostV"></b></label><input type="range" id="payCost" min="150" max="1400" step="10"></div>
+          <div id="payDemandBox">
+            <div class="ctrl-group">Demand charge savings</div>
+            <div class="ctrl"><label for="payRate">Demand rate <b id="payRateV"></b></label><input type="range" id="payRate" min="0" max="30" step="1"></div>
+            <div class="ctrl"><label for="payShave">Peak shaved <b id="payShaveV"></b></label><input type="range" id="payShave"></div>
+            <div class="ctrl"><label for="payMiss"><span>Months the battery misses a peak<span class="tt" tabindex="0"><span class="tt-icon">i</span><span class="tt-box">The demand charge is set by the <b>single highest 15 minutes</b> of the month. If the battery is empty or the controller guesses wrong for just one spike, most of that month's saving is gone. Here a missed month keeps 10%.</span></span></span> <b id="payMissV"></b></label><input type="range" id="payMiss" min="0" max="6" step="1" value="0"></div>
+          </div>
+          <div class="ctrl-group">Time-of-use savings<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">On a <b>time-of-use</b> rate, the same kWh costs more at <b>peak</b> times (usually late afternoon and evening) than <b>off-peak</b> (overnight, and often midday). The battery fills up when power is cheap, or from your own solar, and runs the house during the peak, so you buy less of the expensive kind.<span class="tt-calc">Yearly saving = price gap × kWh moved a day × 365<br><span id="touCalc"></span></span></span></span></div>
+          <div class="ctrl"><label for="paySpread"><span>Peak price gap<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">The <b>gap</b> between the two prices, not either price on its own. Every kWh moved out of the peak saves you this gap. Example: peak 32¢ and off-peak 12¢ is a 20¢ ($0.20) gap. Both prices are on your bill or your utility&#39;s rate sheet. On a flat rate, where every hour costs the same, the gap is $0 and shifting saves nothing.<span class="tt-calc">Simplified: the ~10% lost inside the battery would trim this a little.</span></span></span></span> <b id="paySpreadV"></b></label><input type="range" id="paySpread" min="0" max="0.40" step="0.01"></div>
+          <div class="ctrl"><label for="payShift"><span>Energy shifted per day<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">How many kWh a day the battery moves into peak hours. It is roughly what the home uses during the peak, but it can&#39;t be more than the battery holds: one full cycle a day is the most it can shift.<span class="tt-calc" id="shiftCalc"></span></span></span></span> <b id="payShiftV"></b></label><input type="range" id="payShift"></div>
+          <div class="check-row"><input type="checkbox" id="payCredit"><span><label for="payCredit" id="payCreditLbl">30% federal credit</label><span class="tt tt-left" tabindex="0" aria-label="Explain this credit"><span class="tt-icon">i</span><span class="tt-box" role="tooltip"><span id="payCreditTip"></span><span class="tt-calc" id="payCreditCalc"></span></span></span></span></div>
+          <div class="note" id="payCreditNote" style="font-family:var(--f-mono);font-size:12px;color:var(--ink-3);line-height:1.45"></div>
+      </div>
+      <div class="pills" id="payPills"></div>
+          <div class="chart-wrap">
+            <div class="chart-top"><h3>Cumulative savings against the upfront cost</h3><span class="legend" style="margin:0"><span><i class="sw" style="background:var(--ink);height:3px"></i>savings so far</span><span><svg width="22" height="8" aria-hidden="true"><line x1="1" y1="4" x2="21" y2="4" stroke="var(--ink-3)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>net cost</span></span></div>
+            <div class="chart-scroll"><svg class="chart" id="payChart" viewBox="0 0 960 260" role="img" aria-label="Cumulative savings over 20 years compared with net cost"></svg></div>
+          </div>
+          <div class="hint-box" id="payHint"></div>
+    </div>
+
+    </section>
+
+  <!-- ================= GLOSSARY ================= -->
+  <section class="panel" id="panel-glossary">
+    <h2>Battery glossary</h2>
+    <div class="search-row">
+      <input type="search" id="glossSearch" placeholder="Search terms…" aria-label="Search terms">
+      <select id="glossFilter" aria-label="Filter by category">
+        <option value="all">All categories</option>
+        <option value="hw">Hardware</option>
+        <option value="life">Performance and life</option>
+        <option value="chem">Chemistry and safety</option>
+        <option value="money">Money and markets</option>
+      </select>
+    </div>
+    <div class="card-grid" id="glossGrid"></div>
+
+    <h3 style="margin-top:28px">Common mix-ups</h3>
+    <div class="table-scroll"><table id="mythTable"><thead><tr><th>What people say</th><th>What's actually true</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section class="panel" id="panel-quiz">
+    <div class="quiz-top"><h2 style="margin:0">Quiz</h2><span id="quizScore"></span><button class="btn" id="quizReset" type="button">Start over</button></div>
+    <div id="quizContainer"></div>
+  </section>
+
+  <!-- ================= COSTS ================= -->
+  <section class="panel" id="panel-costs">
+    <h2>What batteries cost</h2>
+    <p class="intro">The same kilowatt-hour of storage costs very different amounts depending on <b>what's included</b> and <b>how big the project is</b>. <span class="asof">Figures as of October 2026, mostly from 2025 surveys.</span></p>
+
+    <h3 style="margin-top:18px">The cost ladder, $ per kWh</h3>
+    <div class="ladder" id="ladder"></div>
+    <div class="caveat">Going from about $70 to about $1,000 per kWh is <b>mostly not the battery</b>. It's design, permits, electricians, interconnection and sales, which cost roughly the same whether the battery is small or large, spread over very few kWh at a home. Solid bars show a single average; striped bars show a range. The ink tick on the home bar is the Powerwall 3 average (~$998/kWh).</div>
+
+    <h3 style="margin-top:26px">Three worked examples</h3>
+    <p class="intro" style="margin-bottom:0">Round, illustrative numbers. Common assumptions: 90% usable depth, 95% efficiency, 20% aging margin, $15/kW-month demand charge. Plug in your own utility's rates with the Pay it back tool.</p>
+    <div class="ex-grid" id="exGrid"></div>
+
+    <div class="incent">
+      <h3 style="margin:0 0 2px">Incentives in 2026 <span class="asof">as of October 2026</span></h3>
+      <ul>
+        <li><b>Homeowners buying outright get no federal credit.</b> The 30% residential credit (Section 25D) ended December 31, 2025. Many websites still list it.</li>
+        <li><b>Businesses</b> and <b>leased or PPA home systems</b> can still use the commercial credit (Section 48E). Storage that starts construction before 2033 remains eligible.</li>
+        <li><b>New foreign-sourcing (FEOC) limits apply</b> to projects claiming the credit, and they tighten each year through 2030.</li>
+        <li><b>State and utility programs now matter more.</b> Examples: Oregon's battery storage credit and California's SGIP, which pays per kWh. Check your own state and utility.</li>
+        <li><b>Tariffs</b> on imported cells and packs can move US prices a lot; BNEF estimated a 60% tariff would raise US turnkey costs by about 60%. Check current status before relying on any figure here.</li>
+      </ul>
+    </div>
+
+    <div class="caveat"><b>How this squares with Chapter 3.</b> Chapter 3 prices its 750 kW / 1,500 kWh battery at $350–$500/kWh, above the ~$219/kWh US turnkey average shown here. They don't conflict: "turnkey" covers the battery, inverter, enclosure and integration, but not construction or the grid connection. Chapter 3's figure is an installed price for a small 2-hour project, which carries those extra costs over fewer kWh.</div>
+
+    <details class="sources">
+      <summary>Sources for this chapter</summary>
+      <ul>
+        <li>BNEF, 2025 lithium-ion battery price survey — <a href="https://about.bnef.com/insights/clean-energy/lithium-ion-battery-pack-prices/" target="_blank" rel="noopener">about.bnef.com</a></li>
+        <li>Energy-Storage.news on BNEF's energy storage system cost survey 2025 — <a href="https://www.energy-storage.news/?p=92133" target="_blank" rel="noopener">energy-storage.news</a></li>
+        <li>BNEF, battery storage costs hit record lows — <a href="https://about.bnef.com/insights/clean-energy/battery-storage-costs-hit-record-lows" target="_blank" rel="noopener">about.bnef.com</a></li>
+        <li>EIA, battery storage capacity growth (2026) — <a href="https://www.eia.gov/todayinenergy/detail.php?id=67925" target="_blank" rel="noopener">eia.gov</a></li>
+        <li>EPRI, BESS failure incident database — <a href="https://storagewiki.epri.com/index.php/BESS_Failure_Incident_Database" target="_blank" rel="noopener">storagewiki.epri.com</a></li>
+        <li>pv magazine USA, storage tax credit eligibility — <a href="https://pv-magazine-usa.com/?p=18305" target="_blank" rel="noopener">pv-magazine-usa.com</a></li>
+        <li>Modo Energy, CAISO battery benchmark, June 2026 — <a href="https://modoenergy.com/research/caiso-bess-benchmark-june-2026" target="_blank" rel="noopener">modoenergy.com</a></li>
+        <li>EnergySage, Tesla Powerwall 3 review — <a href="https://www.energysage.com/solar/solar-energy-storage/tesla-powerwall-home-battery/" target="_blank" rel="noopener">energysage.com</a></li>
+        <li>EIA, US electric generating capacity expected to reach a record high in 2026 — <a href="https://www.eia.gov/TODAYINENERGY/detail.php?id=67205" target="_blank" rel="noopener">eia.gov</a></li>
+        <li>Industrial Info Resources on EIA data, US battery storage growth (43.6 GW at end of 2025) — <a href="https://www.industrialinfo.com/iirenergy/industry-news/article/eia-us-bess-growth-averaged-70-last-three-years--361303" target="_blank" rel="noopener">industrialinfo.com</a></li>
+        <li>Modo Energy, how a battery energy storage system makes money (ERCOT and CAISO revenue stacks) — <a href="https://modoenergy.com/research/en/how-does-battery-energy-storage-make-money" target="_blank" rel="noopener">modoenergy.com</a></li>
+        <li>Modo Energy, CAISO battery storage in 2026: 8 things to watch (resource adequacy) — <a href="https://modoenergy.com/research/caiso-battery-storage-2026-things-to-watch" target="_blank" rel="noopener">modoenergy.com</a></li>
+        <li>Global Infrastructure Hub, Hornsdale Power Reserve project — <a href="https://www.gihub.org/resources/showcase-projects/hornsdale-power-reserve-project-australia/" target="_blank" rel="noopener">gihub.org</a></li>
+        <li>Energy-Storage.news, Moss Landing: what we know so far — <a href="https://www.energy-storage.news/fire-at-moss-landing-energy-storage-facility-what-we-know-so-far/" target="_blank" rel="noopener">energy-storage.news</a></li>
+        <li>Commercial and industrial installed ranges via mgrid.org citing IDTechEx (to verify) — <a href="https://mgrid.org/2026/01/01/ci-battery-storage-market-projects-5x-growth-by-2036-as-demand-charges-drive-3-5-year-payback/" target="_blank" rel="noopener">mgrid.org</a></li>
+      </ul>
+      <p>Built for learning, not for engineering sign-off. Numbers are realistic in scale, not quotes.</p>
+    </details>
+  </section>
+  <!-- ================= SAFETY ================= -->
+  <section class="panel" id="panel-safety">
+    <h2>Safety: layers, and the record so far</h2>
+    <div class="safety" style="margin-top:14px">
+      <div>
+        <h3>Layers of protection</h3>
+        <p>Battery systems are protected in layers, fastest first. The <b>BMS</b> trips in milliseconds when one cell drifts out of range. <b>Thermal management</b> keeps cells in their comfortable range. <b>Gas and heat detection</b>, <b>explosion venting</b>, <b>suppression</b> and <b>spacing between units</b> are there so that if a cell does go into thermal runaway, the failure stays in one unit.</p>
+        <p>The fire most people have heard of, at Moss Landing, California in January 2025, was in a large indoor facility of an older design. It's a big part of why outdoor, spaced, containerized LFP systems are now the norm. Industry groups point to the code framework and the improving record; community groups raise questions about siting, emergency response, and smoke and runoff. Both are part of how projects get approved.</p>
+        <div class="std"><b>Standards to know by name:</b> UL 9540 (system safety listing) · UL 9540A (thermal-runaway fire test) · NFPA 855 (installation code) · UL 1973 (stationary batteries) · IEEE 1547 (grid interconnection, from Chapter 3)</div>
+      </div>
+      <div>
+        <div class="trend">
+          <div class="big">≈ 99% lower</div>
+          <div class="lbl">Failure incidents per unit of deployed capacity, 2018 to 2025, from EPRI's incident database. EPRI notes the database may not capture every incident.</div>
+        </div>
+        <div class="trend" style="margin-top:10px">
+          <div class="big">≈ 72%</div>
+          <div class="lbl">Share of incidents that happened during construction, commissioning or the first two years of operation. The early months are when problems show up.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const MONO = "var(--f-mono)";
+const DISP = "var(--f-display)";
+const n0 = v => Math.round(v).toLocaleString('en-US');
+const n1 = v => (Math.round(v * 10) / 10).toLocaleString('en-US', { maximumFractionDigits: 1 });
+const money = v => '$' + n0(v);
+const moneyK = v => Math.abs(v) >= 1e6 ? '$' + n1(v / 1e6) + 'M' : Math.abs(v) >= 1e5 ? '$' + n0(v / 1e3) + 'k' : Math.abs(v) >= 1e4 ? '$' + n1(v / 1e3) + 'k' : money(v);
+const axisMoney = v => v >= 1e6 ? '$' + n1(v / 1e6) + 'M' : v >= 1000 ? '$' + n1(v / 1e3) + 'k' : '$' + n0(v);
+const hourLbl = h => { h = ((h % 24) + 24) % 24; const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  const ap = hh < 12 ? 'am' : 'pm', h12 = hh % 12 === 0 ? 12 : hh % 12; return h12 + (mm ? ':' + String(mm).padStart(2, '0') : '') + ' ' + ap; };
+const axisHour = h => h === 0 || h === 24 ? '12a' : h === 12 ? '12p' : h < 12 ? h + 'a' : (h - 12) + 'p';
+const txt = (x, y, s, o = {}) => `<text x="${x}" y="${y}" fill="${o.fill || 'var(--ink-3)'}" style="font-family:${o.font || MONO}" font-size="${o.size || 12}"${o.anchor ? ` text-anchor="${o.anchor}"` : ''}${o.weight ? ` font-weight="${o.weight}"` : ''}>${s}</text>`;
+function niceStep(max, ticks = 5) { const raw = max / ticks, p = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+function hatch(id, color) { return `<pattern id="${id}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="${color}" opacity=".85"/></pattern>`; }
+function segInit(id, onPick) {
+  const el = $(id);
+  el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); onPick(b.dataset.v); });
+}
+function segSet(id, v) { $(id).querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.v === v)); }
+function setRange(id, [min, max, step, val]) { const r = $(id); r.min = min; r.max = max; r.step = step; r.value = val; }
+
+/* ============================================================
+   DIAGRAM DATA
+   ============================================================ */
+const PARTS = {
+  cell: { title: 'Cell', tag: 'Smallest unit · DC',
+    does: 'The basic electrochemical unit: a cathode, an anode, a thin separator and electrolyte. Charging pushes lithium ions into the anode; discharging lets them flow back while the electrons take the long way round through your circuit. An LFP cell sits around 3.2 volts.',
+    fails: 'A damaged or defective cell can overheat. The BMS watches for that. If heat spreads from cell to cell, that is thermal runaway, which the safety layers are designed to contain.',
+    cost: 'Cells are most of the pack price. Stationary packs averaged about $70/kWh in 2025 (BNEF).', link: 'Basics tab: watch a cell charge and discharge' },
+  module: { title: 'Module', tag: 'Cells grouped · DC',
+    does: 'A group of cells wired in series and parallel, with voltage and temperature sensors, so they can be handled, monitored and replaced as one block.',
+    fails: 'A bad module can be swapped while the rest keep working. Adding new modules later is also how augmentation restores capacity that has faded.',
+    cost: 'Part of the ~$70/kWh pack price.' },
+  rack: { title: 'Rack / pack', tag: 'Modules stacked · DC',
+    does: 'Modules stacked in a frame with busbars, fuses, a disconnect and a rack-level BMS. A home battery is roughly one small pack; a grid container holds a dozen or more racks side by side.',
+    fails: 'Fuses and contactors open to isolate the rack. A site with many racks can keep running at reduced capacity while one is repaired.',
+    cost: 'Cells, modules, rack and BMS together are "the pack": about $70/kWh in 2025.' },
+  bms: { title: 'Battery management system (BMS)', tag: 'Fastest protection · milliseconds',
+    does: "Watches every cell's voltage, temperature and current. Balances cells so none is overcharged, and estimates state of charge (how full) and state of health (how worn).",
+    fails: 'When anything goes out of range it opens the contactors within milliseconds, before any software higher up has noticed. It is the fastest layer in the Chapter 4 stack: fast layers protect, slow layers plan.',
+    cost: 'A small share of the pack price, and the reason the rest can be trusted.', link: 'Chapter 4: BMS → PCS → site controller → SCADA' },
+  pcs: { title: 'Power conversion system (PCS)', tag: 'DC ↔ AC · sets the kW',
+    does: "A two-way inverter. It turns AC into DC to charge, and DC back into AC to discharge. It's the DC/AC box in Chapter 1. Its kW rating is the battery's power: the size of the pipe. It can be grid-following (syncs to the grid) or grid-forming (sets its own voltage and frequency, so it can hold up a microgrid).",
+    fails: 'A PCS fault takes the battery offline even if every cell is healthy. IEEE 1547 settings make it ride through small grid disturbances and trip on large ones.',
+    cost: 'With the enclosure and integration, it is much of the gap between a ~$70/kWh pack and a ~$117/kWh turnkey system (BNEF 2025, global average).', link: 'Chapter 3: grid-forming inverters and islanding' },
+  xfmr: { title: 'Transformer', tag: 'Site voltage → feeder voltage',
+    does: 'Steps the PCS output (often a few hundred volts) up to site or feeder voltage. Same symbol as in Chapters 1 to 3. A home or small shop uses the transformer that already serves it.',
+    fails: "A failure cuts the battery off from the grid. The utility's protection isolates it so the rest of the feeder keeps running.",
+    cost: 'About $100,000 for the 1 MVA unit at Chapter 3\'s site. Nothing extra for a home.', link: 'Chapter 2: feeders and transformers' },
+  thermal: { title: 'Thermal management', tag: 'Safety layer',
+    does: "Air conditioning or liquid cooling keeps cells near 20–30°C. In cold places like Spokane, heaters keep LFP cells warm enough to charge safely. The energy this uses is small compared with the battery life it protects.",
+    fails: 'Running hot ages cells faster; around 45°C can cut LFP cycle life by roughly a fifth to a third. If cooling fails, the system first reduces power, then shuts down.',
+    cost: 'Built into the enclosure package; small next to the cells.' },
+  fire: { title: 'Fire detection and suppression', tag: 'Safety layer',
+    does: 'Gas, smoke and heat sensors catch a failing cell early, often before any flame. Ventilation and explosion vents release gas safely, suppression systems act on a fire, and spacing between units keeps one failure from spreading.',
+    fails: 'These are the last layers. The design goal, tested under UL 9540A, is that a failure stays in one unit and does not spread to its neighbors.',
+    cost: 'Required by NFPA 855; part of the system price.' },
+  enclosure: { title: 'Enclosure', tag: 'Home · store · factory and grid',
+    does: 'Home: a wall-mounted cabinet, often with the inverter built in. Grocery store: one or two outdoor cabinets. Factory or grid: shipping-container-style units outdoors, with space between them.',
+    fails: 'It protects the cells from weather and people, and its neighbors from it. Outdoor, spaced units replaced the large indoor designs of earlier projects.',
+    cost: 'Part of the turnkey price. Bigger enclosures cost less per kWh, one reason grid batteries are cheapest.' },
+  ems: { title: 'Site controller / EMS', tag: 'Decides when',
+    does: 'The brain of the site. It reads prices, load and forecasts and decides when to charge and discharge: shave a peak, shift solar into the evening, or hold energy back for an outage.',
+    fails: "The hardware stays safe (the BMS and PCS protect themselves) but the money stops. A controller that misses the month's highest peak loses most of that month's demand-charge saving.",
+    cost: 'Small next to the battery, but it decides most of the savings.', link: 'Chapter 1 used a perfect forecast; real controllers have to guess' },
+  utility: { title: 'Utility: DER gateway and SCADA', tag: 'Chapters 3 and 4',
+    does: 'Larger batteries talk to the utility through a DER gateway and SCADA, so the control room can see them and send export limits or dispatch signals. Grid-scale batteries also bid into energy markets.',
+    fails: 'If the link drops, the site falls back to a safe default, such as no export.',
+    cost: 'A gateway is a few thousand dollars (Chapter 3 lists about $3,000).', link: 'Chapter 4: the operations layers' }
+};
+
+/* ============================================================
+   GLOSSARY, MYTHS, QUIZ
+   ============================================================ */
+const CATS = { hw: 'Hardware', life: 'Performance and life', chem: 'Chemistry and safety', money: 'Money and markets' };
+const TERMS = [
+  ['Cell', 'hw', 'The smallest electrochemical unit: cathode, anode, separator and electrolyte in one sealed can or pouch.'],
+  ['Module', 'hw', 'A group of cells wired together with sensors so they can be monitored and replaced as a block.'],
+  ['Rack', 'hw', 'Modules stacked in a frame with busbars, fuses, a disconnect and a rack-level BMS. Also called a pack.'],
+  ['BMS (battery management system)', 'hw', 'Electronics that watch every cell, balance them, estimate SOC and SOH, and trip the system in milliseconds if anything goes out of range.'],
+  ['PCS / inverter', 'hw', 'The power conversion system: a two-way inverter that turns AC into DC to charge and DC into AC to discharge. Its kW rating sets the battery\'s power.'],
+  ['Grid-following vs. grid-forming', 'hw', 'A grid-following inverter measures the grid\'s voltage and frequency and injects current in sync, so it needs a stable grid to follow. A grid-forming inverter sets its own voltage and frequency, so it can hold up a microgrid, help restart after a blackout, and give the stabilizing response spinning generators traditionally provided.'],
+  ['State of charge (SOC)', 'life', 'How full the battery is right now, as a percentage. The fuel gauge.'],
+  ['State of health (SOH)', 'life', 'How much capacity is left compared with new. A battery at 85% SOH holds 85% of its original kWh.'],
+  ['Depth of discharge (DoD)', 'life', 'How much of the capacity a cycle uses: 100% down to 20% is an 80% cycle. Also the share of nameplate a maker lets you use.'],
+  ['Charge cycle', 'life', 'One full discharge and recharge of the usable capacity, in one go or in pieces. Two half-discharges count as about one cycle.'],
+  ['Round-trip efficiency', 'life', 'Energy out divided by energy in. Expect roughly 85–90%; the rest becomes heat in the cells, inverter and cooling.'],
+  ['C-rate', 'life', 'Charge or discharge power relative to capacity. 1C empties the battery in an hour; 0.25C in four hours. A 100 kW / 400 kWh battery runs at 0.25C.'],
+  ['Duration', 'life', 'Energy divided by power (kWh ÷ kW): how many hours the battery lasts at full output. Most grid batteries are 2 or 4 hours.'],
+  ['Nameplate vs. usable capacity', 'life', 'Nameplate is the total energy on the label; usable is what you can actually draw after the reserve the maker holds back. Many home batteries quote usable kWh.'],
+  ['Augmentation', 'life', 'Adding new modules or racks to an older system to restore capacity that has faded, instead of replacing it.'],
+  ['Calendar aging', 'life', 'Capacity lost simply with time, even if the battery is barely used. Heat speeds it up.'],
+  ['Cathode', 'chem', 'The positive electrode. In an LFP cell it is iron phosphate, which holds the lithium when the cell is empty. Named for its role while discharging, so the name stays the same while charging.'],
+  ['Anode', 'chem', 'The negative electrode, usually graphite: stacked sheets of carbon. Lithium tucks in between the sheets when the cell is charged.'],
+  ['Electrolyte', 'chem', 'The liquid or gel between the electrodes that lets lithium ions move from one side to the other. Electrons can\'t travel through it.'],
+  ['Separator', 'chem', 'A thin porous film between the electrodes. Ions pass through it, electrons don\'t, and it keeps the two electrodes from touching and shorting.'],
+  ['Thermal runaway', 'chem', 'A chain reaction where a cell heats itself faster than it can cool, releasing gas and possibly fire, and can spread to neighboring cells. Safety design aims to stop it in one unit.'],
+  ['LFP (lithium iron phosphate)', 'chem', 'A lithium-ion chemistry with long life (about 3,000–6,000+ cycles), strong thermal stability and no cobalt or nickel. Heavier per kWh, which doesn\'t matter for a box on the ground. The large majority of new stationary storage.'],
+  ['NMC (nickel manganese cobalt)', 'chem', 'A lithium-ion chemistry with high energy density, used in long-range EVs. Shorter life (about 1,000–2,000 cycles), less thermal margin and costlier metals.'],
+  ['Sodium-ion', 'chem', 'An emerging chemistry using cheap, abundant sodium. Lower energy density, good in the cold, about 2,000–4,000 cycles in recent tests. Early in commercial rollout.'],
+  ['Lead-acid', 'chem', 'The old standby for telecom and UPS backup. Cheap upfront but wears out quickly with daily cycling; mostly replaced by lithium-ion.'],
+  ['Flow battery', 'chem', 'Stores energy in liquid electrolyte tanks (often vanadium), so energy grows with tank size. Very long cycle life and suited to 4–12 hour storage, but costlier upfront and bulky.'],
+  ['UL 9540 / UL 9540A', 'chem', 'UL 9540 is the safety listing for a whole energy storage system. UL 9540A is the test method for how a thermal-runaway fire behaves and whether it spreads.'],
+  ['NFPA 855', 'chem', 'The US installation code for stationary storage: spacing, size limits, detection, ventilation and fire protection.'],
+  ['Demand charge', 'money', 'A business bill charge ($/kW) set by the single highest 15-minute peak of the month. Miss one spike and most of that month\'s saving is gone.'],
+  ['Time-of-use (TOU)', 'money', 'A rate where energy costs more at peak hours (often late afternoon and evening) and less at other times.'],
+  ['Peak shaving', 'money', 'Discharging the battery during a site\'s highest-demand minutes to lower the demand charge.'],
+  ['Load shifting', 'money', 'Moving energy use in time: charging when power is cheap or solar is plentiful and discharging when it\'s expensive.'],
+  ['Energy arbitrage', 'money', 'Buying (charging) when wholesale prices are low and selling (discharging) when they are high. The more batteries do it, the smaller the price gap gets.'],
+  ['Resource adequacy', 'money', 'Payments for being available to serve peak demand, whether or not the battery is called on. Now more than half of revenue for most California batteries.'],
+  ['Frequency regulation', 'money', 'Adjusting output second by second to hold the grid at 60 Hz. Batteries respond faster than any power plant.'],
+  ['Turnkey vs. installed cost', 'money', 'Turnkey: battery, inverter, enclosure and integration, ready to connect. Installed adds construction, the grid connection, permits and labor, so it is always higher.'],
+  ['Levelized cost of storage (LCOS)', 'money', 'Total lifetime cost divided by total energy delivered, in $/MWh. BNEF\'s benchmark for a 4-hour project fell to about $78/MWh in 2025.']
+];
+
+const MYTHS = [
+  ['Batteries make energy.', 'They store it and give it back, losing roughly 10–15% along the way.'],
+  ['A battery can power the town for days.', 'Most grid batteries hold 2–4 hours. Multi-day gaps need other resources.'],
+  ['LFP isn\'t lithium-ion.', 'It is. Lithium-ion is the family; LFP and NMC are both members.'],
+  ['A battery dies when it hits its cycle count.', 'It fades slowly. "End of life" usually means about 70–80% of the original capacity is left, and it still works.'],
+  ['Home batteries always pay for themselves.', 'On savings alone they often don\'t. Many are mainly a resilience purchase, which is a fine reason as long as you know that\'s what you\'re buying.'],
+  ['Battery fires are getting more common.', 'Incidents per unit of deployed capacity have dropped sharply. Deployments have grown far faster than incidents.'],
+  ['There\'s still a 30% tax credit for my home battery.', 'Not for systems a homeowner buys outright in 2026. Leased and PPA systems can still qualify through the installer.']
+];
+
+const QUIZ = [
+  { q: 'A battery is rated 100 kW / 400 kWh. What is its duration?',
+    opts: ['0.25 hours', '4 hours', '40 hours', '400 hours'], correct: 1,
+    explain: 'Duration is energy divided by power: 400 kWh ÷ 100 kW = 4 hours at full output. That is the typical size for grid batteries in solar-heavy markets.' },
+  { q: 'Why has LFP overtaken NMC for stationary storage?',
+    opts: ['It stores more energy per kilogram', 'It isn\'t lithium-ion, so it avoids lithium supply limits', 'It works without a BMS', 'Longer cycle life, better thermal stability and lower cost, and its extra weight doesn\'t matter for a box on the ground'], correct: 3,
+    explain: 'NMC wins on energy per kilogram, which matters in a car. A stationary battery cares about life, safety and cost, where LFP wins. LFP is still lithium-ion, and every lithium-ion system needs a BMS.' },
+  { q: 'A battery rated for 4,000 cycles does one full cycle a day. Roughly how long is its cycle life?',
+    opts: ['About 4 years', 'About 11 years', 'About 20 years', 'About 40 years'], correct: 1,
+    explain: '4,000 ÷ 365 ≈ 11 years. Calendar aging and heat can shorten that; shallower cycles can lengthen it. Try it in the Wear it out tool.' },
+  { q: 'Do batteries generate electricity?',
+    opts: ['Yes, through a chemical reaction', 'Only lithium-ion ones', 'No. They move energy in time, and lose roughly 10–15% doing it', 'Only when paired with solar'], correct: 2,
+    explain: 'A battery returns less than you put in. Its value is timing: storing energy when it is cheap or plentiful and releasing it when it is scarce.' },
+  { q: 'Why does a home battery cost about $1,000/kWh installed when packs cost about $70/kWh?',
+    opts: ['Home batteries use rarer chemistry', 'Utilities charge a connection fee per kWh', 'Home batteries are built to a higher safety standard', 'Fixed costs (installation, permits, electrical work, sales) are spread over very few kWh'], correct: 3,
+    explain: 'A 13.5 kWh install still needs a site visit, permits, an electrician and a gateway. Those costs barely change with size, so per kWh they dominate at a home and shrink at a factory or grid site.' },
+  { q: 'The factory\'s battery shaves every peak except one 20-minute spike on the 14th. What happens to that month\'s demand-charge saving?',
+    opts: ['Most of it is lost', 'It is cut by 20 minutes\' worth', 'Nothing; one spike is averaged out', 'The utility refunds it'], correct: 0,
+    explain: 'The demand charge is set by the single highest 15-minute peak of the month. One missed spike sets the bill. That is why forecasting and controls matter so much.' },
+  { q: 'Which part of a battery system reacts fastest to a fault?',
+    opts: ['The site controller (EMS)', 'The utility\'s SCADA', 'The battery management system (BMS)', 'The fire suppression system'], correct: 2,
+    explain: 'The BMS watches every cell and opens contactors in milliseconds. Fast layers protect; slow layers like the EMS and SCADA plan.' },
+  { q: 'When in a project\'s life do most battery failure incidents happen?',
+    opts: ['During construction, commissioning or the first two years', 'Evenly across the whole life', 'Near end of life, when cells are worn', 'Only in winter'], correct: 0,
+    explain: 'EPRI\'s analysis found about 72% happened in that early window, when installation and integration problems show up.' },
+  { q: 'Can a homeowner who buys a battery outright in 2026 claim the 30% federal tax credit?',
+    opts: ['Yes, the full 30%', 'Yes, but only 10%', 'No, the residential credit ended December 31, 2025', 'Only if it is paired with solar'], correct: 2,
+    explain: 'Section 25D ended at the end of 2025. Leased or PPA systems can still qualify under the commercial credit (48E), which the installer claims.' },
+  { q: 'Why are most grid batteries in solar-heavy markets 4 hours long?',
+    opts: ['Regulations require exactly 4 hours', 'Shorter batteries can\'t be built', 'To cover the whole evening peak after solar drops off', 'Four hours is the most efficient C-rate'], correct: 2,
+    explain: 'As solar deepens the midday dip and steepens the evening ramp, the expensive hours stretch longer. A 4-hour battery covers more of them.'   },
+  { q: 'A grid-connected home battery is rated 5 kW / 13.5 kWh. The house draws 8 kW one evening. What happens?',
+    opts: ['The battery carries all 8 kW for about 1.7 hours', 'The battery supplies up to 5 kW, and the grid (or solar) covers the other 3 kW', 'The battery won\'t discharge until the load drops below 5 kW', 'The battery carries 8 kW, but only for the first few minutes'], correct: 1,
+    explain: 'Power (kW) is the pipe and energy (kWh) is the tank. The pipe caps output at 5 kW no matter how full the tank is; at that rate 13.5 kWh lasts about 2.7 hours. While the grid is connected, it fills the gap. In an outage there is nothing to fill it, so loads above the pipe size have to be shed.' },
+  { q: 'Why do batteries in cold places like Spokane usually include heaters?',
+    opts: ['Charging very cold lithium-ion cells can plate metallic lithium on the anode, so the system warms them first', 'Lithium electrolyte freezes solid at 0°C', 'The inverter stops working below freezing', 'Heaters are what let the battery generate its own power'], correct: 0,
+    explain: 'Charging below freezing can deposit lithium metal on the graphite instead of tucking it between the layers. That permanently cuts capacity and is a safety concern. The BMS limits charge current until the cells are warm enough. Discharging in the cold is possible, just at reduced power.' },
+  { q: 'What is the main pitch for sodium-ion batteries in stationary storage?',
+    opts: ['More energy per kilogram than NMC', 'Longer cycle life than LFP, so they replace it', 'They don\'t need a BMS', 'Cheap, abundant materials and good cold-weather performance, in exchange for lower energy density and (so far) a shorter cycle life than LFP'], correct: 3,
+    explain: 'Sodium is far more abundant than lithium, and the cells handle cold well. Today they hold less energy per kilogram than LFP and have tested at roughly 2,000 to 4,000 cycles against 3,000 to 6,000+ for LFP. Commercial rollout is still early. Like any battery, they need a BMS.' },
+  { q: 'What is the main design advantage of a flow battery?',
+    opts: ['It has the highest energy density of any battery', 'It is cheaper upfront than LFP at 4 hours', 'Power and energy are sized separately: the cell stack sets the kW and the electrolyte tanks set the kWh, so more hours means bigger tanks', 'It never loses any energy when charging and discharging'], correct: 2,
+    explain: 'Because the energy is stored in liquid tanks, adding hours mostly means adding tank volume. That suits 4 to 12 hour storage and very long cycle life. The trade-offs are higher upfront cost and bulk, which is why LFP wins at 2 to 4 hours.' },
+  { q: 'A factory\'s monthly peak is 500 kW. Its battery reliably holds the peak to 400 kW all month. At $15/kW-month, what is the demand-charge saving?',
+    opts: ['$750', '$1,500', '$7,500', '$15,000'], correct: 1,
+    explain: '100 kW shaved × $15/kW-month = $1,500 a month, or $18,000 a year. The catch from question 6 still applies: if the battery misses the single highest 15-minute spike in a month, most of that month\'s saving disappears.' },
+  { q: 'A home pays a flat 18¢/kWh at every hour, has no solar and no demand charge. What will a battery save by shifting energy to the evening?',
+    opts: ['About 18¢ for every kWh shifted', 'About 10¢ for every kWh shifted', 'It depends only on the battery size', 'Nothing from shifting, because the price gap is $0. Its value is backup power'], correct: 3,
+    explain: 'Shifting saves the gap between peak and off-peak prices. On a flat rate that gap is zero, so the battery earns nothing from timing. It may still be worth buying for resilience. Try it in the Pay it back tool with the peak price gap set to $0.' },
+  { q: 'A battery with 88% round-trip efficiency charges at 5¢/kWh. Ignoring wear, roughly what discharge price does it need just to break even?',
+    opts: ['4.4¢/kWh', '5.0¢/kWh', '5.7¢/kWh', '8.8¢/kWh'], correct: 2,
+    explain: 'To sell 1 kWh you must buy about 1 ÷ 0.88 = 1.14 kWh, so the break-even sale price is 5¢ ÷ 0.88 ≈ 5.7¢. Any price spread smaller than that loses money before counting wear, which is why compressed spreads hurt batteries.' },
+  { q: 'A microgrid loses its connection to the main grid. Which kind of inverter can keep voltage and frequency up on its own?',
+    opts: ['A grid-following inverter', 'A grid-forming inverter', 'Either one, they are the same device', 'Neither; only a spinning generator can'], correct: 1,
+    explain: 'A grid-following inverter measures the grid\'s voltage and frequency and injects current in sync, so it needs a stable grid to follow. A grid-forming inverter sets its own, which lets it hold up an island, help restart after a blackout and supply the stabilizing response spinning generators used to provide.' },
+  { q: 'How does a grid battery\'s response to a sudden frequency dip compare with a gas or steam turbine?',
+    opts: ['About the same', 'Slightly faster, by a few percent', 'Slower, but much cheaper', 'A fraction of a second versus seconds to minutes'], correct: 3,
+    explain: 'The Hornsdale battery in South Australia (100 MW / 129 MWh, switched on in December 2017) was the first non-conventional provider of frequency regulation there. Its response was a fraction of a second, and regional frequency-control costs fell 57% from Q4 2017 to Q1 2018, with the battery cited as a key driver.' },
+  { q: 'A developer needs test evidence that one failing battery unit won\'t set its neighbors on fire. Which standard is that?',
+    opts: ['UL 9540A', 'NFPA 855', 'IEEE 1547', 'UL 1973'], correct: 0,
+    explain: 'UL 9540A is the test method for how a thermal-runaway fire behaves and whether it spreads. NFPA 855 is the installation code (spacing, detection, ventilation), IEEE 1547 covers grid interconnection and UL 1973 covers the battery itself.' },
+  { q: 'Which describes the facility that burned at Moss Landing, California in January 2025?',
+    opts: ['Outdoor spaced containers of LFP cells', 'A home battery fleet', 'A large indoor system with NMC cells, built in a former turbine building about four years earlier', 'A vanadium flow battery'], correct: 2,
+    explain: 'It was Phase 1: 300 MW / 1,200 MWh of NMC cells in a repurposed turbine hall, in service since December 2020. Phases 2 and 3 sit in separate enclosures and were not caught up in the fire. The industry has since moved to outdoor, spaced, containerized LFP.' },
+  { q: 'About how much utility-scale battery storage was operating in the US at the end of 2025?',
+    opts: ['About 4 GW', 'About 15 GW', 'About 44 GW', 'About 150 GW'], correct: 2,
+    explain: 'EIA counts roughly 43.6 GW at the end of 2025. The 15 GW distractor is the record amount added during 2025. Operators added another 8.3 GW in the first half of 2026, taking the total to nearly 52 GW, and developers planned about 24 GW for the full year.' },
+  { q: 'According to EIA, which state accounts for the largest share of planned new US battery capacity in 2026?',
+    opts: ['California', 'Texas', 'Arizona', 'New York'], correct: 1,
+    explain: 'Texas has about 53% (12.9 GW), California 14% (3.4 GW) and Arizona 13% (3.2 GW), together about 80% of the planned additions. California has more cumulative storage history, but Texas is where most of the new build is.' },
+  { q: 'Texas batteries once earned most of their revenue from ancillary services but now lean on energy arbitrage. Why?',
+    opts: ['Ancillary markets are small, so as the battery fleet grew they flooded and prices fell', 'Regulators barred batteries from ancillary markets', 'Batteries turned out to be too slow for frequency regulation', 'Arbitrage spreads grew wider than ever'], correct: 0,
+    explain: 'Ancillary services were roughly 85% of ERCOT battery revenue in 2022 to 2023, but the amount of battery capacity offered nearly tripled in 2024 against a plateauing need, so clearing prices dropped. Arbitrage spreads have been shrinking too, which is the same "more batteries, smaller gap" effect as in Shift the sun.' },
+  { q: 'Most California batteries now earn over half of their revenue from resource adequacy (RA). What is RA paying for?',
+    opts: ['Each MWh actually delivered', 'Responding to frequency in milliseconds', 'Storing energy for individual customers\' bills', 'Being available to serve peak demand, whether or not the battery is called on'], correct: 3,
+    explain: 'Load-serving entities must contract enough capacity to meet forecast peak demand plus a reserve margin (18% for 2026 to 2027 under the CPUC\'s slice-of-day framework). Batteries earn RA by being able to cover the tight evening ramp, which is also why 4-hour systems dominate.' }
+];
+
+
+/* ============================================================
+   BASICS · animated LFP cell
+   Ions (Li+) move inside through the electrolyte; electrons move outside through the wire.
+   ============================================================ */
+const CELL = (() => {
+  const NI = 12, COLS = [192, 222, 252], ROWS = [168, 212, 256, 300, 344];
+  const slots = { c: [], a: [] };
+  ROWS.forEach(y => COLS.forEach(x => { slots.c.push({ x, y }); slots.a.push({ x: x + 456, y }); }));
+  const WIRE = 'M222 140 V64 H678 V140';
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let ions = [], mode = reduce ? 'pause' : 'charge', dev = 'charge', last = 0, spawn = 0, eOff = 0, done = false, wireEl = null, wireLen = 0, eDots = [];
+
+  function build() {
+    const T = (x, y, str, o = {}) => txt(x, y, str, o);
+    let g = '';
+    // outside circuit
+    g += `<path id="cellWire" d="${WIRE}" fill="none" stroke="var(--ink-3)" stroke-width="3" stroke-linejoin="round"/>`;
+    g += `<g id="eDots"></g>`;
+    g += `<rect x="350" y="34" width="200" height="60" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`;
+    g += `<circle id="lampGlow" cx="382" cy="64" r="16" fill="var(--ink)" opacity="0"/>`;
+    g += `<g id="devIcon"></g>`;
+    g += `<text id="devName" x="470" y="60" text-anchor="middle" fill="var(--ink)" style="font-family:${DISP}" font-size="15" font-weight="600"></text>`;
+    g += `<text id="devSub" x="470" y="78" text-anchor="middle" fill="var(--ink-3)" style="font-family:${MONO}" font-size="11.5"></text>`;
+    g += `<text id="eLabel" x="290" y="54" text-anchor="middle" fill="var(--ink)" style="font-family:${MONO}" font-size="13"></text>`;
+    // cell body
+    g += `<rect x="160" y="140" width="580" height="236" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+    g += `<rect x="275" y="142" width="350" height="232" fill="color-mix(in srgb, var(--fuel-battery) 12%, var(--sheet))"/>`;
+    g += T(450, 162, 'electrolyte', { anchor: 'middle', size: 12 });
+    // separator: a membrane with gaps
+    g += `<line x1="450" y1="172" x2="450" y2="374" stroke="var(--ink-3)" stroke-width="5" stroke-dasharray="14 7"/>`;
+    // cathode: iron phosphate framework
+    g += `<rect x="165" y="145" width="110" height="226" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`;
+    slots.c.forEach(p => g += `<rect x="${p.x - 12}" y="${p.y - 12}" width="24" height="24" fill="none" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="3 3"/>`);
+    // anode: graphite sheets
+    g += `<rect x="625" y="145" width="110" height="226" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>`;
+    [146, 190, 234, 278, 322, 366].forEach(y => g += `<line x1="630" x2="730" y1="${y}" y2="${y}" stroke="var(--ink-3)" stroke-width="2.4" opacity=".7"/>`);
+    // terminals and labels
+    g += `<circle cx="222" cy="140" r="11" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>` + T(222, 145, '+', { anchor: 'middle', fill: 'var(--ink)', size: 16 });
+    g += `<circle cx="678" cy="140" r="11" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>` + T(678, 145, '−', { anchor: 'middle', fill: 'var(--ink)', size: 16 });
+    g += T(220, 402, 'Cathode (+)', { anchor: 'middle', fill: 'var(--ink)', font: DISP, size: 17, weight: 600 }) + T(220, 422, 'LiFePO₄ · iron phosphate', { anchor: 'middle', size: 12.5 });
+    g += T(680, 402, 'Anode (−)', { anchor: 'middle', fill: 'var(--ink)', font: DISP, size: 17, weight: 600 }) + T(680, 422, 'C₆ · graphite layers', { anchor: 'middle', size: 12.5 });
+    g += T(450, 402, 'separator', { anchor: 'middle', size: 12 }) + T(450, 418, 'ions through, electrons blocked', { anchor: 'middle', size: 11.5 });
+    g += `<g id="ionLayer"></g>`;
+    $('cellSvg').innerHTML = g;
+
+    wireEl = $('cellWire'); wireLen = wireEl.getTotalLength();
+    const eG = $('eDots'); eG.innerHTML = '';
+    eDots = [];
+    for (let i = 0; i < 14; i++) { const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('r', '5'); c.setAttribute('fill', 'var(--ink)'); c.setAttribute('stroke', 'var(--sheet)'); c.setAttribute('stroke-width', '1.5'); eG.appendChild(c); eDots.push(c); }
+    // ions: start at 25% (3 of 12 in the anode)
+    const layer = $('ionLayer'); ions = [];
+    for (let i = 0; i < NI; i++) {
+      const inAnode = i < 3, loc = inAnode ? 'a' : 'c', slot = inAnode ? [0, 7, 13][i] : 0;
+      const g2 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g2.innerHTML = `<circle r="11.5" fill="var(--fuel-battery)"/><text text-anchor="middle" y="4" fill="var(--on-ink)" style="font-family:${MONO}" font-size="9.5" font-weight="600">Li⁺</text>`;
+      layer.appendChild(g2);
+      ions.push({ el: g2, loc, slot, trip: null });
+    }
+    // cathode ions fill slots 0..8 in reading order
+    let k = 0; ions.forEach(o => { if (o.loc === 'c') o.slot = [0, 1, 2, 3, 4, 5, 6, 8, 9][k++]; });
+    ions.forEach(place);
+  }
+  const pos = o => slots[o.loc][o.slot];
+  function place(o) { const p = o.trip ? o.trip.p : pos(o); o.el.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`); }
+  const used = loc => new Set(ions.filter(o => (o.trip ? o.trip.to : o.loc) === loc).map(o => o.trip ? o.trip.slot : o.slot));
+  const soc = () => ions.filter(o => (o.trip ? o.trip.to : o.loc) === 'a').length / NI;
+  const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+  function startTrip() {
+    const from = mode === 'charge' ? 'c' : 'a', to = mode === 'charge' ? 'a' : 'c';
+    const cands = ions.filter(o => !o.trip && o.loc === from);
+    if (!cands.length) return;
+    const taken = used(to), free = slots[to].map((_, i) => i).filter(i => !taken.has(i));
+    if (!free.length) return;
+    const o = cands[Math.floor(Math.random() * cands.length)], slot = free[Math.floor(Math.random() * free.length)];
+    const a = pos(o), b = slots[to][slot], ys = 190 + Math.random() * 170;
+    o.trip = { to, slot, t: 0, dur: 2.2 + Math.random() * .6, pts: [a, { x: from === 'c' ? 330 : 570, y: (a.y + ys) / 2 }, { x: 450, y: ys }, { x: from === 'c' ? 570 : 330, y: (b.y + ys) / 2 }, b], wob: Math.random() * 6, p: { ...a } };
+  }
+  function stepTrip(o, dt) {
+    const tr = o.trip; tr.t = Math.min(1, tr.t + dt / tr.dur);
+    const u = ease(tr.t) * (tr.pts.length - 1), i = Math.min(tr.pts.length - 2, Math.floor(u)), f = u - i;
+    const A = tr.pts[i], B = tr.pts[i + 1];
+    tr.p = { x: A.x + (B.x - A.x) * f, y: A.y + (B.y - A.y) * f + Math.sin(tr.t * Math.PI * 4 + tr.wob) * 4 * Math.sin(tr.t * Math.PI) };
+    if (tr.t >= 1) { o.loc = tr.to; o.slot = tr.slot; o.trip = null; }
+  }
+
+  function updateText() {
+    const pct = Math.round(soc() * 100);
+    $('socFill').style.width = pct + '%'; $('socVal').textContent = pct + '%';
+    const moving = ions.some(o => o.trip);
+    if (mode !== 'pause') dev = mode;
+    $('devName').textContent = dev === 'discharge' ? 'Your lamp' : 'Charger';
+    $('devSub').textContent = mode === 'pause' ? 'paused' : dev === 'discharge' ? 'uses the current' : 'solar or the grid';
+    $('eLabel').textContent = mode === 'charge' ? 'e⁻ →' : mode === 'discharge' ? '← e⁻' : 'e⁻';
+    $('lampGlow').setAttribute('opacity', mode === 'discharge' && moving ? '.55' : '0');
+    $('devIcon').innerHTML = dev === 'discharge'
+      ? `<circle cx="382" cy="62" r="9" fill="none" stroke="var(--ink)" stroke-width="1.6"/><path d="M378 71 h8 v5 h-8z" fill="var(--ink-3)"/>`
+      : `<rect x="371" y="54" width="22" height="16" fill="none" stroke="var(--ink)" stroke-width="1.6"/><path d="M384 56 l-5 7 h5 l-3 6" fill="none" stroke="var(--ink)" stroke-width="1.6"/>`;
+    let msg;
+    if (done && pct === 100) msg = '<b>Full.</b> The graphite is packed with lithium. Press <b>Discharge</b> to use the energy.';
+    else if (done && pct === 0) msg = '<b>Empty.</b> The lithium is all back in the iron phosphate. Press <b>Charge</b> to refill it.';
+    else if (mode === 'charge') msg = '<b>Charging.</b> The charger pushes electrons through the wire from the cathode to the anode. Lithium ions follow on the inside, through the electrolyte and the separator, and tuck into the graphite.';
+    else if (mode === 'discharge') msg = '<b>Discharging.</b> Lithium ions leave the graphite and return to the cathode. Electrons can\'t cross the separator, so they go the long way round, through the lamp. That flow of electrons is the current.';
+    else msg = '<b>Paused.</b> Press <b>Charge</b> or <b>Discharge</b>.';
+    $('cellStatus').innerHTML = msg;
+    $('cellStatus').className = 'hint-box' + (done ? ' ok' : '');
+    $('cellMode').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === mode));
+  }
+
+  function frame(ts) {
+    const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
+    if ($('panel-basics').classList.contains('active') && !document.hidden) {
+      const before = soc();
+      if (mode === 'charge' || mode === 'discharge') {
+        spawn += dt;
+        if (spawn > 0.7 && ions.filter(o => o.trip).length < 3) { spawn = 0; startTrip(); }
+        ions.forEach(o => { if (o.trip) { stepTrip(o, dt); place(o); } });
+        const moving = ions.some(o => o.trip);
+        if (moving) {
+          eOff = (eOff + (mode === 'charge' ? 1 : -1) * 70 * dt + wireLen) % wireLen;
+        }
+        const s2 = soc();
+        if (!moving && ((mode === 'charge' && s2 >= 1) || (mode === 'discharge' && s2 <= 0))) { done = true; mode = 'pause'; updateText(); }
+        else if (s2 !== before) updateText();
+      }
+      const sp = wireLen / eDots.length;
+      eDots.forEach((c, i) => { const pt = wireEl.getPointAtLength((eOff + i * sp) % wireLen); c.setAttribute('cx', pt.x.toFixed(1)); c.setAttribute('cy', pt.y.toFixed(1)); });
+      const lampOn = mode === 'discharge' && ions.some(o => o.trip);
+      $('lampGlow').setAttribute('opacity', lampOn ? (0.45 + 0.15 * Math.sin(ts / 180)).toFixed(2) : '0');
+    }
+    requestAnimationFrame(frame);
+  }
+  function setMode(v) {
+    if (v === 'charge' && soc() >= 1) { done = true; mode = 'pause'; }
+    else if (v === 'discharge' && soc() <= 0) { done = true; mode = 'pause'; }
+    else { done = false; mode = v; spawn = 1; }
+    updateText();
+  }
+  function init() { build(); updateText(); segInit('cellMode', setMode); requestAnimationFrame(frame); }
+  return { init };
+})();
+/* ============================================================
+   DIAGRAM
+   ============================================================ */
+let selectedPart = null, flowMode = 'out';
+const FLOW_NOTES = {
+  out: 'Evening: energy leaves the cells as DC, the inverter turns it into AC, and the transformer sends it out to the feeder.',
+  in: 'Midday: spare solar on the feeder comes in through the transformer, the inverter turns it into DC, and the cells soak it up.'
+};
+function setFlow(v) { flowMode = v; $('flowNote').textContent = FLOW_NOTES[v]; renderDiagram(); }
+function renderDiagram() {
+  const T = (x, y, s, o = {}) => txt(x, y, s, o);
+  const title = (x, y, s, anchor = 'middle') => T(x, y, s, { fill: 'var(--ink)', font: DISP, size: 17, anchor, weight: 600 });
+  const sub = (x, y, s, anchor = 'middle') => T(x, y, s, { size: 10.5, anchor });
+  // boxes are ink outlines; battery hardware gets a soft battery tint and a solid battery bar down its left edge
+  const box = (x, y, w, h, stroke, fuel = '') => `<rect class="box" x="${x}" y="${y}" width="${w}" height="${h}" fill="${fuel ? `color-mix(in srgb, ${fuel} 14%, var(--sheet))` : 'var(--sheet)'}" stroke="${stroke}" stroke-width="1.6"/>` + (fuel ? `<rect x="${x}" y="${y}" width="6" height="${h}" fill="${fuel}"/>` : '');
+  const node = (id, inner, label) => `<g class="node${selectedPart === id ? ' selected' : ''}" data-id="${id}" tabindex="0" role="button" aria-label="${label}">${inner}</g>`;
+  let g = '';
+
+  // layer labels
+  g += T(20, 30, 'CONTROL AND DATA', { size: 11.5, fill: 'var(--ink-2)' });
+  g += T(20, 160, 'POWER PATH', { size: 11.5, fill: 'var(--ink-2)' });
+
+  // wires first
+  const Y = 245, dir = flowMode === 'in' ? ' rev' : '';
+  // Each power line gets an arrowhead plus a travelling highlight (tinted from its own color); direction follows
+  // the charging / discharging toggle. The DC side of the inverter is the blue double line.
+  const wire = (x1, x2, color, dc) => {
+    const mid = (x1 + x2) / 2, d = flowMode === 'in' ? -1 : 1, k = dc ? 10 : 9;
+    return (dc
+      ? `<line x1="${x1}" y1="${Y}" x2="${x2}" y2="${Y}" stroke="${color}" stroke-width="9"/><line x1="${x1}" y1="${Y}" x2="${x2}" y2="${Y}" stroke="var(--ground)" stroke-width="3"/>`
+      : `<line x1="${x1}" y1="${Y}" x2="${x2}" y2="${Y}" stroke="${color}" stroke-width="5"/><line class="flow-hi${dir}" pathLength="100" x1="${x1}" y1="${Y}" x2="${x2}" y2="${Y}" stroke="color-mix(in srgb, ${color} 30%, var(--sheet))" stroke-width="3"/>`)
+      + `<polygon points="${mid + d * k},${Y} ${mid - d * k},${Y - k} ${mid - d * k},${Y + k}" fill="${color}" stroke="var(--ground)" stroke-width="1.2"/>`;
+  };
+  g += wire(450, 520, 'var(--v-secondary)', true) + T(485, Y - 14, 'DC', { anchor: 'middle', fill: 'var(--v-secondary)' });
+  g += wire(670, 723, 'var(--v-secondary)') + T(696, Y - 14, 'AC', { anchor: 'middle', fill: 'var(--v-secondary)' });
+  g += wire(797, 1080, 'var(--v-primary)');
+  g += T(940, Y - 18, 'Utility feeder, 12 kV (Ch 2)', { anchor: 'middle', fill: 'var(--v-primary)', weight: 700 });
+  [880, 1000].forEach(x => g += `<line x1="${x}" y1="${Y}" x2="${x}" y2="${Y + 40}" stroke="var(--ink-3)" stroke-width="3"/><line x1="${x - 12}" y1="${Y + 6}" x2="${x + 12}" y2="${Y + 6}" stroke="var(--ink-3)" stroke-width="2"/>`);
+  g += T(940, Y + 34, 'customers on the same line', { anchor: 'middle', size: 11 });
+  // data lines: telemetry is teal dotted, control is magenta dashed with a filled arrowhead (as in chapters 2 and 4)
+  g += `<defs><marker id="d5-ctl" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0L8,4L0,8z" style="fill:var(--data-ctl)"/></marker>`
+     + `<marker id="d5-tel" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1L7,4L1,7" style="fill:none;stroke:var(--data-tel);stroke-width:1.4"/></marker></defs>`;
+  g += `<path class="data-flow tel" d="M385 180 V72 H470" marker-end="url(#d5-tel)"/>` + T(392, 128, 'cell data', { size: 11, fill: 'var(--data-tel)' });
+  g += `<path class="data-flow ctl rev" d="M595 205 V104" marker-start="url(#d5-ctl)"/>` + T(602, 160, 'setpoints', { size: 11, fill: 'var(--data-ctl)' });
+  g += `<path class="data-flow tel" d="M670 72 H850" marker-end="url(#d5-tel)"/>` + T(760, 64, 'telemetry + limits', { size: 11, fill: 'var(--data-tel)', anchor: 'middle' });
+  // exploded-view guides
+  g += `<path d="M120 245 H150" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="2 4"/>` + T(135, 236, '×12', { anchor: 'middle', size: 11.5 });
+  g += `<path d="M270 245 H320" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="2 4"/>` + T(295, 236, '×8', { anchor: 'middle', size: 11.5 });
+
+  // enclosure (dashed outline) + its label chip
+  g += `<rect x="304" y="168" width="390" height="288" fill="none" stroke="var(--band)" stroke-width="1.6" stroke-dasharray="8 6"/>`;
+  g += node('enclosure', `<rect class="box" x="560" y="443" width="120" height="26" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>` + T(620, 460, 'Enclosure', { anchor: 'middle', fill: 'var(--ink)', size: 12.5 }), 'Enclosure');
+
+  // cell
+  g += node('cell', box(30, 210, 90, 70, 'var(--ink)', 'var(--fuel-battery)') + `<rect x="62" y="203" width="26" height="9" fill="var(--ink)"/>`
+    + `<rect x="46" y="226" width="58" height="38" fill="var(--fuel-battery)" opacity=".55"/>` + title(75, 305, 'Cell') + sub(75, 322, '3.2 V'), 'Cell');
+  // module: 4x3 mini cells
+  let mini = ''; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) mini += `<rect x="${164 + c * 24}" y="${216 + r * 20}" width="18" height="14" fill="var(--fuel-battery)" opacity=".6"/>`;
+  g += node('module', box(150, 200, 120, 90, 'var(--ink)', 'var(--fuel-battery)') + mini + title(210, 315, 'Module') + sub(210, 332, 'cells + sensors'), 'Module');
+  // rack with stacked modules
+  let stack = ''; for (let i = 0; i < 5; i++) stack += `<rect x="334" y="${206 + i * 14}" width="102" height="10" fill="var(--fuel-battery)" opacity=".6"/>`;
+  g += node('rack', box(320, 180, 130, 150, 'var(--ink)', 'var(--fuel-battery)') + stack + title(385, 357, 'Rack / pack'), 'Rack');
+  // BMS chip inside rack (drawn after the rack so it sits on top)
+  g += node('bms', `<rect class="box" x="334" y="282" width="102" height="36" fill="var(--sheet)" stroke="var(--ink)" stroke-width="1.6"/>` + T(385, 305, 'BMS', { anchor: 'middle', fill: 'var(--ink)', size: 13, weight: 700 }), 'Battery management system');
+  // PCS
+  g += node('pcs', box(520, 205, 150, 80, 'var(--ink)', 'var(--fuel-battery)')  + title(605, 238, 'PCS / inverter') + sub(605, 258, 'DC ↔ AC · sets kW'), 'Power conversion system');
+  // transformer
+  g += node('xfmr', `<rect class="box" x="718" y="214" width="84" height="62" fill="transparent" stroke="transparent"/>`
+    + `<circle cx="746" cy="${Y}" r="22" fill="var(--sheet)" stroke="var(--v-secondary)" stroke-width="2.4"/><circle cx="774" cy="${Y}" r="22" fill="none" stroke="var(--v-primary)" stroke-width="2.4"/>`
+    + title(760, 300, 'Transformer'), 'Transformer');
+  // safety row: protective equipment, drawn in the gold boundary color (nothing here is a fault)
+  const safe = (x, y, w, h) => `<rect class="box" x="${x}" y="${y}" width="${w}" height="${h}" fill="color-mix(in srgb, var(--zone-sec) 10%, var(--sheet))" stroke="var(--zone-sec)" stroke-width="2"/>`;
+  g += T(316, 378, 'SAFETY LAYER', { size: 11, fill: 'var(--zone-sec)', weight: 700 });
+  g += node('thermal', safe(316, 386, 180, 40) + T(406, 411, 'Thermal management', { anchor: 'middle', fill: 'var(--ink)', size: 13, font: DISP, weight: 600 }), 'Thermal management');
+  g += node('fire', safe(504, 386, 180, 40) + T(594, 411, 'Fire protection', { anchor: 'middle', fill: 'var(--ink)', size: 13, font: DISP, weight: 600 }), 'Fire detection and suppression');
+  // EMS and utility
+  g += node('ems', box(470, 40, 200, 64, 'var(--ink)') + title(570, 67, 'Site controller / EMS') + sub(570, 87, 'decides when'), 'Site controller');
+  g += node('utility', box(850, 40, 220, 64, 'var(--ink)') + title(960, 67, 'DER gateway + SCADA') + sub(960, 87, 'utility control room (Ch 4)'), 'Utility DER gateway and SCADA');
+
+  const svg = $('diagramSvg');
+  svg.innerHTML = g;
+  svg.querySelectorAll('.node').forEach(n => {
+    const pick = () => { selectedPart = n.dataset.id; svg.querySelectorAll('.node').forEach(x => x.classList.toggle('selected', x === n)); renderInfo(); };
+    n.addEventListener('click', pick);
+    n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+}
+function renderInfo() {
+  const p = PARTS[selectedPart]; if (!p) return;
+  $('infoCard').innerHTML = `<div class="info-tag">${p.tag}</div><div class="info-title">${p.title}</div>
+    <div class="info-cols"><div><h4>What it does</h4><p>${p.does}</p></div><div><h4>If it fails</h4><p>${p.fails}</p></div><div><h4>Rough cost</h4><p class="cost">${p.cost}</p></div></div>
+    ${p.link ? `<div class="chlink">↔ ${p.link}</div>` : ''}`;
+}
+
+/* ============================================================
+   PLAYGROUND 1 · SHIFT THE SUN
+   ============================================================ */
+// Relative load by hour (0–23): low overnight, morning bump, evening peak.
+const LOAD_SHAPE = [0.7,0.6,0.6,0.6,0.6,0.7,1.0,1.4,1.3,1.0,0.9,0.9,0.9,0.9,1.0,1.1,1.4,1.9,2.2,2.1,1.8,1.5,1.1,0.8];
+const LOAD_SUM = LOAD_SHAPE.reduce((a, b) => a + b, 0);
+const SUN_SCALES = {
+  home: { who: 'home', p: 'kW', e: 'kWh', daily: { summer: 30, winter: 34 }, solar: [0, 15, 0.5, 7], kwh: [0, 40, 0.5, 13.5], kw: [0, 15, 0.5, 11.5], dp: 1 },
+  town: { who: 'town', p: 'MW', e: 'MWh', daily: { summer: 200, winter: 230 }, solar: [0, 60, 1, 20], kwh: [0, 160, 4, 40], kw: [0, 40, 1, 10], dp: 0 }
+};
+const SUN_DAYS = { summer: { rise: 5.5, set: 20.5, peak: 0.8 }, winter: { rise: 7.75, set: 16.25, peak: 0.3 } };
+const SUN = { scale: 'home', day: 'summer' };
+const EV0 = 17, EV1 = 22, N = 96, DT = 0.25, EFF = 0.95, RESERVE = 0.05;
+
+function simSun() {
+  const sc = SUN_SCALES[SUN.scale], day = SUN_DAYS[SUN.day];
+  const solarSize = +$('sunSolar').value, cap = +$('sunKwh').value, P = +$('sunKw').value;
+  const R = { D: [], S: [], sd: [], bo: [], ch: [], lo: [], gr: [], soc: [] };
+  const per = sc.daily[SUN.day] / LOAD_SUM;
+  // Run the day twice so it starts from wherever the previous evening left the battery (a steady daily cycle).
+  let e = cap * RESERVE, fullAt, emptyAt, powerLimited, everCharged, hitFull;
+  for (let pass = 0; pass < 2; pass++) {
+  fullAt = null; emptyAt = null; powerLimited = false; everCharged = false; hitFull = false;
+  if (pass) for (const k in R) R[k] = [];
+  for (let i = 0; i < N; i++) {
+    const h = i * DT + DT / 2;
+    const d = LOAD_SHAPE[Math.floor(h)] * per;
+    const s = (h > day.rise && h < day.set) ? solarSize * day.peak * Math.sin(Math.PI * (h - day.rise) / (day.set - day.rise)) : 0;
+    const direct = Math.min(d, s); let surplus = s - direct, deficit = d - direct, c = 0, o = 0;
+    if (surplus > 1e-9 && cap > 0 && P > 0) {
+      c = Math.min(surplus, P, Math.max(0, (cap - e) / EFF / DT)); e += c * EFF * DT;
+      if (c > 1e-6) everCharged = true;
+      if (e >= cap - 1e-6 && !hitFull) { hitFull = true; fullAt = i * DT; }
+    }
+    if (deficit > 1e-9 && cap > 0 && P > 0) {
+      const avail = Math.max(0, (e - cap * RESERVE) * EFF / DT);
+      o = Math.min(deficit, P, avail); e -= o / EFF * DT;
+      if (deficit > P + 1e-9 && avail > P && h >= EV0 && h < EV1) powerLimited = true;
+      if (everCharged && emptyAt === null && e <= cap * RESERVE + 1e-6 && o < deficit - 1e-9 && h >= 12) emptyAt = i * DT;
+    }
+    R.D.push(d); R.S.push(s); R.sd.push(direct); R.bo.push(o); R.ch.push(c); R.lo.push(surplus - c); R.gr.push(deficit - o); R.soc.push(cap > 0 ? e / cap : 0);
+  }
+  }
+  const sum = (a, f = () => true) => a.reduce((t, v, i) => t + (f(i) ? v : 0), 0) * DT;
+  const inEv = i => { const h = i * DT; return h >= EV0 && h < EV1; };
+  R.evLoad = sum(R.D, inEv); R.evSd = sum(R.sd, inEv); R.evBo = sum(R.bo, inEv); R.evSun = R.evSd + R.evBo; R.demTot = sum(R.D);
+  R.left = sum(R.lo); R.solarTot = sum(R.S); R.grid = sum(R.gr); R.out = sum(R.bo); R.charged = sum(R.ch);
+  R.cycles = cap > 0 ? R.out / cap : 0;
+  Object.assign(R, { cap, P, solarSize, fullAt, emptyAt, powerLimited, everCharged, hitFull, sc });
+  return R;
+}
+
+function drawSun(R) {
+  const W = 960, H = 300, l = 52, r = 12, t = 14, b = 26, pw = W - l - r, ph = H - t - b, sc = R.sc;
+  const top = R.D.map((d, i) => Math.max(d + R.ch[i] + R.lo[i], d));
+  let maxY = Math.max(...top, 0.1) * 1.08; const st = niceStep(maxY, 5); maxY = Math.ceil(maxY / st) * st;
+  const X = i => l + pw * (i / N), Y = v => t + ph * (1 - v / maxY);
+  const area = (lo, hi) => { let d = ''; for (let i = 0; i <= N; i++) { const k = Math.min(i, N - 1); d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(hi[k]).toFixed(1); }
+    for (let i = N; i >= 0; i--) { const k = Math.min(i, N - 1); d += 'L' + X(i).toFixed(1) + ',' + Y(lo[k]).toFixed(1); } return d + 'Z'; };
+  const step = a => { let d = ''; for (let i = 0; i < N; i++) d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(a[i]).toFixed(1) + 'L' + X(i + 1).toFixed(1) + ',' + Y(a[i]).toFixed(1); return d; };
+  let g = `<defs>${hatch('sh-ch', 'var(--fuel-battery)')}${hatch('sh-lo', 'var(--fuel-solar)')}</defs>`;
+  g += `<rect x="${X(EV0 / DT)}" y="${t}" width="${X(EV1 / DT) - X(EV0 / DT)}" height="${ph}" fill="var(--hover-fill)"/>` + txt((X(EV0 / DT) + X(EV1 / DT)) / 2, t + 13, 'evening, 5–10 pm', { anchor: 'middle', size: 11.5 });
+  for (let v = 0; v <= maxY + 1e-9; v += st) g += `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/>` + txt(l - 8, Y(v) + 4, +v.toFixed(2), { anchor: 'end' });
+  g += `<text x="14" y="${t + ph / 2}" fill="var(--ink-3)" style="font-family:${MONO}" font-size="12" transform="rotate(-90 14 ${t + ph / 2})" text-anchor="middle">${sc.p}</text>`;
+  for (let h = 0; h <= 24; h += 3) g += txt(X(h / DT), H - 8, axisHour(h), { anchor: 'middle' });
+  const z = Array(N).fill(0), s1 = R.sd, s2 = s1.map((v, i) => v + R.bo[i]), s3 = s2.map((v, i) => v + R.gr[i]);
+  const c1 = R.D.map((d, i) => d + R.ch[i]), c2 = c1.map((v, i) => v + R.lo[i]);
+  g += `<path d="${area(z, s1)}" fill="var(--fuel-solar)" opacity=".88"/>`;
+  g += `<path d="${area(s1, s2)}" fill="var(--fuel-battery)" opacity=".9"/>`;
+  g += `<path d="${area(s2, s3)}" fill="var(--ink-3)" opacity=".6"/>`;
+  g += `<path d="${area(R.D, c1)}" fill="url(#sh-ch)"/>`;
+  g += `<path d="${area(c1, c2)}" fill="url(#sh-lo)"/>`;
+  g += `<path d="${step(R.D)}" fill="none" stroke="var(--ink)" stroke-width="2.4"/>`;
+  g += `<g id="sunCur" style="display:none" pointer-events="none"><line y1="${t}" y2="${t + ph}" stroke="var(--ink)" stroke-width="2"/><circle r="5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/></g>`;
+  $('sunChart').innerHTML = g;
+  R.maxY = maxY;
+
+  // SOC chart
+  const H2 = 110, b2 = 22, t2 = 8, ph2 = H2 - t2 - b2, Y2 = v => t2 + ph2 * (1 - v);
+  let s = '';
+  [0, .5, 1].forEach(v => s += `<line x1="${l}" x2="${W - r}" y1="${Y2(v)}" y2="${Y2(v)}" stroke="var(--grid)"/>` + txt(l - 8, Y2(v) + 4, v * 100 + '%', { anchor: 'end' }));
+  for (let h = 0; h <= 24; h += 3) s += txt(X(h / DT), H2 - 5, axisHour(h), { anchor: 'middle' });
+  if (R.cap > 0 && R.P > 0) {
+    let d = `M${X(0)},${Y2(0)}`; for (let i = 0; i < N; i++) d += `L${X(i).toFixed(1)},${Y2(R.soc[i]).toFixed(1)}L${X(i + 1).toFixed(1)},${Y2(R.soc[i]).toFixed(1)}`; d += `L${X(N)},${Y2(0)}Z`;
+    s += `<path d="${d}" fill="color-mix(in srgb, var(--fuel-battery) 25%, transparent)" stroke="var(--fuel-battery)" stroke-width="2"/>`;
+  } else s += txt(W / 2, H2 / 2 + 4, 'Add battery energy and power to see it charge and discharge', { anchor: 'middle', size: 13 });
+  s += `<g id="socCur" style="display:none" pointer-events="none"><line y1="${t2}" y2="${t2 + ph2}" stroke="var(--ink)" stroke-width="2"/><circle r="4.5" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/></g>`;
+  $('sunSoc').innerHTML = s;
+  sunR = R;
+  if (sunHi !== null) sunCursor(sunHi);
+}
+
+function renderSun() {
+  const sc = SUN_SCALES[SUN.scale], fp = v => (sc.dp ? n1(v) : n0(v));
+  $('sunSolarV').textContent = fp(+$('sunSolar').value) + ' ' + sc.p;
+  $('sunKwhV').textContent = fp(+$('sunKwh').value) + ' ' + sc.e;
+  $('sunKwV').textContent = fp(+$('sunKw').value) + ' ' + sc.p;
+  const R = simSun();
+  $('sunTitle').textContent = SUN.scale === 'home' ? "Where the home's power comes from, hour by hour" : "Where the town's power comes from, hour by hour";
+  $('sunDur').textContent = R.cap > 0 && R.P > 0 ? `Duration: ${n1(R.cap)} ÷ ${n1(R.P)} = ${n1(R.cap / R.P)} hours at full output` : 'Duration: set both energy and power';
+  const evPct = R.evLoad > 0 ? R.evSun / R.evLoad * 100 : 0;
+  const E = v => fp(v) + ' ' + sc.e, pctOf = (a, b) => b > 0 ? n0(a / b * 100) + '%' : '0%';
+  const tips = [
+    `Share of evening demand (5–10 pm) met by sunshine, either used straight away or stored in the battery at midday.<span class="tt-calc">(${E(R.evSd)} solar direct + ${E(R.evBo)} from the battery) ÷ ${E(R.evLoad)} evening demand = <b>${n0(evPct)}%</b></span>`,
+    `Solar that ${SUN.scale === 'home' ? 'the home' : 'the town'} couldn't use or store: it arrives while the battery is already full or charging as fast as its inverter allows. In real life it's exported to the grid or curtailed.<span class="tt-calc">${E(R.left)} of ${E(R.solarTot)} produced today = <b>${pctOf(R.left, R.solarTot)}</b></span>`,
+    `Energy the battery delivered today divided by its capacity. One cycle is one full tank's worth, whether it's used in one go or in pieces.<span class="tt-calc">${R.cap > 0 ? `${E(R.out)} out ÷ ${E(R.cap)} capacity = <b>${n1(R.cycles)} cycles</b>, about ${n0(R.cycles * 365)} a year at this rate` : 'No battery set.'}</span>`,
+    `Demand over the whole 24 hours that neither solar nor the battery covered.<span class="tt-calc">${E(R.grid)} of ${E(R.demTot)} demand today = <b>${pctOf(R.grid, R.demTot)}</b></span>`
+  ];
+  $('sunPills').innerHTML = [
+    [`${n0(evPct)}<small>%</small>`, 'evening from the sun', evPct >= 90 ? 'good' : ''],
+    [`${fp(R.left)}<small> ${sc.e}</small>`, 'solar left over', R.left > 0.02 * R.solarTot && R.left > 0.05 ? 'bad' : ''],
+    [`${n1(R.cycles)}`, 'battery cycles used', 'batt'],
+    [`${fp(R.grid)}<small> ${sc.e}</small>`, 'bought from the grid', '']
+  ].map(([v, l, c], i) => `<div class="pill ${c}"><div class="v">${v}</div><div class="l">${l}<span class="tt" tabindex="0" aria-label="How this is calculated"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">${tips[i]}</span></span></div></div>`).join('');
+  drawSun(R);
+
+  const who = SUN.scale === 'home' ? 'the house' : 'the town', msgs = [];
+  let cls = '';
+  if (R.cap <= 0 || R.P <= 0) {
+    msgs.push(`<b>No battery.</b> Midday sun beyond what ${who} uses right then is left over (exported or curtailed), and the whole evening comes from the grid.`);
+  } else if (R.solarTot <= 0 || !R.everCharged) {
+    msgs.push(`<b>Nothing to store.</b> Solar never makes more than ${who} is using, so the battery never charges. Add solar before adding battery.`); cls = 'alert';
+  } else {
+    if (R.hitFull && R.left > 0.05) msgs.push(`<b>The battery is full by ${hourLbl(R.fullAt)}.</b> ${fp(R.left)} ${sc.e} of sun is left over after that. A bigger tank (more ${sc.e}) would keep more of it.`);
+    if (!R.hitFull && R.left > 0.05) msgs.push(`<b>The battery never fills, yet ${fp(R.left)} ${sc.e} of sun is left over.</b> It can only charge at ${fp(R.P)} ${sc.p}, so the midday peak arrives faster than it can soak it up. A bigger pipe (more ${sc.p}) would catch more.`);
+    else if (!R.hitFull) msgs.push(`<b>The battery never fills.</b> There's only ${fp(R.charged)} ${sc.e} of spare sun to store. More solar would help more than more battery.`);
+    if (R.powerLimited) msgs.push(`<b>Power-limited in the evening.</b> At the peak, ${who} needs more than the ${fp(R.P)} ${sc.p} the inverter can deliver, so the grid fills the gap even though energy is still in the battery. That's a pipe problem, not a tank problem.`);
+    if (R.emptyAt !== null) msgs.push(`<b>The battery runs down to its reserve at ${hourLbl(R.emptyAt)}.</b> Everything after that comes from the grid.`);
+    if (evPct >= 90) { cls = 'ok'; msgs.unshift(`<b>The sun covers ${n0(evPct)}% of the evening.</b>`); }
+  }
+  if (SUN.day === 'winter' && R.cap > 0) msgs.push('A December day in Spokane has little spare sun. Batteries that rely on solar alone do most of their work in summer.');
+  msgs.push('<span class="quiet">Like Chapter 1, this assumes a perfect forecast and about 90% round-trip efficiency. The battery keeps a 5% reserve, and the day repeats, so it starts the morning with whatever was left the night before.</span>');
+  $('sunHint').className = 'hint-box ' + cls;
+  $('sunHint').innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+}
+
+/* Hover readout for the Shift-the-sun charts: a cursor on both charts and a tooltip with every series at that moment. */
+let sunR = null, sunHi = null;
+const SUN_CH = { W: 960, l: 52, r: 12, t: 14, ph: 260, t2: 8, ph2: 80 };
+function sunCursor(i) {
+  sunHi = i;
+  const tip = $('sunTip'), cm = $('sunCur'), cs = $('socCur');
+  if (i === null || !sunR) { if (cm) cm.style.display = 'none'; if (cs) cs.style.display = 'none'; tip.hidden = true; return; }
+  const R = sunR, sc = R.sc, C = SUN_CH, x = C.l + (C.W - C.l - C.r) * ((i + 0.5) / N);
+  const ym = C.t + C.ph * (1 - R.D[i] / R.maxY), ys = C.t2 + C.ph2 * (1 - R.soc[i]);
+  cm.style.display = ''; cm.querySelector('line').setAttribute('x1', x); cm.querySelector('line').setAttribute('x2', x);
+  cm.querySelector('circle').setAttribute('cx', x); cm.querySelector('circle').setAttribute('cy', ym);
+  const hasBatt = R.cap > 0 && R.P > 0;
+  cs.style.display = hasBatt ? '' : 'none'; cs.querySelector('line').setAttribute('x1', x); cs.querySelector('line').setAttribute('x2', x);
+  cs.querySelector('circle').setAttribute('cx', x); cs.querySelector('circle').setAttribute('cy', ys);
+
+  const f = v => (v < 0.05 ? '0' : n1(v)) + ' ' + sc.p;
+  const hatchSw = c => `repeating-linear-gradient(45deg,${c} 0 3px,transparent 3px 6px)`;
+  const rows = [
+    ['solar used directly', R.sd[i], 'var(--fuel-solar)'],
+    ['battery discharging', R.bo[i], 'var(--fuel-battery)'],
+    ['from the grid', R.gr[i], 'var(--ink-3)'],
+    ['battery charging', R.ch[i], hatchSw('var(--fuel-battery)')],
+    ['solar left over', R.lo[i], hatchSw('var(--fuel-solar)')]
+  ];
+  tip.innerHTML = `<div class="tip-time">${hourLbl(i * DT)} – ${hourLbl((i + 1) * DT)}</div>`
+    + rows.map(([lbl, v, bg]) => `<div class="tip-row${v < 0.05 ? ' zero' : ''}"><i style="background:${bg}"></i><span>${lbl}</span><b>${f(v)}</b></div>`).join('')
+    + `<div class="tip-row tip-sum"><i style="background:var(--ink);height:3px"></i><span>demand</span><b>${f(R.D[i])}</b></div>`
+    + `<div class="tip-row tip-sum"><i style="background:transparent"></i><span>solar produced</span><b>${f(R.S[i])}</b></div>`
+    + (hasBatt ? `<div class="tip-row tip-sum"><i style="background:var(--fuel-battery)"></i><span>battery</span><b>${n0(R.soc[i] * 100)}% full</b></div>` : '');
+  tip.hidden = false;
+  const wrap = tip.parentElement.getBoundingClientRect(), svg = $('sunChart').getBoundingClientRect();
+  const px = svg.left - wrap.left + x / C.W * svg.width;
+  if (px > wrap.width / 2) { tip.style.left = ''; tip.style.right = (wrap.width - px + 14) + 'px'; }
+  else { tip.style.right = ''; tip.style.left = (px + 14) + 'px'; }
+}
+function sunHoverInit() {
+  const idxAt = (svg, e) => { const r = svg.getBoundingClientRect(), C = SUN_CH; const xv = (e.clientX - r.left) / r.width * C.W;
+    return clamp(Math.floor((xv - C.l) / (C.W - C.l - C.r) * N), 0, N - 1); };
+  ['sunChart', 'sunSoc'].forEach(id => {
+    const svg = $(id);
+    svg.setAttribute('tabindex', '0');
+    svg.addEventListener('pointermove', e => sunCursor(idxAt(svg, e)));
+    svg.addEventListener('pointerdown', e => sunCursor(idxAt(svg, e)));
+    svg.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') sunCursor(null); });
+    svg.addEventListener('focus', () => { if (sunHi === null) sunCursor(48); });
+    svg.addEventListener('blur', () => sunCursor(null));
+    svg.addEventListener('keydown', e => {
+      const step = e.shiftKey ? 4 : 1;
+      if (e.key === 'ArrowRight') { e.preventDefault(); sunCursor(clamp((sunHi ?? 47) + step, 0, N - 1)); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); sunCursor(clamp((sunHi ?? 48) - step, 0, N - 1)); }
+      else if (e.key === 'Escape') sunCursor(null);
+    });
+  });
+  // a tap anywhere else closes the readout on touch screens
+  document.addEventListener('pointerdown', e => { if (sunHi !== null && !e.target.closest('#sunChart, #sunSoc')) sunCursor(null); });
+}
+function sunScale(v) {
+  SUN.scale = v; const sc = SUN_SCALES[v];
+  setRange('sunSolar', sc.solar); setRange('sunKwh', sc.kwh); setRange('sunKw', sc.kw); renderSun();
+}
+
+/* ============================================================
+   PLAYGROUND 2 · WEAR IT OUT
+   Illustrative model: linear fade. Cycle life to 80% at full depth and 25°C,
+   scaled by depth^-1.15 and by temperature; plus calendar fade per year.
+   ============================================================ */
+const CHEMS = {
+  lfp: { name: 'LFP', base: 5000, heat: 48, cal: 0.6, note: 'Rated ~3,000–6,000+ cycles. The large majority of new stationary storage.' },
+  nmc: { name: 'NMC', base: 1500, heat: 35, cal: 1.0, note: 'Rated ~1,000–2,000 cycles. Wins on weight, which matters in cars, not on the ground.' },
+  na:  { name: 'Sodium-ion', base: 3000, heat: 40, cal: 0.8, note: 'About 2,000–4,000 cycles in recent tests. Cheap materials, good in the cold, early in rollout.' },
+  pb:  { name: 'Lead-acid', base: 800, heat: 12, cal: 2.0, note: 'Roughly 500–1,500 cycles. Fine for rare backup, short-lived with daily cycling.' }
+};
+let wearChem = 'lfp';
+function wearModel(c, W) {
+  const d = W.dod / 100;
+  let tf = 1;
+  if (W.temp > 25) tf = Math.pow(2, -(W.temp - 25) / c.heat);
+  else if (W.temp < 15) tf = 1 - 0.015 * (15 - W.temp);
+  const N = c.base * Math.pow(d, -1.15) * tf;          // partial cycles of depth d to reach 80%
+  const cpy = W.cpd * 365;
+  const cyc = 20 * cpy / N;                             // capacity points lost per year from cycling
+  const cal = W.cal ? c.cal * Math.pow(2, (W.temp - 25) / 15) : 0;
+  const rate = cyc + cal;
+  return { N, cpy, rate, y80: 20 / rate, y70: 30 / rate, yCycles: N / cpy, efc: cpy * d };
+}
+function renderWear() {
+  const W = { dod: +$('wearDod').value, cpd: +$('wearCpd').value, temp: +$('wearTemp').value, cal: $('wearCal').checked };
+  $('wearDodV').textContent = W.dod + '%';
+  $('wearCpdV').textContent = n1(W.cpd) + (W.cpd === 1 ? ' cycle' : ' cycles');
+  $('wearTempV').textContent = W.temp + '°C';
+  const c = CHEMS[wearChem], M = wearModel(c, W), L = wearModel(CHEMS.lfp, W), Nm = wearModel(CHEMS.nmc, W);
+  $('wearChemNote').textContent = c.note;
+  const yrs = v => v > 40 ? '40+' : n1(v);
+  $('wearPills').innerHTML = [
+    [`${yrs(M.y80)}<small> yrs</small>`, `${c.name} to 80% capacity`, 'batt'],
+    [`${yrs(M.y70)}<small> yrs</small>`, 'to 70% capacity', ''],
+    [`${n0(Math.round(M.N / 100) * 100)}`, `cycles at ${W.dod}% depth`, ''],
+    [`${yrs(L.y80)} <small>vs</small> ${yrs(Nm.y80)}`, 'LFP vs NMC, years to 80%', 'good']
+  ].map(([v, l, k]) => `<div class="pill ${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+  // chart
+  const Wd = 960, H = 300, l = 52, r = 90, t = 14, b = 28, pw = Wd - l - r, ph = H - t - b, YMAX = 25;
+  const X = y => l + pw * y / YMAX, Y = v => t + ph * (100 - v) / 60;
+  let g = '';
+  for (let v = 40; v <= 100; v += 10) g += `<line x1="${l}" x2="${Wd - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/>` + txt(l - 8, Y(v) + 4, v + '%', { anchor: 'end' });
+  for (let y = 0; y <= YMAX; y += 5) g += txt(X(y), H - 8, y === 0 ? '0' : y + ' yrs', { anchor: 'middle' });
+  [[80, '80%: where cycle ratings are usually measured'], [70, '70%: a common warranty floor']].forEach(([v, s]) =>
+    g += `<line x1="${l}" x2="${Wd - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="4 3"/>` + txt(l + 6, Y(v) - 5, s, { size: 11, fill: 'var(--ink-2)' }));
+  const order = Object.keys(CHEMS).filter(k => k !== wearChem).concat(wearChem);
+  const labels = [];
+  order.forEach(k => {
+    const m = wearModel(CHEMS[k], W), on = k === wearChem;
+    const yEnd = Math.min(YMAX, 60 / m.rate), cEnd = 100 - m.rate * yEnd;
+    g += `<line x1="${X(0)}" y1="${Y(100)}" x2="${X(yEnd)}" y2="${Y(Math.max(40, cEnd))}" stroke="${on ? 'var(--fuel-battery)' : 'var(--ink-3)'}" stroke-width="${on ? 3.5 : 1.6}" ${on ? '' : 'stroke-dasharray="5 4"'}/>`;
+    labels.push({ k, on, x: X(yEnd), y: Y(Math.max(40, cEnd)) });
+    if (on && m.y80 <= YMAX) g += `<circle cx="${X(m.y80)}" cy="${Y(80)}" r="5.5" fill="var(--fuel-battery)" stroke="var(--sheet)" stroke-width="2"/>`;
+  });
+  // label at line ends, nudged apart
+  labels.sort((a, b2) => a.y - b2.y);
+  for (let i = 1; i < labels.length; i++) if (labels[i].x > Wd - r - 4 && labels[i - 1].x > Wd - r - 4 && labels[i].y - labels[i - 1].y < 15) labels[i].y = labels[i - 1].y + 15;
+  labels.forEach(o => g += txt(Math.min(o.x + 6, Wd - r + 6), o.y + 4, CHEMS[o.k].name, { size: 12, fill: o.on ? 'var(--ink)' : 'var(--ink-3)', weight: o.on ? 600 : 400 }));
+  $('wearChart').innerHTML = g;
+  $('wearLegend').innerHTML = `<span><i class="sw" style="background:var(--fuel-battery);height:3px"></i>${c.name}</span><span><i class="sw" style="background:var(--ink-3);height:2px"></i>other chemistries</span>`;
+
+  const msgs = [];
+  msgs.push(`<b>Cycle count alone says ${yrs(M.yCycles)} years</b> (${n0(M.N)} cycles ÷ ${n0(M.cpy)} a year)${W.cal ? `, but calendar aging brings it to <b>${yrs(M.y80)}</b>` : ''}. That's ${n0(M.efc)} full-equivalent cycles a year.`);
+  if (W.temp >= 35) msgs.push(`<b>Heat is the quiet killer.</b> At ${W.temp}°C the cells wear noticeably faster than at 25°C. This is why cooling is part of the system, not an extra.`);
+  if (W.temp <= 10) msgs.push(`<b>Cold mainly limits charging.</b> Charging lithium cells below freezing damages them, so stationary systems in cold places heat their cells. With heating, this penalty mostly goes away.`);
+  if (W.dod <= 60) msgs.push('<b>Shallow cycles last longer,</b> but you only use part of the capacity you paid for. It\'s a trade-off, not free life.');
+  msgs.push('<span class="quiet">At 80% the battery still works; it just holds less. Owners can keep going, add modules (augmentation), move it to an easier second-life job, or recycle it. The straight lines are a simplification; real fade has curves and a knee.</span>');
+  $('wearHint').innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+}
+
+/* ============================================================
+   PLAYGROUND 3 · SIZE IT
+   ============================================================ */
+const SITES = {
+  home: { name: 'home', kw: [0.5, 12, 0.1], h: [1, 24, 0.5],
+    goals: { shift: { label: 'Shift evening solar', short: 'Shift', kw: 2, h: 5, note: 'Cover about 10 kWh of evening use from rooftop solar.' },
+             backup: { label: 'Back up critical loads', short: 'Backup', kw: 0.8, h: 12, note: 'Fridge, lights, internet and furnace fan for about 12 hours in an outage.' } },
+    usable: true, pick: (kwh, kw) => { const u = Math.max(1, Math.ceil(kwh / 13.5 - 1e-9), Math.ceil(kw / 11.5 - 1e-9)); return { kwh: u * 13.5, kw: u * 11.5, label: u === 1 ? 'one 13.5 kWh / 11.5 kW home unit' : `${u} home units (${n1(u * 13.5)} kWh / ${n1(u * 11.5)} kW)` }; } },
+  grocery: { name: 'grocery store', kw: [10, 150, 5], h: [0.5, 8, 0.5],
+    goals: { shave: { label: 'Shave the afternoon peak', short: 'Shave', kw: 50, h: 2, note: 'Peak is 200 kW on hot afternoons (refrigeration + HVAC). Cap it at 150 kW.' },
+             backup: { label: 'Keep refrigeration running', short: 'Backup', kw: 40, h: 4, note: 'Protect inventory through a short outage.' } },
+    usable: false, pick: (kwh, kw) => { const e = Math.ceil(kwh / 50 - 1e-9) * 50, p = Math.ceil(kw * 1.2 / 10 - 1e-9) * 10; return { kwh: e, kw: p, label: `${p} kW / ${e} kWh outdoor cabinet` }; } },
+  factory: { name: 'small factory', kw: [50, 600, 10], h: [0.5, 6, 0.5],
+    goals: { shave: { label: 'Shave production peaks', short: 'Shave', kw: 150, h: 2, note: 'Load is 400 kW, peaking at 600 kW when compressors, motors and ovens overlap. Cap it at 450 kW.' },
+             backup: { label: 'Ride through outages', short: 'Backup', kw: 250, h: 1, note: 'Keep critical processes running through an outage or voltage dip.' } },
+    usable: false, pick: (kwh, kw) => { const e = Math.ceil(kwh / 100 - 1e-9) * 100, p = Math.ceil(kw * 1.2 / 50 - 1e-9) * 50; return { kwh: e, kw: p, label: `${p} kW / ${e} kWh containerized system` }; } }
+};
+const SIZE = { site: 'home', goal: 'shift' };
+function sizeSite(v) {
+  SIZE.site = v; const S = SITES[v];
+  $('sizeGoal').innerHTML = Object.entries(S.goals).map(([k, g], i) => `<button data-v="${k}" class="${i ? '' : 'on'}">${g.label}</button>`).join('');
+  $('sizeUsable').checked = S.usable;
+  sizeGoal(Object.keys(S.goals)[0]);
+}
+function sizeGoal(k) {
+  SIZE.goal = k; const S = SITES[SIZE.site], g = S.goals[k];
+  setRange('sizeKw', [...S.kw, g.kw]); setRange('sizeH', [...S.h, g.h]);
+  renderSize();
+}
+function renderSize() {
+  const S = SITES[SIZE.site], g = S.goals[SIZE.goal];
+  const kw = +$('sizeKw').value, h = +$('sizeH').value, usable = $('sizeUsable').checked;
+  const dod = usable ? 1 : +$('sizeDod').value / 100, eff = +$('sizeEff').value / 100, m = +$('sizeMargin').value / 100;
+  $('sizeDodRow').hidden = usable;
+  $('sizeKwV').textContent = n1(kw) + ' kW'; $('sizeHV').textContent = n1(h) + ' h';
+  $('sizeDodV').textContent = Math.round(dod * 100) + '%'; $('sizeEffV').textContent = Math.round(eff * 100) + '%'; $('sizeMarginV').textContent = '+' + Math.round(m * 100) + '%';
+  $('sizeGoalNote').textContent = g.note;
+  const need = kw * h, plate = need / (dod * eff) * (1 + m), P = S.pick(plate, kw);
+  const fmt = v => v >= 100 ? n0(v) : n1(v);
+  const steps = [
+    ['Pick the goal', `${g.label} at the ${S.name}. Backup, solar shifting and peak shaving each size differently.`, '', g.short],
+    ['Power: how much at once?', 'The load the battery must carry at the same moment. This sets the inverter (PCS) size: the pipe.', '', fmt(kw) + ' kW'],
+    ['Energy: for how long?', 'Power × hours gives the usable energy needed: the tank.', `${fmt(kw)} kW × ${n1(h)} h`, fmt(need) + ' kWh'],
+    ['Adjust for reality', usable ? 'The product is rated in usable kWh, so only efficiency and the aging margin apply.' : 'Some capacity is held back, some is lost as heat, and the battery fades over time.', `${fmt(need)} ÷ (${Math.round(dod * 100)}% × ${Math.round(eff * 100)}%) × ${n1(1 + m)}`, fmt(plate) + ' kWh']
+  ];
+  const dur = P.kwh / P.kw, durGoal = P.kwh * dod / kw;
+  $('sizeSteps').innerHTML = steps.map((s, i) => `<div class="step"><div class="n">${i + 1}</div><div><h4>${s[0]}</h4><p>${s[1]}</p>${s[2] ? `<div class="math">${s[2]}</div>` : ''}</div><div class="res">${s[3]}</div></div>`).join('')
+    + `<div class="step final"><div class="n">✓</div><div><h4>Choose: ${P.label}</h4><p>Duration ${n1(P.kwh)} ÷ ${n1(P.kw)} = <b>${n1(dur)} h</b> at full output, but about <b>${n1(durGoal)} h</b> at your ${fmt(kw)} kW load.${SIZE.site === 'factory' && SIZE.goal === 'shave' ? ' The worked example rounds up to 250 kW to leave room for motor starts.' : ''}</p></div><div class="res">${fmt(P.kwh)} kWh</div></div>`;
+  drawPipeTank(P, dod, m, kw);
+}
+function drawPipeTank(P, dod, m, loadKw) {
+  const S = SITES[SIZE.site], maxKwh = { home: 60, grocery: 700, factory: 2400 }[SIZE.site], maxKw = S.kw[1] * 1.3;
+  const tx = 40, tw = 150, tb = 226, tHmax = 170;
+  const tH = Math.max(18, tHmax * Math.sqrt(Math.min(1, P.kwh / maxKwh))), ty = tb - tH;
+  const heldFrac = 1 - dod, marginFrac = m / (1 + m) * dod;
+  const hHeld = tH * heldFrac, hMarg = tH * marginFrac, hUse = tH - hHeld - hMarg;
+  const fmt = v => v >= 100 ? n0(v) : n1(v);
+  let g = `<defs>${hatch('pt-h', 'var(--ink-3)')}</defs>`;
+  g += `<rect x="${tx}" y="${tb - hHeld}" width="${tw}" height="${hHeld}" fill="url(#pt-h)"/>`;
+  g += `<rect x="${tx}" y="${tb - hHeld - hUse}" width="${tw}" height="${hUse}" fill="var(--fuel-battery)" opacity=".85"/>`;
+  g += `<rect x="${tx}" y="${ty}" width="${tw}" height="${hMarg}" fill="var(--fuel-battery)" opacity=".35"/>`;
+  g += `<rect x="${tx}" y="${ty}" width="${tw}" height="${tH}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+  g += txt(tx + tw / 2, ty - 10, `tank: ${fmt(P.kwh)} kWh`, { anchor: 'middle', fill: 'var(--ink)', size: 15, font: DISP, weight: 600 });
+  const pT = Math.max(4, 44 * Math.sqrt(Math.min(1, P.kw / maxKw))), lT = Math.max(2, 44 * Math.sqrt(Math.min(1, loadKw / maxKw)));
+  const px = tx + tw, pl = 300, py = tb - 30;
+  g += `<rect x="${px}" y="${py - pT / 2}" width="${pl}" height="${pT}" fill="var(--v-secondary)" opacity=".85"/>`;
+  g += `<rect x="${px}" y="${py - lT / 2}" width="${pl}" height="${lT}" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  g += txt(px + pl / 2, py - Math.max(pT, lT) / 2 - 12, `pipe: ${fmt(P.kw)} kW inverter`, { anchor: 'middle', fill: 'var(--ink)', size: 15, font: DISP, weight: 600 });
+  g += txt(px + pl / 2, py + Math.max(pT, lT) / 2 + 18, `dashed outline: your ${fmt(loadKw)} kW load`, { anchor: 'middle', size: 12.5 });
+  g += txt(px + 10, 34, 'Drawn to the same scale for', { size: 12.5 });
+  g += txt(px + 10, 52, `every choice at the ${S.name}.`, { size: 12.5 });
+  $('sizeSvg').innerHTML = g;
+}
+
+/* ============================================================
+   PLAYGROUND 4 · PAY IT BACK
+   ============================================================ */
+const PAY_PRESETS = {
+  home:    { kwh: [5, 40.5, 0.5, 13.5], cost: 1000, rate: 0, shave: [0, 10, 1, 0], spread: 0.20, shift: [0, 30, 1, 10], demand: false, credit: false },
+  grocery: { kwh: [50, 600, 10, 150], cost: 430, rate: 15, shave: [0, 150, 5, 50], spread: 0, shift: [0, 400, 10, 0], demand: true, credit: false },
+  factory: { kwh: [100, 2000, 50, 500], cost: 430, rate: 15, shave: [0, 500, 10, 150], spread: 0, shift: [0, 1500, 25, 0], demand: true, credit: false }
+};
+let paySite = 'home';
+function payLoad(v) {
+  paySite = v; const p = PAY_PRESETS[v];
+  setRange('payKwh', p.kwh); $('payCost').value = p.cost; $('payRate').value = p.rate; setRange('payShave', p.shave);
+  $('paySpread').value = p.spread; setRange('payShift', p.shift); $('payMiss').value = 0; $('payCredit').checked = p.credit;
+  $('payDemandBox').hidden = !p.demand;
+  $('payCreditLbl').textContent = v === 'home' ? '30% credit through a lease or PPA (48E)' : '30% federal credit (48E)';
+  $('payCreditTip').innerHTML = v === 'home'
+    ? '<b>Buying it yourself:</b> the 30% credit for homeowners (Section 25D) ended December 31, 2025, so a battery bought outright in 2026 gets no federal credit.<br><br><b>Lease or PPA:</b> a company owns the battery on your home. With a lease you pay a monthly fee; with a PPA (power purchase agreement) you pay for what it provides. Because the owner is a business, it can claim the 30% business credit (Section 48E) and may pass some of it to you as a lower price.'
+    : '<b>Section 48E</b> is a federal tax credit for businesses that own clean energy equipment, including batteries. The base rate is 30%, and storage that starts construction before 2033 qualifies. Larger projects must meet wage and apprenticeship rules to get the full 30%, some qualify for bonus credit on top, and new foreign-sourcing (FEOC) rules apply.<br><br>The business gets it as a lower tax bill when it files, not as a discount at the register.';
+  $('payCreditNote').textContent = v === 'home' ? 'A homeowner who buys outright gets no federal credit in 2026. With a lease or PPA the installer claims it and may pass some through in a lower price.' : 'Subject to the new foreign-sourcing rules. Check state and utility programs too.';
+  renderPay();
+}
+function renderPay() {
+  const kwh = +$('payKwh').value, cost = +$('payCost').value, rate = +$('payRate').value, shave = +$('payShave').value;
+  const miss = +$('payMiss').value, spread = +$('paySpread').value, shift = +$('payShift').value, credit = $('payCredit').checked;
+  $('payKwhV').textContent = (kwh < 100 ? n1(kwh) : n0(kwh)) + ' kWh'; $('payCostV').textContent = money(cost) + '/kWh';
+  $('payRateV').textContent = money(rate) + '/kW-mo'; $('payShaveV').textContent = n0(shave) + ' kW';
+  $('payMissV').textContent = miss === 0 ? 'none' : miss + (miss === 1 ? ' month' : ' months');
+  $('paySpreadV').textContent = '$' + spread.toFixed(2) + '/kWh'; $('payShiftV').textContent = n0(shift) + ' kWh';
+  const demand = PAY_PRESETS[paySite].demand ? shave * rate * (12 - miss + miss * 0.1) : 0;
+  // The battery can move at most one full tank a day into the peak.
+  const shiftUsed = Math.min(shift, kwh), capped = shift > kwh + 1e-9;
+  const tou = spread * shiftUsed * 365;
+  $('touCalc').innerHTML = `Now: $${spread.toFixed(2)} × ${n1(shiftUsed)} kWh × 365 = <b>${money(tou)}</b> a year`;
+  $('shiftCalc').innerHTML = capped
+    ? `You set ${n1(shift)} kWh, but this battery holds ${n1(kwh)} kWh, so the savings use <b>${n1(kwh)} kWh</b>.`
+    : `${n1(shift)} kWh of a ${n1(kwh)} kWh battery = <b>${n0(kwh > 0 ? shift / kwh * 100 : 0)}%</b> of a full cycle each day.`;
+  const annual = demand + tou, gross = kwh * cost, net = gross * (credit ? 0.7 : 1), pb = annual > 0 ? net / annual : Infinity;
+  $('payCreditCalc').innerHTML = `When checked: ${money(gross)} × 0.7 = <b>${money(gross * 0.7)}</b>`
+    + (paySite === 'home' ? '. That assumes the company passes the whole credit on to you, which is the best case. A lease also swaps the upfront cost for monthly payments, which this tool doesn\'t model.' : '.')
+    + '<span style="display:block;margin-top:6px;color:var(--ink-3)">General information, not tax advice.</span>';
+  const demandLost = PAY_PRESETS[paySite].demand ? shave * rate * miss * 0.9 : 0;
+  $('payPills').innerHTML = [
+    [moneyK(net), credit ? 'net cost after credit' : 'upfront cost', ''],
+    [moneyK(annual), 'savings per year', 'good'],
+    [isFinite(pb) ? n1(pb) + '<small> yrs</small>' : '—', 'simple payback', pb > 12 ? 'bad' : pb <= 7 ? 'good' : ''],
+    [money(Math.round(gross / Math.max(kwh, 1))) + '<small>/kWh</small>', 'installed price', 'batt']
+  ].map(([v, l, k]) => `<div class="pill ${k}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+  // chart: cumulative savings vs net cost, 20 years
+  const W = 960, H = 260, l = 64, r = 16, t = 16, b = 28, pw = W - l - r, ph = H - t - b, YRS = 20;
+  let maxY = Math.max(net * 1.25, annual * YRS) || 1; const st = niceStep(maxY, 5); maxY = Math.ceil(maxY / st) * st;
+  const X = y => l + pw * y / YRS, Y = v => t + ph * (1 - v / maxY);
+  let g = '';
+  for (let v = 0; v <= maxY + 1e-6; v += st) g += `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)"/>` + txt(l - 8, Y(v) + 4, axisMoney(v), { anchor: 'end' });
+  for (let y = 0; y <= YRS; y += 5) g += txt(X(y), H - 8, y + ' yrs', { anchor: y === YRS ? 'end' : 'middle' });
+  g += `<line x1="${X(10)}" x2="${X(10)}" y1="${t}" y2="${t + ph}" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="4 3"/>` + txt(X(10) + 6, t + 12, 'typical warranty: 10 yrs', { size: 11 });
+  g += `<line x1="${l}" x2="${W - r}" y1="${Y(net)}" y2="${Y(net)}" stroke="var(--ink-3)" stroke-width="2" stroke-dasharray="6 4"/>`;
+  g += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(YRS)}" y2="${Y(annual * YRS)}" stroke="var(--ink)" stroke-width="3"/>`;
+  if (isFinite(pb) && pb <= YRS) g += `<circle cx="${X(pb)}" cy="${Y(net)}" r="6" fill="var(--ok)" stroke="var(--sheet)" stroke-width="2"/>` + txt(X(pb), Y(net) - 12, 'pays back', { anchor: 'middle', fill: 'var(--ink)', size: 12, weight: 700 });
+  $('payChart').innerHTML = g;
+
+  const msgs = []; let cls = '';
+  if (!isFinite(pb)) { msgs.push('<b>No savings set.</b> Add a demand charge or a time-of-use spread to see a payback.'); cls = 'alert'; }
+  else if (pb > 15) { msgs.push(`<b>${n1(pb)} years is longer than most warranties.</b> On savings alone this battery doesn't pay for itself. It may still be worth it as <b>backup</b>. That makes it a resilience purchase, not an investment.`); cls = 'alert'; }
+  else if (pb <= 7) { msgs.push(`<b>A ${n1(pb)}-year payback</b> is comfortably inside the battery's life.`); cls = 'ok'; }
+  else msgs.push(`<b>A ${n1(pb)}-year payback</b> works, but leaves less room for surprises.`);
+  if (capped && spread > 0) msgs.push(`<b>The battery can only shift ${n1(kwh)} kWh a day.</b> You set ${n1(shift)} kWh, but it can move at most one full tank into the peak, so the savings use ${n1(kwh)} kWh. A bigger battery would shift more.`);
+  if (miss > 0) msgs.push(`<b>Missing one peak in ${miss} ${miss === 1 ? 'month' : 'months'} costs ${money(demandLost)} a year.</b> The demand charge is set by the month's single highest 15 minutes, so forecasting and controls matter.`);
+  if (paySite !== 'home') msgs.push('<span class="quiet">Not counted: the value of riding through an outage. For a grocery store that\'s spoiled stock; for a factory, a single lost shift can cost more than a year of demand charges. Advertised 3–5 year paybacks usually assume high demand charges, the 30% credit and several revenue streams stacked together.</span>');
+  else msgs.push('<span class="quiet">Not counted: backup during outages, or utility programs that pay batteries to help at peak times. Plug in your own utility\'s rates.</span>');
+  $('payHint').className = 'hint-box ' + cls;
+  $('payHint').innerHTML = msgs.map(m => `<p>${m}</p>`).join('');
+}
+
+/* ============================================================
+   COSTS
+   ============================================================ */
+const LADDER = [
+  { name: 'Battery pack', sub: 'cells, modules, rack, BMS', lo: 70 },
+  { name: 'Turnkey system, global', sub: '+ inverter, enclosure, integration', lo: 117 },
+  { name: 'Turnkey system, US', sub: 'China ~$73, Europe ~$177', lo: 219 },
+  { name: 'Large commercial / industrial', sub: 'containerized, installed', lo: 180, hi: 300 },
+  { name: 'Small commercial', sub: 'cabinets, installed', lo: 280, hi: 580 },
+  { name: 'Home battery', sub: 'installed, with permits and gateway', lo: 700, hi: 1300, mark: 998 }
+];
+function renderLadder() {
+  const MAX = 1400, pct = v => v / MAX * 100;
+  $('ladder').innerHTML = LADDER.map(r => {
+    const end = r.hi || r.lo;
+    return `<div class="rung"><div class="name">${r.name}<small>${r.sub}</small></div>
+      <div class="bar-track" role="img" aria-label="${r.name}: ${r.hi ? '$' + r.lo + ' to $' + r.hi : '$' + r.lo} per kWh">
+        <div class="bar-solid" style="width:${pct(r.lo)}%;${r.hi ? '' : 'border-radius:5px'}"></div>
+        ${r.hi ? `<div class="bar-range" style="left:${pct(r.lo)}%;width:${pct(r.hi - r.lo)}%"></div>` : ''}
+        ${r.mark ? `<div class="bar-mark" style="left:${pct(r.mark)}%"></div>` : ''}
+        <div class="bar-val${pct(end) > 62 ? ' in' : ''}" style="${pct(end) > 62 ? 'right:' + (100 - pct(end)) + '%' : 'left:' + pct(end) + '%'}">${r.hi ? `$${n0(r.lo)}–$${n0(r.hi)}` : '$' + n0(r.lo)}</div>
+      </div></div>`;
+  }).join('');
+}
+const EXAMPLES = [
+  { site: 'home', title: 'Home', who: 'Residential feeder · ~30 kWh a day',
+    rows: [['Goal', '~10 kWh of evening solar, plus critical loads for ~12 h in an outage'], ['Pick', 'One 13.5 kWh / 11.5 kW unit'], ['Cost', '~$13,500 installed; no federal credit if bought outright'], ['Saves', '10 kWh × $0.20 spread × 365 ≈ $730 a year']],
+    pay: 'Payback ≈ 18 years', lesson: 'Without strong time-of-use rates or local incentives, a home battery is mainly a resilience purchase. That\'s a legitimate reason to buy one.' },
+  { site: 'grocery', title: 'Grocery store', who: 'Main Street · commercial rate',
+    rows: [['Goal', 'Cap a 200 kW peak at 150 kW: shave 50 kW for up to 2 h'], ['Size', '100 kWh usable ÷ (0.90 × 0.95) × 1.2 ≈ 140 kWh → 60 kW / 150 kWh'], ['Cost', '$42,000–$87,000 at $280–$580/kWh'], ['Saves', '50 kW × $15 × 12 = $9,000 a year']],
+    pay: 'Payback ≈ 4.7–9.7 years', lesson: 'About 3.3–6.8 years with the 30% credit. Keeping refrigeration running through a short outage protects the stock too.' },
+  { site: 'factory', title: 'Small factory', who: 'Edge of town · industrial rate',
+    rows: [['Goal', 'Cap a 600 kW peak at 450 kW: shave 150 kW for up to 2 h'], ['Size', '300 kWh usable ÷ (0.90 × 0.95) × 1.2 ≈ 420 kWh → 250 kW / 500 kWh'], ['Cost', '$140,000–$290,000 at $280–$580/kWh'], ['Saves', '150 kW × $15 × 12 = $27,000 a year']],
+    pay: 'Payback ≈ 5.2–10.7 years', lesson: 'About 3.6–7.5 years with the credit. A 250 kW battery on a 12 kV feeder needs an interconnection review like Chapter 3\'s site.' }
+];
+function renderExamples() {
+  $('exGrid').innerHTML = EXAMPLES.map(e => `<div class="ex"><h3>${e.title}</h3><div class="who">${e.who}</div>
+    <dl>${e.rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+    <div class="pay">${e.pay}</div><p class="lesson">${e.lesson}</p>
+    <button class="btn" type="button" data-try="${e.site}">Try your own numbers</button></div>`).join('');
+  $('exGrid').querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => { segSet('paySite', b.dataset.try); payLoad(b.dataset.try); showTab('playground', 'pay'); window.scrollTo({ top: 0 }); }));
+}
+
+/* ============================================================
+   GLOSSARY + MYTHS
+   ============================================================ */
+function renderGlossary() {
+  const q = $('glossSearch').value.trim().toLowerCase(), f = $('glossFilter').value;
+  const list = TERMS.filter(([t, c, d]) => (f === 'all' || c === f) && (!q || (t + ' ' + d).toLowerCase().includes(q)));
+  $('glossGrid').innerHTML = list.length ? list.map(([t, c, d]) => `<div class="term-card"><div class="info-tag">${CATS[c]}</div><h3>${t}</h3><p>${d}</p></div>`).join('')
+    : '<p class="empty">No terms match. Try a shorter word, or set the category to All.</p>';
+}
+function renderMyths() { $('mythTable').querySelector('tbody').innerHTML = MYTHS.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join(''); }
+
+/* ============================================================
+   QUIZ  (progress saved per viewer under a namespaced key)
+   ============================================================ */
+const QKEY = 'gfg-batt-quiz-v1';
+let quizAnswers = {};
+try { quizAnswers = JSON.parse(localStorage.getItem(QKEY) || '{}') || {}; } catch (e) { quizAnswers = {}; }
+function saveQuiz() { try { localStorage.setItem(QKEY, JSON.stringify(quizAnswers)); } catch (e) {} }
+function renderQuiz() {
+  const c = $('quizContainer'); c.innerHTML = '';
+  QUIZ.forEach((item, idx) => {
+    const block = document.createElement('div'); block.className = 'quiz-q';
+    block.innerHTML = `<h3>${idx + 1}. ${item.q}</h3>`;
+    const mark = oi => block.querySelectorAll('.opt').forEach((el, ei) => { if (ei === item.correct) el.classList.add('correct'); else if (ei === oi) el.classList.add('wrong'); });
+    item.opts.forEach((opt, oi) => {
+      const b = document.createElement('button'); b.className = 'opt'; b.type = 'button'; b.textContent = opt;
+      b.addEventListener('click', () => { if (idx in quizAnswers) return; quizAnswers[idx] = oi; saveQuiz(); mark(oi); ex.classList.add('show'); scoreQuiz(); });
+      block.appendChild(b);
+    });
+    const ex = document.createElement('div'); ex.className = 'explain'; ex.textContent = item.explain; block.appendChild(ex);
+    c.appendChild(block);
+    if (idx in quizAnswers) { mark(quizAnswers[idx]); ex.classList.add('show'); }
+  });
+  scoreQuiz();
+}
+function scoreQuiz() {
+  const ans = Object.keys(quizAnswers), right = ans.filter(k => QUIZ[k] && quizAnswers[k] === QUIZ[k].correct).length;
+  $('quizScore').textContent = ans.length ? `Score: ${right} / ${ans.length} answered (of ${QUIZ.length})` : `${QUIZ.length} questions`;
+}
+$('quizReset').addEventListener('click', () => { quizAnswers = {}; saveQuiz(); renderQuiz(); });
+
+/* ============================================================
+   TABS (hash deep links: #playground, #playground/size, …)
+   ============================================================ */
+const TOOLS = ['sun', 'wear', 'size', 'pay'];
+let currentSub = 'sun';
+function showSub(sub) {
+  if (!TOOLS.includes(sub)) sub = 'sun'; currentSub = sub;
+  document.querySelectorAll('.subtabs button').forEach(b => b.classList.toggle('on', b.dataset.sub === sub));
+  TOOLS.forEach(t => $('tool-' + t).classList.toggle('on', t === sub));
+}
+function showTab(name, sub, fromHash) {
+  if (!$('panel-' + name)) name = 'basics';
+  document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.tab === name; t.classList.toggle('active', on); t.setAttribute('aria-selected', on); });
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  if (name === 'playground') showSub(sub || currentSub);
+  if (!fromHash) { const h = '#' + name + (name === 'playground' ? '/' + currentSub : ''); if (location.hash !== h) history.replaceState(null, '', h); }
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+document.querySelectorAll('.subtabs button').forEach(b => b.addEventListener('click', () => { showSub(b.dataset.sub); showTab('playground'); }));
+function fromHash() { const [tab, sub] = location.hash.replace('#', '').split('/'); if (tab) showTab(tab, sub, true); }
+window.addEventListener('hashchange', () => { fromHash(); document.querySelector('.tabs').scrollIntoView({ block: 'start' }); });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+segInit('sunScale', sunScale);
+segInit('sunDay', v => { SUN.day = v; renderSun(); });
+['sunSolar', 'sunKwh', 'sunKw'].forEach(id => $(id).addEventListener('input', renderSun));
+segInit('wearChem', v => { wearChem = v; renderWear(); });
+['wearDod', 'wearCpd', 'wearTemp', 'wearCal'].forEach(id => $(id).addEventListener('input', renderWear));
+segInit('sizeSite', sizeSite);
+segInit('sizeGoal', sizeGoal);
+['sizeKw', 'sizeH', 'sizeUsable', 'sizeDod', 'sizeEff', 'sizeMargin'].forEach(id => $(id).addEventListener('input', renderSize));
+segInit('paySite', payLoad);
+['payKwh', 'payCost', 'payRate', 'payShave', 'payMiss', 'paySpread', 'payShift', 'payCredit'].forEach(id => $(id).addEventListener('input', renderPay));
+$('glossSearch').addEventListener('input', renderGlossary);
+$('glossFilter').addEventListener('change', renderGlossary);
+
+CELL.init(); sunHoverInit(); segInit('flowMode', setFlow); setFlow('out'); sunScale('home'); renderWear(); sizeSite('home'); payLoad('home');
+renderLadder(); renderExamples(); renderGlossary(); renderMyths(); renderQuiz();
+fromHash();
+</script>
+</body>
+</html>
