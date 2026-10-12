@@ -548,6 +548,12 @@
         <li>pv magazine USA, storage tax credit eligibility — <a href="https://pv-magazine-usa.com/?p=18305" target="_blank" rel="noopener">pv-magazine-usa.com</a></li>
         <li>Modo Energy, CAISO battery benchmark, June 2026 — <a href="https://modoenergy.com/research/caiso-bess-benchmark-june-2026" target="_blank" rel="noopener">modoenergy.com</a></li>
         <li>EnergySage, Tesla Powerwall 3 review — <a href="https://www.energysage.com/solar/solar-energy-storage/tesla-powerwall-home-battery/" target="_blank" rel="noopener">energysage.com</a></li>
+        <li>EIA, US electric generating capacity expected to reach a record high in 2026 — <a href="https://www.eia.gov/TODAYINENERGY/detail.php?id=67205" target="_blank" rel="noopener">eia.gov</a></li>
+        <li>Industrial Info Resources on EIA data, US battery storage growth (43.6 GW at end of 2025) — <a href="https://www.industrialinfo.com/iirenergy/industry-news/article/eia-us-bess-growth-averaged-70-last-three-years--361303" target="_blank" rel="noopener">industrialinfo.com</a></li>
+        <li>Modo Energy, how a battery energy storage system makes money (ERCOT and CAISO revenue stacks) — <a href="https://modoenergy.com/research/en/how-does-battery-energy-storage-make-money" target="_blank" rel="noopener">modoenergy.com</a></li>
+        <li>Modo Energy, CAISO battery storage in 2026: 8 things to watch (resource adequacy) — <a href="https://modoenergy.com/research/caiso-battery-storage-2026-things-to-watch" target="_blank" rel="noopener">modoenergy.com</a></li>
+        <li>Global Infrastructure Hub, Hornsdale Power Reserve project — <a href="https://www.gihub.org/resources/showcase-projects/hornsdale-power-reserve-project-australia/" target="_blank" rel="noopener">gihub.org</a></li>
+        <li>Energy-Storage.news, Moss Landing: what we know so far — <a href="https://www.energy-storage.news/fire-at-moss-landing-energy-storage-facility-what-we-know-so-far/" target="_blank" rel="noopener">energy-storage.news</a></li>
         <li>Commercial and industrial installed ranges via mgrid.org citing IDTechEx (to verify) — <a href="https://mgrid.org/2026/01/01/ci-battery-storage-market-projects-5x-growth-by-2036-as-demand-charges-drive-3-5-year-payback/" target="_blank" rel="noopener">mgrid.org</a></li>
       </ul>
       <p>Built for learning, not for engineering sign-off. Numbers are realistic in scale, not quotes.</p>
@@ -738,7 +744,52 @@ const QUIZ = [
     explain: 'Section 25D ended at the end of 2025. Leased or PPA systems can still qualify under the commercial credit (48E), which the installer claims.' },
   { q: 'Why are most grid batteries in solar-heavy markets 4 hours long?',
     opts: ['Regulations require exactly 4 hours', 'Shorter batteries can\'t be built', 'To cover the whole evening peak after solar drops off', 'Four hours is the most efficient C-rate'], correct: 2,
-    explain: 'As solar deepens the midday dip and steepens the evening ramp, the expensive hours stretch longer. A 4-hour battery covers more of them.' }
+    explain: 'As solar deepens the midday dip and steepens the evening ramp, the expensive hours stretch longer. A 4-hour battery covers more of them.'   },
+  { q: 'A grid-connected home battery is rated 5 kW / 13.5 kWh. The house draws 8 kW one evening. What happens?',
+    opts: ['The battery carries all 8 kW for about 1.7 hours', 'The battery supplies up to 5 kW, and the grid (or solar) covers the other 3 kW', 'The battery won\'t discharge until the load drops below 5 kW', 'The battery carries 8 kW, but only for the first few minutes'], correct: 1,
+    explain: 'Power (kW) is the pipe and energy (kWh) is the tank. The pipe caps output at 5 kW no matter how full the tank is; at that rate 13.5 kWh lasts about 2.7 hours. While the grid is connected, it fills the gap. In an outage there is nothing to fill it, so loads above the pipe size have to be shed.' },
+  { q: 'Why do batteries in cold places like Spokane usually include heaters?',
+    opts: ['Charging very cold lithium-ion cells can plate metallic lithium on the anode, so the system warms them first', 'Lithium electrolyte freezes solid at 0°C', 'The inverter stops working below freezing', 'Heaters are what let the battery generate its own power'], correct: 0,
+    explain: 'Charging below freezing can deposit lithium metal on the graphite instead of tucking it between the layers. That permanently cuts capacity and is a safety concern. The BMS limits charge current until the cells are warm enough. Discharging in the cold is possible, just at reduced power.' },
+  { q: 'What is the main pitch for sodium-ion batteries in stationary storage?',
+    opts: ['More energy per kilogram than NMC', 'Longer cycle life than LFP, so they replace it', 'They don\'t need a BMS', 'Cheap, abundant materials and good cold-weather performance, in exchange for lower energy density and (so far) a shorter cycle life than LFP'], correct: 3,
+    explain: 'Sodium is far more abundant than lithium, and the cells handle cold well. Today they hold less energy per kilogram than LFP and have tested at roughly 2,000 to 4,000 cycles against 3,000 to 6,000+ for LFP. Commercial rollout is still early. Like any battery, they need a BMS.' },
+  { q: 'What is the main design advantage of a flow battery?',
+    opts: ['It has the highest energy density of any battery', 'It is cheaper upfront than LFP at 4 hours', 'Power and energy are sized separately: the cell stack sets the kW and the electrolyte tanks set the kWh, so more hours means bigger tanks', 'It never loses any energy when charging and discharging'], correct: 2,
+    explain: 'Because the energy is stored in liquid tanks, adding hours mostly means adding tank volume. That suits 4 to 12 hour storage and very long cycle life. The trade-offs are higher upfront cost and bulk, which is why LFP wins at 2 to 4 hours.' },
+  { q: 'A factory\'s monthly peak is 500 kW. Its battery reliably holds the peak to 400 kW all month. At $15/kW-month, what is the demand-charge saving?',
+    opts: ['$750', '$1,500', '$7,500', '$15,000'], correct: 1,
+    explain: '100 kW shaved × $15/kW-month = $1,500 a month, or $18,000 a year. The catch from question 6 still applies: if the battery misses the single highest 15-minute spike in a month, most of that month\'s saving disappears.' },
+  { q: 'A home pays a flat 18¢/kWh at every hour, has no solar and no demand charge. What will a battery save by shifting energy to the evening?',
+    opts: ['About 18¢ for every kWh shifted', 'About 10¢ for every kWh shifted', 'It depends only on the battery size', 'Nothing from shifting, because the price gap is $0. Its value is backup power'], correct: 3,
+    explain: 'Shifting saves the gap between peak and off-peak prices. On a flat rate that gap is zero, so the battery earns nothing from timing. It may still be worth buying for resilience. Try it in the Pay it back tool with the peak price gap set to $0.' },
+  { q: 'A battery with 88% round-trip efficiency charges at 5¢/kWh. Ignoring wear, roughly what discharge price does it need just to break even?',
+    opts: ['4.4¢/kWh', '5.0¢/kWh', '5.7¢/kWh', '8.8¢/kWh'], correct: 2,
+    explain: 'To sell 1 kWh you must buy about 1 ÷ 0.88 = 1.14 kWh, so the break-even sale price is 5¢ ÷ 0.88 ≈ 5.7¢. Any price spread smaller than that loses money before counting wear, which is why compressed spreads hurt batteries.' },
+  { q: 'A microgrid loses its connection to the main grid. Which kind of inverter can keep voltage and frequency up on its own?',
+    opts: ['A grid-following inverter', 'A grid-forming inverter', 'Either one, they are the same device', 'Neither; only a spinning generator can'], correct: 1,
+    explain: 'A grid-following inverter measures the grid\'s voltage and frequency and injects current in sync, so it needs a stable grid to follow. A grid-forming inverter sets its own, which lets it hold up an island, help restart after a blackout and supply the stabilizing response spinning generators used to provide.' },
+  { q: 'How does a grid battery\'s response to a sudden frequency dip compare with a gas or steam turbine?',
+    opts: ['About the same', 'Slightly faster, by a few percent', 'Slower, but much cheaper', 'A fraction of a second versus seconds to minutes'], correct: 3,
+    explain: 'The Hornsdale battery in South Australia (100 MW / 129 MWh, switched on in December 2017) was the first non-conventional provider of frequency regulation there. Its response was a fraction of a second, and regional frequency-control costs fell 57% from Q4 2017 to Q1 2018, with the battery cited as a key driver.' },
+  { q: 'A developer needs test evidence that one failing battery unit won\'t set its neighbors on fire. Which standard is that?',
+    opts: ['UL 9540A', 'NFPA 855', 'IEEE 1547', 'UL 1973'], correct: 0,
+    explain: 'UL 9540A is the test method for how a thermal-runaway fire behaves and whether it spreads. NFPA 855 is the installation code (spacing, detection, ventilation), IEEE 1547 covers grid interconnection and UL 1973 covers the battery itself.' },
+  { q: 'Which describes the facility that burned at Moss Landing, California in January 2025?',
+    opts: ['Outdoor spaced containers of LFP cells', 'A home battery fleet', 'A large indoor system with NMC cells, built in a former turbine building about four years earlier', 'A vanadium flow battery'], correct: 2,
+    explain: 'It was Phase 1: 300 MW / 1,200 MWh of NMC cells in a repurposed turbine hall, in service since December 2020. Phases 2 and 3 sit in separate enclosures and were not caught up in the fire. The industry has since moved to outdoor, spaced, containerized LFP.' },
+  { q: 'About how much utility-scale battery storage was operating in the US at the end of 2025?',
+    opts: ['About 4 GW', 'About 15 GW', 'About 44 GW', 'About 150 GW'], correct: 2,
+    explain: 'EIA counts roughly 43.6 GW at the end of 2025. The 15 GW distractor is the record amount added during 2025. Operators added another 8.3 GW in the first half of 2026, taking the total to nearly 52 GW, and developers planned about 24 GW for the full year.' },
+  { q: 'According to EIA, which state accounts for the largest share of planned new US battery capacity in 2026?',
+    opts: ['California', 'Texas', 'Arizona', 'New York'], correct: 1,
+    explain: 'Texas has about 53% (12.9 GW), California 14% (3.4 GW) and Arizona 13% (3.2 GW), together about 80% of the planned additions. California has more cumulative storage history, but Texas is where most of the new build is.' },
+  { q: 'Texas batteries once earned most of their revenue from ancillary services but now lean on energy arbitrage. Why?',
+    opts: ['Ancillary markets are small, so as the battery fleet grew they flooded and prices fell', 'Regulators barred batteries from ancillary markets', 'Batteries turned out to be too slow for frequency regulation', 'Arbitrage spreads grew wider than ever'], correct: 0,
+    explain: 'Ancillary services were roughly 85% of ERCOT battery revenue in 2022 to 2023, but the amount of battery capacity offered nearly tripled in 2024 against a plateauing need, so clearing prices dropped. Arbitrage spreads have been shrinking too, which is the same "more batteries, smaller gap" effect as in Shift the sun.' },
+  { q: 'Most California batteries now earn over half of their revenue from resource adequacy (RA). What is RA paying for?',
+    opts: ['Each MWh actually delivered', 'Responding to frequency in milliseconds', 'Storing energy for individual customers\' bills', 'Being available to serve peak demand, whether or not the battery is called on'], correct: 3,
+    explain: 'Load-serving entities must contract enough capacity to meet forecast peak demand plus a reserve margin (18% for 2026 to 2027 under the CPUC\'s slice-of-day framework). Batteries earn RA by being able to cover the tight evening ramp, which is also why 4-hour systems dominate.' }
 ];
 
 
