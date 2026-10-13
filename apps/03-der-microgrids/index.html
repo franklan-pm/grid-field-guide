@@ -243,7 +243,7 @@
         <span><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="var(--v-secondary)" stroke-width="6"/><line x1="1" y1="5" x2="25" y2="5" stroke="var(--ground)" stroke-width="2"/></svg>DC side of an inverter</span>
         <span><svg width="26" height="8" aria-hidden="true"><line x1="1" y1="4" x2="25" y2="4" stroke="var(--data)" stroke-width="2" stroke-dasharray="4 3"/></svg>Data + control</span>
         <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" fill="none" stroke="var(--band)" stroke-dasharray="3 3"/></svg>Who owns it</span>
-        <span><i class="fuel" style="background:var(--fuel-solar)"></i><i class="fuel" style="background:var(--fuel-battery)"></i>Solar · battery swatch</span>
+        <span><i class="fuel" style="background:var(--fuel-solar)"></i><i class="fuel" style="background:var(--fuel-battery)"></i>Fuel bar and tint: solar · battery</span>
       </div>
     </div>
     <div class="diagram-hint">Click any piece of equipment for a plain-language explanation.</div>
@@ -444,18 +444,21 @@ function drawIcon(parent, type, x, y, s, color, color2){
 }
 // Outlined equipment box shared by the one-line diagram and the playground:
 // sheet fill, border in the color of the line it sits on, ink icon and name, value underneath.
-// A source box (o.fuel) gets a small fuel swatch so it can be matched to the charts.
+// A source box (o.fuel) gets a fuel-tinted fill and a fuel bar down its left edge, as in chapter 1, so it can be
+// matched to the charts; its inverter (o.tint) gets a lighter tint of the same color. Border stays the line color.
 function nodeBox(svg, o){
   const active = o.active !== false;
   const g = el('g', o.id ? {class:'node', 'data-id':o.id} : {}, svg);
-  const r = el('rect', {x:o.x, y:o.y, width:o.w, height:o.h, fill:'var(--sheet)',
+  const fill = !active ? 'var(--sheet)' : o.fuel ? `color-mix(in srgb, ${o.fuel} 16%, var(--sheet))` :
+    o.tint ? `color-mix(in srgb, ${o.tint} 9%, var(--sheet))` : 'var(--sheet)';
+  const r = el('rect', {x:o.x, y:o.y, width:o.w, height:o.h, fill,
     stroke: active ? o.color : 'var(--dead)', 'stroke-width': active ? 2.5 : 1.5}, g);
   if(o.dashed) r.setAttribute('stroke-dasharray', '5,4');
-  if(o.fuel) el('rect', {x:o.x + o.w - 15, y:o.y + 7, width:8, height:8, fill:o.fuel, opacity: active ? 1 : .4}, g);
-  const iconSize = 24;
+  if(o.fuel) el('rect', {x:o.x + 1.25, y:o.y + 1.25, width:7, height:o.h - 2.5, fill:o.fuel, opacity: active ? 1 : .4}, g);
+  const iconSize = 24, pad = o.fuel ? 16 : 12;
   const ic = active ? (o.iconColor || 'var(--ink)') : 'var(--ink-3)';
-  drawIcon(g, o.icon, o.x + 12, o.y + (o.h - iconSize)/2, iconSize, ic, active ? o.iconColor2 : null);
-  const tx = o.x + 12 + iconSize + 10;
+  drawIcon(g, o.icon, o.x + pad, o.y + (o.h - iconSize)/2, iconSize, ic, active ? o.iconColor2 : null);
+  const tx = o.x + pad + iconSize + 10;
   el('text', {x:tx, y:o.y + o.h/2 - 4, style:'font-family:var(--f-body)', 'font-size':16, 'font-weight':600, fill: active ? 'var(--ink)' : 'var(--ink-3)'}, g).textContent = o.label;
   el('text', {x:tx, y:o.y + o.h/2 + 18, style:'font-family:var(--f-mono)', 'font-size':14, 'font-weight':700, fill: active ? (o.valueColor || 'var(--ink-2)') : 'var(--ink-3)'}, g).textContent = o.value;
   if(o.extra) el('text', {x: o.x + o.w/2, y: o.y + o.h + 20, 'text-anchor':'middle', style:'font-family:var(--f-mono)', 'font-size':13, fill: o.extra.color || 'var(--ink-3)'}, g).textContent = o.extra.text;
@@ -522,14 +525,14 @@ function buildDiagram(){
 
   // solar branch: AC from the inverter to the bus, DC from the array to the inverter
   wire(svg, SX, BUSY, SX, 420, SEC, null, W);
-  box('pvinv', SX, 420, 'PV Inverter', '250 kW AC', SEC, 'inverter');
+  box('pvinv', SX, 420, 'PV Inverter', '250 kW AC', SEC, 'inverter', {tint:'var(--fuel-solar)'});
   dcWire(svg, SX, 480, SX, 510, SEC, W);
   mono(SX + 14, 499, 'DC', SEC, 11, 'start');
   box('pvarray', SX, 510, 'PV Array', '250 kW AC nameplate', SEC, 'solar', {fuel:'var(--fuel-solar)'});
 
   // battery branch
   wire(svg, CX, BUSY, CX, 420, SEC, null, W);
-  box('pcs', CX, 420, 'Battery Inverter (PCS)', 'bidirectional', SEC, 'inverter');
+  box('pcs', CX, 420, 'Battery Inverter (PCS)', 'bidirectional', SEC, 'inverter', {tint:'var(--fuel-battery)'});
   dcWire(svg, CX, 480, CX, 510, SEC, W);
   mono(CX + 14, 499, 'DC', SEC, 11, 'start');
   box('bess', CX, 510, 'BESS', '750 kW / ~1,500 kWh', SEC, 'battery', {fuel:'var(--fuel-battery)'});
