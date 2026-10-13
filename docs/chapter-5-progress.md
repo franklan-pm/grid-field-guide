@@ -53,6 +53,6 @@ Tested in dark and light, at desktop and 400 px wide: no script errors, no sidew
 2. ~~Delete the stand-in `.iso-bar` at the top of `<body>` and its CSS.~~ Done.
 3. ~~Add `{ dir: '05-batteries', short: 'Batteries', title: 'Batteries' }` to `CHAPTERS` in `shared/nav.js`.~~ Done.
 4. ~~Change "Chapter n of 4" to "of 5" in chapters 1–4.~~ Done.
-5. ~~Add a fifth chapter card and map zone to the home page.~~ Done (the sheet's viewBox is now 1600 wide; the zone sits right of chapter 3). Still to do: dark and light thumbnails in `assets/thumbs/` (`05-batteries.jpg`, `05-batteries-light.jpg`).
+5. ~~Add a fifth chapter card and map zone to the home page.~~ Done (the sheet's viewBox is now 1600 wide; the zone sits right of chapter 3). Thumbnails `05-batteries.jpg` and `05-batteries-light.jpg` are in `assets/thumbs/`.
 6. ~~Add chapter 5 colors to `docs/colors.md`.~~ Done in the restyle.
 7. ~~Merge into `main`.~~ Done (PR #2).
