@@ -155,8 +155,6 @@ svg text{font-family:var(--f-mono);fill:var(--ink-3);font-size:11px;letter-spaci
 footer{margin-top:72px;border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:16px 40px;padding-block:24px 36px;font-size:13.5px;color:var(--ink-2)}
 footer p{margin:0;max-width:72ch}
-footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);text-underline-offset:4px}
-
 @media (prefers-reduced-motion:reduce){.flow{animation:none;display:none}}
 @media (max-width:1100px){
   .row{grid-template-columns:96px minmax(0,1fr) auto}
@@ -200,9 +198,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
     <div class="right">
       <nav aria-label="Site">
         <a href="#chapters">Chapters</a>
-        <a class="nav-opt" href="#about">About</a>
-        <a href="https://github.com/franklan-pm/grid-field-guide">GitHub</a>
-      </nav>
+        <a class="nav-opt" href="#about">About</a>      </nav>
       <div class="theme-toggle" role="group" aria-label="Color theme">
         <button type="button" id="theme-light" data-theme-set="light" aria-pressed="true">☀<span class="t"> Light</span></button>
         <button type="button" id="theme-dark" data-theme-set="dark" aria-pressed="false">☾<span class="t"> Dark</span></button>
@@ -500,9 +496,7 @@ footer .gh{font:400 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:upp
 
 <footer id="about">
   <div class="wrap">
-    <p>Built by Frank Lan while learning how the electric grid works, from equipment on the pole to the systems in the control room. Each chapter is one self-contained HTML file with no build step.</p>
-    <a class="gh" href="https://github.com/franklan-pm/grid-field-guide">Source on GitHub →</a>
-  </div>
+    <p>Built by Frank Lan while learning how the electric grid works, from equipment on the pole to the systems in the control room. Each chapter is one self-contained HTML file with no build step.</p>  </div>
 </footer>
 
 <script>
