@@ -645,7 +645,8 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   var svg=document.querySelector('.scroll svg');
   var zones=[].slice.call(document.querySelectorAll('.zone[data-ch]'));
   var rows=[].slice.call(document.querySelectorAll('.row[data-ch]'));
-  var loose=[].filter.call(svg.children,function(el){return el.getAttribute('data-ch') && !el.classList.contains('zone');});
+  // looked up on each hover: shared/sheet-motion.js adds its own per-chapter layers after this script runs
+  function loose(){return [].filter.call(svg.children,function(el){return el.getAttribute('data-ch') && !el.classList.contains('zone');});}
   var notes=document.getElementById('notes-col'), pv=notes.querySelector('.notes-preview');
   var sheets=document.getElementById('sheets-val'), TOTAL=rows.length;
   var rulers={top:[].slice.call(document.querySelectorAll('.zm.top span')),bot:[].slice.call(document.querySelectorAll('.zm.bot span')),
@@ -693,7 +694,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
     }
     zones.forEach(function(z){var m=on&&z.dataset.ch===ch; z.classList.toggle('hot',m); if(m||!on) ruler(z,m);});
     rows.forEach(function(r){r.classList.toggle('hot',on&&r.dataset.ch===ch)});
-    loose.forEach(function(p){p.classList.toggle('hot',on&&p.getAttribute('data-ch')===ch)});
+    loose().forEach(function(p){p.classList.toggle('hot',on&&p.getAttribute('data-ch')===ch)});
     svg.classList.toggle('has-hot',on);
     if(on){pv.innerHTML=preview(ch); notes.classList.add('pv'); sheets.textContent='Sheet '+ch+' of '+TOTAL;}
     else{notes.classList.remove('pv'); sheets.textContent=TOTAL+' chapters';}
