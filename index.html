@@ -226,7 +226,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
     <div class="zm side l" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
     <div class="inner">
       <div class="scroll" tabindex="0" aria-label="One-line diagram of the guide; scrolls sideways on small screens">
-      <svg viewBox="0 0 1600 602" role="group" aria-label="One-line diagram of the five chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, and a battery rack behind an inverter sits beside the DER site.">
+      <svg id="sheet" viewBox="0 0 1600 602" role="group" aria-label="One-line diagram of the five chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, and a battery rack behind an inverter sits beside the DER site.">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--v-primary)"/></marker>
         </defs>
@@ -236,13 +236,13 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <rect class="bg" x="375" y="18" width="879" height="167"/>
           <text class="tag" x="390" y="32">CHAPTER 4</text>
           <text class="name" x="390" y="59">GRID OPERATIONS →</text>
-          <rect class="box sys" x="455" y="82" width="167" height="50"/>
+          <rect data-node="scada" class="box sys" x="455" y="82" width="167" height="50"/>
           <text class="lbl" x="467" y="104">SCADA</text>
           <text class="sub" x="467" y="120">real-time path</text>
-          <rect class="box sys" x="671" y="82" width="199" height="50"/>
+          <rect data-node="adms" class="box sys" x="671" y="82" width="199" height="50"/>
           <text class="lbl" x="683" y="104">ADMS</text>
           <text class="sub" x="683" y="120">OMS · FLISR · VVO</text>
-          <rect class="box sys" x="943" y="82" width="167" height="50"/>
+          <rect data-node="derms" class="box sys" x="943" y="82" width="167" height="50"/>
           <text class="lbl" x="955" y="104">DERMS</text>
           <text class="sub" x="955" y="120">DER dispatch</text>
           <path class="data" d="M622 107 H671 M870 107 H943"/>
@@ -251,7 +251,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
         </a>
 
         <!-- data and control down into the field -->
-        <path class="data" d="M539 132 V392 M606 132 V165 H638 V392 M1078 132 V386"/>
+        <path id="data-field" class="data" d="M539 132 V392 M606 132 V165 H638 V392 M1078 132 V386"/>
 
         <!-- Chapter 1: power mix -->
         <a class="zone" data-ch="1" href="apps/01-power-mix/index.html" aria-label="Chapter 1: Power mix">
@@ -284,10 +284,10 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <circle cx="445" cy="402" r="14" fill="none" stroke="var(--v-primary)" stroke-width="2"/>
           <text class="dev" x="437" y="434" text-anchor="middle">SUBSTATION</text>
           <!-- recloser and switch -->
-          <rect x="528" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <rect data-node="recloser" x="528" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
           <text x="538.5" y="406" text-anchor="middle" style="fill:var(--v-primary);font-size:10px;font-weight:700">R</text>
           <text class="dev" x="538" y="434" text-anchor="middle">RECLOSER</text>
-          <rect x="628" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
+          <rect data-node="switch" x="628" y="392" width="21" height="20" fill="var(--sheet)" stroke="var(--v-primary)" stroke-width="2"/>
           <path d="M632 408 L645 396" stroke="var(--v-primary)" stroke-width="2"/>
           <text class="dev" x="638" y="434" text-anchor="middle">SWITCH</text>
           <text class="dev t-prim" x="755" y="386">FEEDER · ~12 kV</text>
@@ -315,15 +315,15 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="tag" x="950" y="232">CHAPTER 3</text>
           <text class="name" x="950" y="257">DER + MICROGRIDS →</text>
           <text class="dev t-prim" x="1005" y="374" text-anchor="middle">TWO-WAY</text>
-          <path d="M980 385 H1030" stroke="var(--v-primary)" stroke-width="1.6" marker-start="url(#arr)" marker-end="url(#arr)"/>
-          <circle cx="1078" cy="402" r="16" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/>
+          <path id="two-way" d="M980 385 H1030" stroke="var(--v-primary)" stroke-width="1.6" marker-start="url(#arr)" marker-end="url(#arr)"/>
+          <circle data-node="pcc" cx="1078" cy="402" r="16" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/>
           <text x="1078" y="406" text-anchor="middle" style="fill:var(--ink);font-size:11px;font-weight:700">M</text>
           <text class="dev" x="1103" y="397">PCC</text>
           <text class="dev" x="1103" y="411">METER</text>
           <path class="sec" d="M1078 418 V458 M1039 498 V458 H1178 V498"/>
           <rect class="box site" x="975" y="498" width="127" height="43"/>
           <text class="lbl" x="1038.5" y="524" text-anchor="middle">250 kW PV</text>
-          <rect class="box site" x="1115" y="498" width="127" height="43"/>
+          <rect data-node="bess" class="box site" x="1115" y="498" width="127" height="43"/>
           <text class="lbl" x="1178.5" y="524" text-anchor="middle">750 kW BESS</text>
         </a>
 
@@ -334,25 +334,25 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="tag" x="1289" y="232">CHAPTER 5</text>
           <text class="name" x="1289" y="257">BATTERIES →</text>
           <!-- BMS: watches every cell, talks to the inverter -->
-          <rect class="box sys" x="1298" y="300" width="100" height="50"/>
+          <rect data-node="bms" class="box sys" x="1298" y="300" width="100" height="50"/>
           <text class="lbl" x="1310" y="322">BMS</text>
           <text class="sub" x="1310" y="338">cell safety</text>
           <path class="data" d="M1398 325 H1428 M1348 350 V494"/>
           <!-- PCS (inverter): AC on the left, DC on the right -->
-          <rect class="box site" x="1298" y="494" width="100" height="51"/>
+          <rect data-node="pcs" class="box site" x="1298" y="494" width="100" height="51"/>
           <text class="lbl" x="1310" y="516">PCS</text>
           <text class="sub" x="1310" y="532">inverter</text>
           <path d="M1398 519.5 H1428" stroke="var(--v-secondary)" stroke-width="7" fill="none"/>
           <path d="M1398 519.5 H1428" stroke="var(--sheet)" stroke-width="3" fill="none"/>
           <text class="dev t-sec" x="1413" y="507" text-anchor="middle">DC</text>
           <!-- rack of modules, each a row of cells (fuel-battery tint) -->
-          <rect class="box" x="1428" y="290" width="104" height="255"/>
+          <rect data-node="rack" class="box" x="1428" y="290" width="104" height="255"/>
           <text class="dev" x="1438" y="309">RACK</text>
-          <g fill="color-mix(in srgb, var(--fuel-battery) 35%, var(--sheet))" stroke="var(--fuel-battery)" stroke-width="1.2">
+          <g id="modules" fill="color-mix(in srgb, var(--fuel-battery) 35%, var(--sheet))" stroke="var(--fuel-battery)" stroke-width="1.2">
             <rect x="1438" y="322" width="84" height="46"/><rect x="1438" y="378" width="84" height="46"/>
             <rect x="1438" y="434" width="84" height="46"/><rect x="1438" y="490" width="84" height="46"/>
           </g>
-          <g fill="var(--fuel-battery)">
+          <g id="cells" fill="var(--fuel-battery)">
             <path d="M1447 332h9v26h-9zM1461 332h9v26h-9zM1475 332h9v26h-9zM1489 332h9v26h-9zM1503 332h9v26h-9z"/>
             <path d="M1447 388h9v26h-9zM1461 388h9v26h-9zM1475 388h9v26h-9zM1489 388h9v26h-9zM1503 388h9v26h-9z"/>
             <path d="M1447 444h9v26h-9zM1461 444h9v26h-9zM1475 444h9v26h-9zM1489 444h9v26h-9zM1503 444h9v26h-9z"/>
@@ -505,6 +505,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   </div>
 </footer>
 
+<script src="shared/sheet-motion.js" defer></script>
 <script>
 // The theme toggle is handled by shared/theme.js.
 
