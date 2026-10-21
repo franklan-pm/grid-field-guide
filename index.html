@@ -187,6 +187,68 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   .brand{font-size:17px}
 }
 @media (max-width:380px){.brand .name{display:none}}
+/* ===== HOVER COMBO: ghost the rest, corner ticks, energized lines, callouts, readouts ===== */
+.scroll svg > [data-ch]{transition:opacity .25s ease}
+.scroll svg.has-hot > [data-ch]:not(.hot):not(.surge){opacity:.28}
+
+/* registration ticks at the corners of the hovered region */
+.ticks{fill:none;stroke:var(--ink);stroke-width:2;opacity:0;transition:opacity .2s;pointer-events:none}
+.zone.hot .ticks{opacity:1}
+
+/* drafting underline under the region name draws in left to right */
+.uline{stroke:var(--ink);stroke-width:2;fill:none;pointer-events:none;transition:stroke-dashoffset .4s ease}
+.zone.hot .uline{stroke-dashoffset:0 !important}
+
+/* energized lines: a bead of the line's own legend color travelling in the direction of power */
+.surge{fill:none;stroke:currentColor;stroke-width:5;stroke-dasharray:12 28;stroke-linecap:butt;opacity:0;pointer-events:none;
+  filter:drop-shadow(0 0 3px currentColor);transition:opacity .2s}
+.s-hv{color:var(--v-hv)}.s-prim{color:var(--v-primary)}.s-sec{color:var(--v-secondary)}
+.zone.hot .surge,.scroll svg .surge.hot{opacity:1;animation:surge 1.1s linear infinite}
+@keyframes surge{to{stroke-dashoffset:-40}}
+.zone.hot .bus{filter:drop-shadow(0 0 5px var(--v-hv))}
+
+/* pulse ring on one key device */
+.ring{fill:none;stroke:var(--v-primary);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center;pointer-events:none}
+.zone.hot .ring{animation:ring 1.6s ease-out infinite}
+@keyframes ring{0%{transform:scale(.75);opacity:.95}100%{transform:scale(2);opacity:0}}
+
+/* numbered callouts, keyed to the Notes panel */
+.callout{opacity:0;transition:opacity .25s .12s;pointer-events:none}
+.zone.hot .callout{opacity:1}
+.callout path{stroke:var(--ink);stroke-width:1.2;fill:none}
+.callout circle{fill:var(--sheet);stroke:var(--ink);stroke-width:1.5}
+.callout text{fill:var(--ink);font:700 11px var(--f-mono);letter-spacing:0;text-anchor:middle}
+
+/* "Try" readout: a detail note that appears beside the hovered region */
+.readout{opacity:0;transform:translateY(4px);transition:opacity .25s .1s,transform .25s .1s;pointer-events:none}
+.zone.hot .readout{opacity:1;transform:none}
+.readout rect{fill:var(--sheet);stroke:var(--ink);stroke-width:1.2}
+.readout path{stroke:var(--ink);stroke-width:1.2;fill:none}
+.readout .rd{font-weight:500}
+
+/* sheet zone markers light up for the hovered region's grid squares */
+.zm span{transition:color .2s,background-color .2s}
+.zm span.lit{color:var(--ink);font-weight:700;background-color:var(--hover-fill)}
+
+/* Notes panel becomes a chapter preview */
+.notes-preview{display:none}
+#notes-col.pv .notes-default{display:none}
+#notes-col.pv .notes-preview{display:block;animation:pvin .2s ease}
+@keyframes pvin{from{opacity:0}to{opacity:1}}
+.pv-q{font-style:italic;color:var(--ink);font-size:14px;line-height:1.4;margin:0 0 12px}
+.pv-key{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px;font-size:13px;line-height:1.4;color:var(--ink-2)}
+.pv-key li{display:flex;gap:9px;align-items:flex-start}
+.pv-key i{flex:none;width:18px;height:18px;border:1.5px solid var(--ink);border-radius:50%;font:700 10.5px/15px var(--f-mono);font-style:normal;text-align:center;color:var(--ink)}
+.pv-key b{color:var(--ink);font-weight:600}
+.pv-inc{font:400 11.5px/1.7 var(--f-mono);color:var(--ink-2);margin:0}
+.pv-inc .fl{margin:0 6px 0 0 !important;display:inline}
+
+@media (prefers-reduced-motion:reduce){
+  .surge,.ring{animation:none !important;display:none}
+  .uline,.readout,.callout,.ticks{transition:none}
+  .readout{transform:none}
+  .notes-preview{animation:none !important}
+}
 </style>
 </head>
 <body>
@@ -248,10 +310,22 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <path class="data" d="M622 107 H671 M870 107 H943"/>
           <text class="dev" x="1131" y="96">5 MIN TO</text>
           <text class="dev" x="1131" y="110">MILLISECONDS</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M367 32 V10 H389 M1262 32 V10 H1240 M367 171 V193 H389 M1262 171 V193 H1240"/>
+          <g class="callout">
+            <path d="M480 143 V133"/><circle cx="480" cy="152" r="9"/><text x="480" y="156">1</text>
+            <path d="M700 143 V133"/><circle cx="700" cy="152" r="9"/><text x="700" y="156">2</text>
+            <path d="M975 143 V133"/><circle cx="975" cy="152" r="9"/><text x="975" y="156">3</text>
+          </g>
+          <g class="readout">
+            <rect x="660" y="24" width="410" height="48"/>
+            <text class="dev" x="672" y="40">TRY</text>
+            <text class="lbl rd" x="672" y="60">Step through a storm outage, then a heat-wave peak.</text>
+          </g>
         </a>
 
         <!-- data and control down into the field -->
-        <path id="data-field" class="data" d="M539 132 V392 M606 132 V165 H638 V392 M1078 132 V386"/>
+        <path id="data-field" class="data" data-ch="4" d="M539 132 V392 M606 132 V165 H638 V392 M1078 132 V386"/>
 
         <!-- Chapter 1: power mix -->
         <a class="zone" data-ch="1" href="apps/01-power-mix/index.html" aria-label="Chapter 1: Power mix">
@@ -267,12 +341,26 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <rect class="box" x="79" y="462" width="167" height="43"/>
           <text class="lbl" x="91" y="488">Battery</text>
           <path class="hv" d="M246 303 H302 M246 363 H302 M246 423 H302 M246 483 H302"/>
-          <rect x="300" y="286" width="5" height="215" fill="var(--v-hv)"/>
+          <rect class="bus" x="300" y="286" width="5" height="215" fill="var(--v-hv)"/>
           <text class="dev" x="79" y="546">BUS · SUPPLY = DEMAND</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M47 224 V202 H69 M350 224 V202 H328 M47 570 V592 H69 M350 570 V592 H328"/>
+          <path class="surge s-hv" d="M246 303 H302 M246 363 H302 M246 423 H302 M246 483 H302"/>
+          <g class="callout">
+            <path d="M316 273 L304 287"/><circle cx="322" cy="266" r="9"/><text x="322" y="270">1</text>
+            <path d="M265 442 H247"/><circle cx="274" cy="442" r="9"/><text x="274" y="446">2</text>
+          </g>
+          <g class="readout">
+            <rect x="55" y="126" width="287" height="66"/>
+            <text class="dev" x="67" y="144">TRY</text>
+            <text class="lbl rd" x="67" y="164">Add solar, then scrub to noon</text>
+            <text class="lbl rd" x="67" y="181">and watch solar get curtailed.</text>
+            <path d="M198 192 V210"/>
+          </g>
         </a>
 
         <!-- bus to substation -->
-        <path class="hv" d="M305 402 H412"/>
+        <path class="hv" data-ch="1" d="M305 402 H412"/>
 
         <!-- Chapter 2: distribution -->
         <a class="zone" data-ch="2" href="apps/02-distribution/index.html" aria-label="Chapter 2: Distribution">
@@ -302,12 +390,28 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="dev t-sec" x="748" y="573">120/240 V</text>
           <path d="M798 564 V550 L813 535 L828 550 V564 Z" fill="var(--sheet)" stroke="var(--v-secondary)" stroke-width="2"/>
           <text class="dev" x="836" y="556">CUSTOMER</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M367 224 V202 H389 M910 224 V202 H888 M367 570 V592 H389 M910 570 V592 H888"/>
+          <path class="surge s-prim" d="M738 402 V450 M738 472 V487"/>
+          <path class="surge s-sec" d="M738 519 V553 H798"/>
+          <circle class="ring" cx="538.5" cy="402" r="16"/>
+          <g class="callout">
+            <path d="M538.5 369 V391"/><circle cx="538.5" cy="360" r="9"/><text x="538.5" y="364">1</text>
+            <path d="M757 461 H746"/><circle cx="766" cy="461" r="9"/><text x="766" y="465">2</text>
+          </g>
+          <g class="readout">
+            <rect x="390" y="286" width="372" height="52"/>
+            <text class="dev" x="402" y="303">TRY</text>
+            <text class="lbl rd" x="402" y="324">Insert a fault and watch the recloser respond.</text>
+          </g>
         </a>
 
         <!-- the feeder itself, interrupted by the recloser and switch -->
-        <path class="prim" d="M459 402 H528 M549 402 H628 M649 402 H1062"/>
-        <path class="flow" pathLength="100" d="M305 402 H412" style="stroke:color-mix(in srgb, var(--v-hv) 30%, var(--sheet))"/>
-        <path class="flow" pathLength="100" d="M459 402 H1062" style="stroke:color-mix(in srgb, var(--v-primary) 30%, var(--sheet))"/>
+        <path class="prim" data-ch="2" d="M459 402 H528 M549 402 H628 M649 402 H1062"/>
+        <path class="flow" data-ch="1" pathLength="100" d="M305 402 H412" style="stroke:color-mix(in srgb, var(--v-hv) 30%, var(--sheet))"/>
+        <path class="flow" data-ch="2" pathLength="100" d="M459 402 H1062" style="stroke:color-mix(in srgb, var(--v-primary) 30%, var(--sheet))"/>
+        <path class="surge s-hv" data-ch="1" d="M305 402 H412"/>
+        <path class="surge s-prim" data-ch="2" d="M459 402 H528 M549 402 H628 M649 402 H1062"/>
 
         <!-- Chapter 3: DER and microgrids -->
         <a class="zone" data-ch="3" href="apps/03-der-microgrids/index.html" aria-label="Chapter 3: DER and microgrids">
@@ -325,10 +429,22 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="lbl" x="1038.5" y="524" text-anchor="middle">250 kW PV</text>
           <rect data-node="bess" class="box site" x="1115" y="498" width="127" height="43"/>
           <text class="lbl" x="1178.5" y="524" text-anchor="middle">750 kW BESS</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M927 224 V202 H949 M1262 224 V202 H1240 M927 570 V592 H949 M1262 570 V592 H1240"/>
+          <g class="callout">
+            <path d="M1005 363 V365"/><circle cx="1005" cy="354" r="9"/><text x="1005" y="358">1</text>
+            <path d="M1113 374 L1091 391"/><circle cx="1120" cy="368" r="9"/><text x="1120" y="372">2</text>
+          </g>
+          <g class="readout">
+            <rect x="950" y="275" width="290" height="58"/>
+            <text class="dev" x="962" y="290">TRY</text>
+            <text class="lbl rd" x="962" y="308">Follow the interconnection from</text>
+            <text class="lbl rd" x="962" y="324">the utility side to the inverters.</text>
+          </g>
         </a>
 
         <!-- Chapter 5: batteries. Opens up the BESS from chapter 3: AC to the inverter (PCS), DC to the rack. -->
-        <path class="sec" d="M1242 519.5 H1298"/>
+        <path class="sec" data-ch="5" d="M1242 519.5 H1298"/>
         <a class="zone" data-ch="5" href="apps/05-batteries/index.html" aria-label="Chapter 5: Batteries">
           <rect class="bg" x="1274" y="210" width="272" height="374"/>
           <text class="tag" x="1289" y="232">CHAPTER 5</text>
@@ -359,6 +475,20 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
             <path d="M1447 500h9v26h-9zM1461 500h9v26h-9zM1475 500h9v26h-9zM1489 500h9v26h-9zM1503 500h9v26h-9z"/>
           </g>
           <text class="dev" x="1289" y="566">RACK · MODULE · CELL</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M1266 224 V202 H1288 M1554 224 V202 H1532 M1266 570 V592 H1288 M1554 570 V592 H1532"/>
+          <g class="callout">
+            <path d="M1380 291 V300"/><circle cx="1380" cy="282" r="9"/><text x="1380" y="286">1</text>
+            <path d="M1315 485 V494"/><circle cx="1315" cy="476" r="9"/><text x="1315" y="480">2</text>
+            <path d="M1480 281 V290"/><circle cx="1480" cy="272" r="9"/><text x="1480" y="276">3</text>
+          </g>
+          <g class="readout">
+            <rect x="1274" y="126" width="272" height="66"/>
+            <text class="dev" x="1286" y="144">TRY</text>
+            <text class="lbl rd" x="1286" y="164">Size a battery for a home,</text>
+            <text class="lbl rd" x="1286" y="181">a grocery store or a factory.</text>
+            <path d="M1410 192 V210"/>
+          </g>
         </a>
       </svg>
       </div>
@@ -375,13 +505,14 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
             <li><i style="border-color:var(--fault)"></i><span><b style="color:var(--fault)">Red</b> · faults and alarms, only when something is wrong</span></li>
           </ul>
         </div>
-        <div>
+        <div id="notes-col"><div class="notes-default">
           <p class="fl">Notes</p>
           <ol class="notes">
             <li>Click a region to open that chapter.</li>
             <li>Simplified on purpose: one feeder, one lateral, one DER site.</li>
             <li>Line color means voltage class, never fuel type. Fuel colors appear only in charts.</li>
-          </ol>
+          </ol></div>
+          <div class="notes-preview" aria-live="polite"></div>
         </div>
         <div class="tb">
           <div class="wide">
@@ -390,7 +521,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
             <p>Plant → meter → control room</p>
           </div>
           <div><p class="fl">Drawn by</p><p class="v">F. Lan</p></div>
-          <div class="c2"><p class="fl">Sheets</p><p class="v">5 chapters</p></div>
+          <div class="c2"><p class="fl">Sheets</p><p class="v" id="sheets-val">5 chapters</p></div>
           <div><p class="fl">Scale</p><p class="v">Not to scale</p></div>
           <div class="c2"><p class="fl">Status</p><p class="v status">For learning</p></div>
           <div class="wide">
@@ -509,23 +640,84 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 <script>
 // The theme toggle is handled by shared/theme.js.
 
-// Hovering a sheet region highlights its row in the sheet index, and the other way around.
+// Hover: highlight the region, its sheet-index row, its lines, the ruler marks and the Notes preview.
 (function(){
-  var zones=document.querySelectorAll('.zone[data-ch]'), rows=document.querySelectorAll('.row[data-ch]');
-  function hot(ch,on){
-    zones.forEach(function(z){z.classList.toggle('hot',on&&z.dataset.ch===ch)});
-    rows.forEach(function(r){r.classList.toggle('hot',on&&r.dataset.ch===ch)});
+  var svg=document.querySelector('.scroll svg');
+  var zones=[].slice.call(document.querySelectorAll('.zone[data-ch]'));
+  var rows=[].slice.call(document.querySelectorAll('.row[data-ch]'));
+  // looked up on each hover: shared/sheet-motion.js adds its own per-chapter layers after this script runs
+  function loose(){return [].filter.call(svg.children,function(el){return el.getAttribute('data-ch') && !el.classList.contains('zone');});}
+  var notes=document.getElementById('notes-col'), pv=notes.querySelector('.notes-preview');
+  var sheets=document.getElementById('sheets-val'), TOTAL=rows.length;
+  var rulers={top:[].slice.call(document.querySelectorAll('.zm.top span')),bot:[].slice.call(document.querySelectorAll('.zm.bot span')),
+              l:[].slice.call(document.querySelectorAll('.zm.l span')),r:[].slice.call(document.querySelectorAll('.zm.r span'))};
+  var VB={w:1600,h:602};   // matches the SVG viewBox
+
+  var CUSTOM={
+    '1':[['Bus','supply must equal demand in every interval.'],['Solar PV','peaks at noon, when it can exceed demand.']],
+    '2':[['Recloser','trips, then recloses to clear a temporary fault.'],['Fuse','blows to isolate a lateral so the feeder stays on.']],
+    '3':[['Two-way flow','the site can import from the feeder or export to it.'],['PCC meter','the point of common coupling, where the utility ends and the site begins.']],
+    '4':[['SCADA','sees the field in real time.'],['ADMS','decides: outages, fault isolation, voltage.'],['DERMS','controls: dispatches distributed energy.']],
+    '5':[['BMS','watches every cell and talks to the inverter.'],['PCS','the inverter: AC on the grid side, DC on the rack side.'],['Rack','modules of cells, where the energy is stored.']]
+  };
+  var TREATED={'1':1,'2':1,'3':1,'4':1,'5':1};   // any other chapter keeps the original hover only
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+
+  function preview(ch){
+    var row=document.querySelector('.row[data-ch="'+ch+'"]'); if(!row) return '';
+    var a=row.querySelector('h3 a').cloneNode(true); [].forEach.call(a.querySelectorAll('.sr'),function(n){n.remove()});
+    var inc=row.querySelector('.inc').cloneNode(true); [].forEach.call(inc.querySelectorAll('.fl'),function(n){n.remove()});
+    var tabs=inc.textContent.replace(/^[\s·]+/,'').trim();
+    var html='<p class="fl">Sheet '+esc(ch)+' of '+TOTAL+' · '+esc(a.textContent.trim())+'</p>'+
+             '<p class="pv-q">'+esc(row.querySelector('.q').textContent)+'</p>';
+    if(CUSTOM[ch]){
+      html+='<ol class="pv-key">'+CUSTOM[ch].map(function(k,n){return '<li><i>'+(n+1)+'</i><span><b>'+esc(k[0])+'</b>: '+esc(k[1])+'</span></li>'}).join('')+'</ol>';
+    }
+    html+='<p class="pv-inc"><span class="fl">Opens with</span>'+esc(tabs)+'</p>';
+    return html;
   }
-  function bind(el,focus){
+
+  function ruler(z,on){
+    var bg=z.querySelector('.bg'); if(!bg) return;
+    var x=+bg.getAttribute('x'),y=+bg.getAttribute('y'),w=+bg.getAttribute('width'),h=+bg.getAttribute('height');
+    var cw=VB.w/8, rh=VB.h/4;
+    var c0=Math.floor(x/cw), c1=Math.floor((x+w-1)/cw), r0=Math.floor(y/rh), r1=Math.floor((y+h-1)/rh);
+    ['top','bot'].forEach(function(k){rulers[k].forEach(function(s,i){s.classList.toggle('lit',on&&i>=c0&&i<=c1)})});
+    ['l','r'].forEach(function(k){rulers[k].forEach(function(s,i){s.classList.toggle('lit',on&&i>=r0&&i<=r1)})});
+  }
+
+  function hot(ch,on){
+    if(on && !TREATED[ch]){   // untreated chapter: original behavior only (zone and row highlight)
+      zones.forEach(function(z){z.classList.toggle('hot',z.dataset.ch===ch)});
+      rows.forEach(function(r){r.classList.toggle('hot',r.dataset.ch===ch)});
+      return;
+    }
+    zones.forEach(function(z){var m=on&&z.dataset.ch===ch; z.classList.toggle('hot',m); if(m||!on) ruler(z,m);});
+    rows.forEach(function(r){r.classList.toggle('hot',on&&r.dataset.ch===ch)});
+    loose().forEach(function(p){p.classList.toggle('hot',on&&p.getAttribute('data-ch')===ch)});
+    svg.classList.toggle('has-hot',on);
+    if(on){pv.innerHTML=preview(ch); notes.classList.add('pv'); sheets.textContent='Sheet '+ch+' of '+TOTAL;}
+    else{notes.classList.remove('pv'); sheets.textContent=TOTAL+' chapters';}
+  }
+  function bind(el){
     el.addEventListener('mouseenter',function(){hot(el.dataset.ch,true)});
     el.addEventListener('mouseleave',function(){hot(el.dataset.ch,false)});
-    if(focus){
-      el.addEventListener('focusin',function(){hot(el.dataset.ch,true)});
-      el.addEventListener('focusout',function(){hot(el.dataset.ch,false)});
-    }
+    el.addEventListener('focusin',function(){hot(el.dataset.ch,true)});
+    el.addEventListener('focusout',function(){hot(el.dataset.ch,false)});
   }
-  [].forEach.call(zones,function(el){bind(el,true)});
-  [].forEach.call(rows,function(el){bind(el,true)});
+  zones.forEach(bind); rows.forEach(bind);
+
+  // underline under each region name, drawn in once fonts have loaded so it matches the text width
+  function underlines(){
+    zones.forEach(function(z){
+      var n=z.querySelector('.name'); if(!n||!TREATED[z.dataset.ch]||z.querySelector('.uline')) return;
+      var x=+n.getAttribute('x'), y=+n.getAttribute('y')+8, len=n.getComputedTextLength();
+      var l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('class','uline'); l.setAttribute('x1',x); l.setAttribute('x2',x+len); l.setAttribute('y1',y); l.setAttribute('y2',y);
+      l.style.strokeDasharray=len; l.style.strokeDashoffset=len; z.appendChild(l);
+    });
+  }
+  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(underlines);
 })();
 </script>
 </body>

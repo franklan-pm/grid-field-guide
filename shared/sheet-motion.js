@@ -36,20 +36,29 @@
   var PULSE_MAX=0.7;
   var glow={},halos={},modGlow=[0,0,0,0],modHalos=[];
 
-  /* ---------- overlay layer, above the artwork, never catches clicks ---------- */
-  var layer=mk('g',{'class':'fx','aria-hidden':'true'},svg);
-  var gFlow=mk('g',{},layer),gLits=mk('g',{},layer),gHalos=mk('g',{},layer),gPk=mk('g',{},layer);
+  /* ---------- overlay layers, above the artwork, never catch clicks ----------
+     One layer per chapter, tagged data-ch, so the page can dim the motion of chapters
+     that are not being hovered the same way it dims their artwork. */
+  var layers={};
+  function layerFor(ch){
+    if(!layers[ch]){
+      var l=mk('g',{'class':'fx','aria-hidden':'true','data-ch':ch},svg);
+      layers[ch]={flow:mk('g',{},l),lits:mk('g',{},l),halos:mk('g',{},l),pk:mk('g',{},l)};
+    }
+    return layers[ch];
+  }
 
   /* ---------- halos built from the real box geometry ---------- */
-  function halo(id,el,green){
+  function halo(id,el,green,ch){
     var b=el.getBBox(),pad=3;
     var round=el.tagName.toLowerCase()==='circle';
-    var h=mk('rect',{x:b.x-pad,y:b.y-pad,width:b.width+2*pad,height:b.height+2*pad,rx:round?(b.width+2*pad)/2:2,'class':'fx-halo'+(green?' g':'')},gHalos);
+    var h=mk('rect',{x:b.x-pad,y:b.y-pad,width:b.width+2*pad,height:b.height+2*pad,rx:round?(b.width+2*pad)/2:2,'class':'fx-halo'+(green?' g':'')},layerFor(ch).halos);
     if(id){halos[id]=h;glow[id]=0;}
     return h;
   }
-  ['scada','adms','derms','recloser','switch','pcc','bess','bms','pcs'].forEach(function(id){halo(id,q('[data-node="'+id+'"]'));});
-  [].forEach.call(q('#modules').querySelectorAll('rect'),function(r){modHalos.push(halo(null,r,true));});
+  var NODE_CH={scada:4,adms:4,derms:4,recloser:2,'switch':2,pcc:3,bess:3,bms:5,pcs:5};
+  Object.keys(NODE_CH).forEach(function(id){halo(id,q('[data-node="'+id+'"]'),false,NODE_CH[id]);});
+  [].forEach.call(q('#modules').querySelectorAll('rect'),function(r){modHalos.push(halo(null,r,true,5));});
 
   /* ---------- faint breathing on the chapter 4 and 5 box borders ---------- */
   var boxes=['scada','adms','derms','bms','pcs','rack'].map(function(id){return q('[data-node="'+id+'"]');});
@@ -58,6 +67,8 @@
   [].forEach.call(svg.querySelectorAll('.zone[data-ch="4"] .data, .zone[data-ch="5"] .data, #data-field'),function(el){el.classList.add('fx-dim');});
 
   /* ---------- telemetry guide paths, all drawn field to control room ---------- */
+  /* the data lines belong to chapter 4 (the control room), the BMS lines to chapter 5 */
+  var ROUTE_CH={recloser:4,'switch':4,sa:4,ad:4,pcc:4,bms:5,bmspcs:5};
   var routes={
     recloser:'M539 392 V132',
     'switch':'M638 392 V165 H606 V132',
@@ -69,8 +80,9 @@
   };
   var paths={};
   Object.keys(routes).forEach(function(k){
-    var g=mk('path',{d:routes[k],fill:'none',stroke:'none'},gLits);
-    paths[k]={el:g,len:g.getTotalLength(),lit:mk('path',{d:routes[k],'class':'fx-lit'},gLits)};
+    var lits=layerFor(ROUTE_CH[k]).lits;
+    var g=mk('path',{d:routes[k],fill:'none',stroke:'none'},lits);
+    paths[k]={el:g,ch:ROUTE_CH[k],len:g.getTotalLength(),lit:mk('path',{d:routes[k],'class':'fx-lit'},lits)};
   });
 
   /* ---------- chapter 5: one cell element each, so a cell can dim on its own ---------- */
@@ -84,11 +96,11 @@
 
   /* ---------- power flow: the same travelling highlight as chapters 1 to 3, but reversible ---------- */
   var flows=[
-    {d:'M1078 418 V458 H1178 V498',c:'var(--v-secondary)'},
-    {d:'M1242 519.5 H1298',c:'var(--v-secondary)'},
-    {d:'M1398 519.5 H1428',c:'var(--v-secondary)'}
+    {d:'M1078 418 V458 H1178 V498',c:'var(--v-secondary)',ch:3},
+    {d:'M1242 519.5 H1298',c:'var(--v-secondary)',ch:5},
+    {d:'M1398 519.5 H1428',c:'var(--v-secondary)',ch:5}
   ].map(function(f){
-    return mk('path',{d:f.d,pathLength:100,'class':'fx-flow',style:'stroke:color-mix(in srgb, '+f.c+' 30%, var(--sheet))'},gFlow);
+    return mk('path',{d:f.d,pathLength:100,'class':'fx-flow',style:'stroke:color-mix(in srgb, '+f.c+' 30%, var(--sheet))'},layerFor(f.ch).flow);
   });
 
   /* ---------- TWO-WAY arrow: one head per direction so each can fade on its own ---------- */
@@ -107,7 +119,7 @@
   }
   function pulse(id){if(halos[id]){glow[id]=1;}}
   function send(k,dir,dur,kind,done,onMove){
-    var e=mk('circle',{r:kind==='cmd'?2.8:2.2,'class':'fx-pk '+(kind==='cmd'?'cmd':'tel')},gPk);
+    var e=mk('circle',{r:kind==='cmd'?2.8:2.2,'class':'fx-pk '+(kind==='cmd'?'cmd':'tel')},layerFor(paths[k].ch).pk);
     packets.push({k:k,dir:dir,dur:dur,start:vt,el:e,done:done||function(){},onMove:onMove});
   }
   function updatePackets(){
@@ -134,10 +146,10 @@
 
   /* ---------- what the packets do ---------- */
   function loopFast(){
-    function run(k,id){pulse(id);send(k,1,0.9,'tel',function(){pulse('scada');});}
-    run('recloser','recloser');
-    after(1.1,function(){run('switch','switch');});
-    after(2.2,loopFast);
+    pulse('recloser');
+    send('recloser',1,0.9,'tel',function(){pulse('scada');});
+    after(3,function(){pulse('switch');send('switch',1,0.9,'tel');});
+    after(6,loopFast);
   }
   function loopOps(){
     pulse('scada');
