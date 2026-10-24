@@ -2,7 +2,7 @@
 
 **Live site:** https://franklan.net/
 
-Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room that runs it, and into the batteries that store it. Written for program managers and other non-engineers who work around the grid.
+Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room that runs it, and into the batteries that store it. Written for anyone interested in the grid, no engineering degree required.
 
 | # | Chapter | Question | Folder |
 |---|---|---|---|
