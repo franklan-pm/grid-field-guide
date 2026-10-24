@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Virtual power plants · Grid Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
+<script src="../../shared/nav.js" defer></script>
+
+<style>
+  /* Tabs, panels, buttons, chips and quiz options come from shared/theme.css. Line colors follow
+     docs/colors.md and chapter 4: telemetry teal dotted, commands magenta long dash, bids / forecasts /
+     limits violet dash-dot, enrollment / meter data / payment olive short dash. Power: 240 V blue,
+     12 kV feeder orange. Device colors (--dev-hvac, --dev-water, --dev-ev, plus --fuel-battery and
+     --fuel-solar) are fills, tints, icon strokes and chart bands only, never a line. */
+  :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--ground); color:var(--ink); font-family:var(--f-body); min-height:100vh; padding:28px 16px 60px; font-size:17px; }
+  .wrap{max-width:1240px;margin:0 auto;}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+
+  .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1;text-transform:uppercase;margin:0 0 12px;letter-spacing:.01em;}
+  .sub{color:var(--ink-2);font-size:18px;max-width:760px;line-height:1.55;margin:0 0 26px;}
+  .sub b{color:var(--ink);}
+  .tabs{margin-bottom:22px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 6px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 6px;}
+  p{line-height:1.55;}
+  .intro{font-size:16px;color:var(--ink-2);margin:0 0 16px;line-height:1.5;max-width:800px;}
+  .intro b{color:var(--ink);}
+  .asof{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em;}
+  .chk{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);}
+
+  /* icons: 24-unit SVG symbols, stroked in the device color */
+  .ic{display:inline-block;vertical-align:-4px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;}
+  .sprite{position:absolute;width:0;height:0;overflow:hidden;}
+
+  .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+  .grow{flex:1 1 560px;min-width:0;}
+  .side{flex:0 1 300px;min-width:260px;}
+  .ctrl-row{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;margin:4px 0 10px;font:400 13px var(--f-mono);color:var(--ink-2);}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--ink);}
+  .seg button{font:400 13px var(--f-mono);padding:7px 10px;border:0;background:transparent;color:var(--ink-2);cursor:pointer;}
+  .seg button + button{border-left:1px solid var(--ink);}
+  .seg button:hover{color:var(--ink);background:var(--hover-fill);}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);font-weight:700;}
+  input[type=range]{accent-color:var(--ink);}
+  .legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px var(--f-mono);color:var(--ink-2);margin:8px 0;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .caveat{margin-top:16px;padding:12px 14px;background:var(--sheet);border:1px solid var(--band);border-left:4px solid var(--ink);font-size:14px;color:var(--ink-2);line-height:1.5;}
+  .caveat b{color:var(--ink);}
+
+  /* tooltips (as chapter 5) */
+  .tt{position:relative;display:inline-flex;align-items:center;margin-left:6px;cursor:help;vertical-align:1px;}
+  .tt-icon{width:15px;height:15px;border:1px solid var(--ink);color:var(--ink);font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-family:var(--f-mono);line-height:1;user-select:none;text-transform:none;letter-spacing:0;}
+  .tt:hover .tt-icon,.tt:focus .tt-icon,.tt:focus-within .tt-icon{background:var(--ink);color:var(--on-ink);}
+  .tt-box{display:none;position:absolute;bottom:135%;left:50%;transform:translateX(-50%);width:270px;background:var(--sheet);border:1px solid var(--ink);padding:11px 13px;font-size:13px;line-height:1.5;color:var(--ink);font-family:var(--f-body);text-align:left;z-index:20;font-weight:400;text-transform:none;letter-spacing:0;}
+  .tt:hover .tt-box,.tt:focus .tt-box,.tt:focus-within .tt-box{display:block;}
+  .tt-calc{display:block;margin-top:7px;padding-top:7px;border-top:1px solid var(--band);font-family:var(--f-mono);font-size:12px;color:var(--ink-2);}
+  .tile{position:relative;}
+  .tile .tt{position:static;}
+  .tile .tt-box{left:-1px;right:-1px;width:auto;transform:none;bottom:calc(100% + 6px);}
+
+  /* ---- result tiles (shared by Basics and the Playground) ---- */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:10px;}
+  .tile{border:1px solid var(--band);border-top:4px solid var(--ink);background:var(--sheet);padding:9px 12px;}
+  .tile .k{font:400 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);}
+  .tile .v{font:700 30px/1.1 var(--f-display);margin-top:2px;}
+  .tile .s{font-size:13px;color:var(--ink-2);line-height:1.35;}
+  .tile.small .v{font-size:24px;}
+
+  /* ================= BASICS ================= */
+  .bx-lead{font-size:18px;line-height:1.5;color:var(--ink-2);max-width:820px;margin:0 0 16px;}
+  .bx-lead b{color:var(--ink);}
+  .bx-ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:0 0 18px;}
+  .bx-ideas .card{display:flex;gap:10px;align-items:flex-start;}
+  .bx-ideas .num{font:700 26px/1 var(--f-display);border:2px solid var(--ink);min-width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+  .bx-ideas h3{font-size:18px;margin:0 0 3px;}
+  .bx-ideas p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.45;}
+  .svgbox{overflow-x:auto;border:1px solid var(--band);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;}
+  svg.bx{display:block;width:100%;min-width:660px;height:auto;}
+  .bx .box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.5;}
+  .bx .t1{font:600 19px var(--f-display);fill:var(--ink);letter-spacing:.03em;text-transform:uppercase;}
+  .bx .t2{font:600 16px var(--f-display);fill:var(--ink);letter-spacing:.02em;}
+  .bx .mono{font:400 11.5px var(--f-mono);fill:var(--ink-3);}
+  .bx .monob{font:700 12px var(--f-mono);fill:var(--ink);}
+  .bx .big{font:700 30px var(--f-display);fill:var(--ink);}
+  .bx .gut{font:700 10.5px var(--f-mono);fill:var(--ink-3);letter-spacing:.14em;}
+  .bx .gutline{stroke:var(--band);stroke-width:1;}
+  .bx .lyr{fill:none;stroke:var(--band);stroke-dasharray:6 4;}
+  .bx .ctl{fill:none;stroke:var(--data-ctl);stroke-width:2;stroke-dasharray:8 4;}
+  .bx .tel{fill:none;stroke:var(--data-tel);stroke-width:2;stroke-dasharray:2 4;}
+  .bx .feeder{fill:none;stroke:var(--v-primary);stroke-width:3;}
+  .bx .drop{fill:none;stroke:var(--v-secondary);stroke-width:2.5;}
+  .bx .hilite{fill:none;stroke:color-mix(in srgb,var(--v-primary) 30%,var(--sheet));stroke-width:7;stroke-linecap:round;stroke-dasharray:70 3000;opacity:0;}
+  .bx .hilite.on{opacity:1;animation:bxRun 2.4s linear infinite;}
+  @keyframes bxRun{from{stroke-dashoffset:70}to{stroke-dashoffset:-2100}}
+  .bx .grp{transition:opacity .3s;}
+  .bx .ico{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:fill .35s,stroke .35s,opacity .35s;}
+  .bx-steps{border:1px solid var(--ink);background:var(--sheet);padding:12px 14px;margin:0 0 14px;}
+  .bx-steps .btn.primary{font-size:16px;padding:12px 22px;}
+  /* first-click cue (remove .nudge on click): shine sweep */
+  .bx-steps .btn.primary{position:relative;overflow:hidden;}
+  .bx-steps .btn.primary.nudge::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(105deg,transparent,color-mix(in srgb,var(--on-ink) 55%,transparent),transparent);transform:skewX(-20deg);animation:bxShine 3.2s ease-in-out infinite;}
+  @keyframes bxShine{0%,55%{left:-60%}100%{left:130%}}
+  @media (prefers-reduced-motion:reduce){.bx-steps .btn.primary.nudge::after{animation:none;}}
+  .bx-steps h3{font-size:18px;margin:0 0 6px;}
+  .bx-steps ol{list-style:none;padding:0;margin:8px 0 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px;}
+  .bx-steps li{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:8px 6px;border-left:3px solid transparent;cursor:pointer;color:var(--ink-3);}
+  .bx-steps li:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;}
+  .bx-steps li .n{font:700 16px/1 var(--f-display);border:1.5px solid currentColor;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+  .bx-steps li b{display:block;font-family:var(--f-display);font-size:16.5px;letter-spacing:.02em;}
+  .bx-steps li span.d{font-size:14px;line-height:1.4;}
+  .bx-steps li.on{color:var(--ink);border-left-color:var(--ink);background:var(--hover-fill);}
+  .bx-steps li.done{color:var(--ink-2);}
+  .bx-foot{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:flex-start;}
+  .bx-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .bx-mix{flex:1 1 380px;font-size:13.5px;line-height:1.45;color:var(--ink-2);}
+  .bx-mix b{color:var(--ink);}
+  .bx-build{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;margin-top:6px;align-items:start;}
+  @media (max-width:900px){ .bx-build{grid-template-columns:1fr;} }
+  fieldset.box{border:1px solid var(--ink);padding:10px 12px 12px;margin:0 0 12px;background:var(--sheet);min-width:0;}
+  fieldset.box legend{font:700 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;padding:0 4px;}
+  .bx-sl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;margin:9px 0;font-size:14.5px;}
+  .bx-sl output{font:700 13px var(--f-mono);}
+  .bx-sl input{grid-column:1/3;width:100%;}
+  .bx-mixline{font-size:13.5px;line-height:1.7;color:var(--ink-2);margin-top:6px;}
+  .bx-mixline small{font:400 11.5px var(--f-mono);color:var(--ink-3);}
+  .bx-cta{border:2px solid var(--ink);background:var(--sheet);padding:12px 14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45;}
+  .bx-lesson{border-left:4px solid var(--ink);padding:6px 10px;background:var(--sheet);font-size:14.5px;line-height:1.45;margin:10px 0 0;}
+  .bx-real{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:18px;}
+  .bx-real .card{border-left:4px solid var(--ink-3);}
+  .bx-real .k{font:400 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);display:flex;align-items:center;gap:6px;}
+  .bx-real .v{font:700 24px/1.15 var(--f-display);margin:4px 0;}
+  .bx-real p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.45;}
+  .bx-math{margin-top:14px;font-size:14px;color:var(--ink-2);}
+  .bx-math summary{cursor:pointer;font:700 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);}
+  .bx-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center;font:400 13px var(--f-mono);color:var(--ink-3);}
+
+  /* ---- tables ---- */
+  .table-scroll{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;margin-top:10px;background:var(--sheet);border:1px solid var(--ink);}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--band);font-size:14.5px;vertical-align:top;line-height:1.45;}
+  th{font-family:var(--f-mono);font-size:11px;font-weight:400;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--ink);}
+  td.num{font-family:var(--f-mono);font-size:13.5px;font-weight:700;white-space:nowrap;}
+
+  /* ================= INSIDE THE BOX + EVENTS (shared diagram) ================= */
+  svg.dia{display:block;width:100%;min-width:720px;height:auto;}
+  .band-lbl{font:700 11px var(--f-mono);letter-spacing:.1em;fill:var(--ink-3);text-transform:uppercase;}
+  .band-rect{fill:none;stroke:var(--band);stroke-dasharray:6 4;}
+  .node{cursor:pointer;transition:opacity .25s;outline:none;}
+  .node .box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.5;}
+  .node:hover .box,.node:focus-visible .box{stroke-width:2.5;}
+  .node:focus-visible .box{stroke-dasharray:4 2;}
+  .node.sel .box{stroke-width:3.5;}
+  .node text{font:500 12.5px var(--f-body);fill:var(--ink);pointer-events:none;}
+  .node text.small{font:400 10.5px var(--f-mono);fill:var(--ink-3);}
+  .node.hl .box{stroke-width:3;}
+  .dim{opacity:.18;}
+  .flow{fill:none;stroke-width:2;transition:opacity .25s;}
+  .flow.tel{stroke:var(--data-tel);stroke-dasharray:2 4;}
+  .flow.ctl{stroke:var(--data-ctl);stroke-dasharray:8 4;}
+  .flow.plan{stroke:var(--data-plan);stroke-dasharray:8 3 2 3;}
+  .flow.biz{stroke:var(--data-biz);stroke-dasharray:4 3;}
+  .flow.anim{animation:dash 1.6s linear infinite;}
+  @keyframes dash{to{stroke-dashoffset:-36;}}
+  .flow.off{opacity:0;}
+  .flow-lbl{font:400 10px var(--f-mono);fill:var(--ink-3);}
+  .pwr{fill:none;stroke-width:3;}
+  .house{transition:fill .2s,stroke .2s;}
+  .house-ic{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+  .detail{border:1px solid var(--ink);background:var(--sheet);padding:14px 16px;min-height:150px;}
+  .detail .sub2{font:400 12px var(--f-mono);color:var(--ink-3);}
+  .detail dl{margin:8px 0 0;font-size:14.5px;line-height:1.45;}
+  .detail dt{font:700 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-top:8px;}
+  .detail dd{margin:2px 0 0;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .chip.sm{font-size:11.5px;padding:3px 7px;text-decoration:none;}
+  .huels{border:1px solid var(--ink);padding:12px 14px;margin-top:12px;background:var(--sheet);}
+  .huels h3{font-size:17px;}
+  .huels label{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;margin:6px 0;cursor:pointer;line-height:1.35;}
+  .huels input{accent-color:var(--ink);margin-top:3px;}
+  .zoomlbl{font:700 13px var(--f-mono);color:var(--ink);}
+  @media (prefers-reduced-motion: reduce){ .flow.anim{animation:none;} .bx .hilite.on{animation:none;stroke-dasharray:none;opacity:.9;} .bx .ico{transition:none;} }
+
+  /* events */
+  .scen-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .scen-pick .chip span{opacity:.7;}
+  .clock{display:inline-block;font:700 20px var(--f-mono);border:2px solid var(--ink);padding:4px 10px;background:var(--sheet);}
+  .step-title{font:600 22px var(--f-display);text-transform:uppercase;margin-top:10px;}
+  .step-text{margin:6px 0 10px;line-height:1.5;min-height:120px;}
+  .steps-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .pips{display:flex;gap:4px;}
+  .pips button{width:14px;height:14px;border:1px solid var(--ink);display:block;cursor:pointer;background:transparent;padding:0;}
+  .pips button.on{background:var(--ink);}
+  .gauge{border:1px solid var(--ink);background:var(--sheet);padding:10px 14px;margin:12px 0;}
+  .gauge .big{font:700 34px var(--f-display);}
+  .gauge .track{position:relative;height:16px;border:1px solid var(--ink);margin-top:6px;background:var(--grid);}
+  .gauge .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);transition:width .6s;}
+  .gauge .fill.over{background:var(--fault);}
+  .gauge .tgt{position:absolute;top:-6px;bottom:-6px;border-left:2px dashed var(--ink-3);}
+  .gauge .cap{font:400 12px var(--f-mono);color:var(--ink-3);}
+  .anchor{font-size:14px;border-left:4px solid var(--ink-3);padding:6px 10px;color:var(--ink-2);background:var(--sheet);margin:8px 0;line-height:1.45;}
+  @media (prefers-reduced-motion: reduce){ .gauge .fill{transition:none;} }
+
+  /* ================= PLAYGROUND ================= */
+  .pg{display:grid;grid-template-columns:310px minmax(0,1fr);gap:16px;}
+  @media (max-width:880px){ .pg{grid-template-columns:1fr;} }
+  .sl{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:14px;margin:9px 0;align-items:center;}
+  .sl > span{display:flex;align-items:center;gap:6px;}
+  .sl input{grid-column:1/3;width:100%;}
+  .sl b{font:700 12.5px var(--f-mono);}
+  .check-row{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;color:var(--ink-2);line-height:1.4;margin-top:6px;}
+  .check-row input{margin-top:2px;accent-color:var(--ink);}
+  .nameplate{font:400 12.5px var(--f-mono);color:var(--ink-2);margin-top:6px;line-height:1.5;}
+  .warn{color:var(--fault);font-weight:700;}
+  .result{border:2px solid var(--ink);padding:10px 14px;background:var(--sheet);font:400 14px var(--f-mono);line-height:1.6;margin-bottom:10px;}
+  .result b{font-size:16px;}
+  .chart-wrap{background:var(--sheet);border:1px solid var(--ink);padding:8px 8px 4px;margin-bottom:10px;}
+  .chart-wrap .legend{margin:2px 4px 6px;}
+  .chart-wrap h3{font-size:17px;margin:2px 4px 2px;}
+  svg.chart{width:100%;height:auto;display:block;}
+  #chart{cursor:crosshair;touch-action:pan-y;}
+  #chart:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .ax{font:400 10.5px var(--f-mono);fill:var(--ink-3);}
+  .axh{paint-order:stroke;stroke:var(--sheet);stroke-width:3px;stroke-linejoin:round;}
+  .dl{font:600 12px var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:3px;stroke-linejoin:round;pointer-events:none;}
+  .scrub{display:flex;align-items:center;gap:10px;margin:2px 4px 6px;font:400 13px var(--f-mono);}
+  .scrub input{flex:1;min-width:0;}
+  .scrub .btn{padding:5px 12px;}
+  .readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;font:400 12.5px var(--f-mono);margin:0 0 10px;}
+  .readout div{border:1px solid var(--band);padding:5px 8px;background:var(--sheet);display:flex;flex-direction:column;gap:2px;}
+  .readout span{display:flex;align-items:center;gap:5px;color:var(--ink-2);}
+  .readout b{font-size:15px;}
+  .mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:640px){ .mini{grid-template-columns:1fr;} }
+  .pg-bottom{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;}
+  @media (max-width:760px){ .pg-bottom{grid-template-columns:1fr;} }
+  .lessons{font-size:14px;color:var(--ink-2);}
+  .lessons .chip{margin:3px 4px 3px 0;}
+  .lesson{border-left:4px solid var(--ink);padding:6px 10px;background:var(--sheet);font-size:14.5px;line-height:1.45;margin-top:8px;min-height:40px;}
+
+  /* ================= GLOSSARY ================= */
+  .search-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .search-row input,.search-row select{background:var(--sheet);border:1px solid var(--ink);border-radius:0;color:var(--ink);padding:10px 12px;font-family:var(--f-body);font-size:16px;}
+  .search-row input{flex:1 1 220px;}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .term-card{background:var(--sheet);border:1px solid var(--band);padding:14px 16px;}
+  .info-tag{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;}
+  .term-card h3{margin:4px 0 6px;}
+  .term-card p{font-size:15px;color:var(--ink-2);margin:0;line-height:1.5;}
+  .empty{color:var(--ink-3);font-size:15px;}
+
+  /* ================= QUIZ ================= */
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  #quizScore{font-family:var(--f-mono);font-size:13px;color:var(--ink);border:1px solid var(--ink);padding:6px 12px;}
+  .quiz-q{margin-bottom:24px;max-width:800px;}
+  .quiz-q h3{margin-bottom:10px;font-size:21px;}
+  .opt{display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:15px;font-family:var(--f-body);}
+  .explain{font-size:14.5px;color:var(--ink-2);margin-top:6px;display:none;line-height:1.5;}
+  .explain.show{display:block;}
+  .explain button{margin-left:6px;}
+
+  /* ================= VALUE ================= */
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:12px;}
+  .card h3{margin-top:0;}
+  .card > p{font-size:14.5px;color:var(--ink-2);line-height:1.5;}
+  .hbars{display:grid;gap:7px;margin-top:10px;}
+  .hbar{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:10px;align-items:center;font-size:13.5px;}
+  .hbar .track{position:relative;height:24px;background:var(--grid);}
+  .hbar .fill{position:absolute;left:0;top:0;bottom:0;}
+  .hbar .val{position:absolute;top:50%;transform:translateY(-50%);font:700 12.5px var(--f-mono);white-space:nowrap;margin-left:6px;}
+  .timeline{list-style:none;margin:10px 0 0;padding:0 0 0 16px;border-left:2px solid var(--ink);}
+  .timeline li{position:relative;margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--ink-2);}
+  .timeline li::before{content:"";position:absolute;left:-22px;top:5px;width:10px;height:10px;background:var(--sheet);border:2px solid var(--ink);}
+  .timeline li.risk::before{background:var(--fault);border-color:var(--fault);}
+  .timeline b{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);display:block;}
+  .sources{font-size:14px;color:var(--ink-2);line-height:1.6;margin-top:22px;}
+  .sources summary{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--ink);}
+  .sources h4{font:700 11.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin:12px 0 2px;}
+  .sources ol{padding-left:24px;margin:4px 0;}
+</style>
+</head>
+<body>
+<!-- device icons: 24-unit symbols, drawn with the stroke color of whatever uses them -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-hvac" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12 L12 6.5 M12 12 L15.5 14"/><path d="M7 18.5 h10"/></symbol>
+    <symbol id="i-water" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M8.5 14 q1.75 -2 3.5 0 t3.5 0"/><path d="M9.5 6 h5"/></symbol>
+    <symbol id="i-ev" viewBox="0 0 24 24"><rect x="6.5" y="9" width="11" height="7" rx="1.5"/><path d="M9.5 9 V4 M14.5 9 V4 M12 16 V21"/></symbol>
+    <symbol id="i-batt" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="1"/><path d="M19.5 10.5 h2 v3 h-2"/><path d="M12 8.5 L9 12.5 H12.5 L10.5 15.5"/></symbol>
+    <symbol id="i-solar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <!-- chart textures, so device bands still read in print and forced colors -->
+    <pattern id="tx-hvac" patternUnits="userSpaceOnUse" width="6" height="6"><path d="M0 3 H6" stroke="var(--sheet)" stroke-width="1.2" opacity=".6"/></pattern>
+    <pattern id="tx-water" patternUnits="userSpaceOnUse" width="6" height="6"><circle cx="3" cy="3" r="1.1" fill="var(--sheet)" opacity=".7"/></pattern>
+    <pattern id="tx-ev" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><path d="M0 0 V6" stroke="var(--sheet)" stroke-width="1.4" opacity=".6"/></pattern>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <div class="eyebrow">Chapter 6 of 6 · How do 20,000 homes act like one power plant?</div>
+  <h1>Virtual Power Plant Field Guide</h1>
+  <p class="sub">A gas peaker is one big machine in one place. A <b>virtual power plant</b> is thousands of small machines in thousands of homes: thermostats, water heaters, EV chargers, batteries and solar. Software makes them act as one. To the grid operator, both can look like <b>50 MW</b>.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="basics" role="tab">◉ Basics</button>
+    <button class="tab" data-tab="events" role="tab">▶ Events</button>
+    <button class="tab" data-tab="playground" role="tab">⚡&#xFE0E; Playground</button>
+    <button class="tab" data-tab="glossary" role="tab">≡ Glossary</button>
+    <button class="tab" data-tab="quiz" role="tab">? Quiz</button>
+    <button class="tab" data-tab="value" role="tab">$ Value</button>
+  </div>
+
+  <!-- ================= BASICS ================= -->
+  <section class="panel active" id="panel-basics">
+    <h2>What is a virtual power plant?</h2>
+    <p class="bx-lead">A <b>virtual power plant (VPP)</b> is thousands of small devices in people's homes, such as thermostats, water heaters, EV chargers and batteries, run by software so they act like <b>one power plant</b>. When the grid is short of power, they all use a little less, or send a little back, at the same time.</p>
+    <p class="bx-lead">For example, Google announced a deal with Voltus to set up a VPP in the PJM grid. Announced on Oct 22, 2026, the deal adds ~1,070 MW of electric capacity to an earlier 100 MW agreement. That's about the size of a large nuclear reactor, but available only when the grid calls for it!</p>
+
+    <div class="bx-ideas">
+      <div class="card"><span class="num">1</span><div><h3>Real hardware, in homes</h3><p>Every device already exists for another reason: to heat the house, charge the car, back up the lights.</p></div></div>
+      <div class="card"><span class="num">2</span><div><h3>Many makers' clouds</h3><p>Each brand runs its own cloud service: ecobee, Google Nest, ChargePoint, Tesla, Enphase…</p></div></div>
+      <div class="card"><span class="num">3</span><div><h3>One aggregator on top</h3><p>VPP software talks to all those clouds at once and adds the devices up into megawatts.</p></div></div>
+    </div>
+
+    <div class="bx-steps">
+      <h3>Watch one event</h3>
+      <ol id="bxSteps">
+        <li data-s="1" tabindex="0"><span class="n">1</span><span><b>The grid asks</b><span class="d">The grid operator needs power from 4 to 8 pm, the same way it would call a power plant.</span></span></li>
+        <li data-s="2" tabindex="0"><span class="n">2</span><span><b>The VPP splits the job</b><span class="d">The aggregator works out how much each kind of device can give, then sends one request to each maker's cloud.</span></span></li>
+        <li data-s="3" tabindex="0"><span class="n">3</span><span><b>Each cloud tells its devices</b><span class="d">Thermostats shift 2–4°F, EV chargers pause, batteries discharge, water heaters wait. Customers can always override.</span></span></li>
+        <li data-s="4" tabindex="0"><span class="n">4</span><span><b>The grid sees one power plant</b><span class="d">The power doesn't travel over the internet. It shows up on the wires the homes already use. The aggregator reports the total.</span></span></li>
+      </ol>
+      <div class="bx-foot"><div class="bx-btns"><button class="btn primary" id="bxPlay" type="button">▶ Send the call</button><button class="btn" id="bxReset" type="button">Reset</button></div>
+      <div class="bx-mix"><b>Common mix-up:</b> ecobee, Nest and Tesla aren't the VPP. They run <i>device clouds</i>. The VPP software (Uplight, EnergyHub, Everyday Electric…) sits on top of them, and the utility's DERMS (<a href="../04-grid-operations/index.html">chapter 4</a>) checks the wires.</div></div>
+    </div>
+    <div class="svgbox"><svg class="bx" id="bxSvg" viewBox="0 0 1100 580" role="img" aria-labelledby="bxSvgT"><title id="bxSvgT">How a VPP works: the grid asks the VPP software for power, the software sends one request to each device maker's cloud, each cloud tells its devices in homes, and the homes' combined change shows up on the feeder as megawatts.</title></svg></div>
+
+    <h2 style="margin-top:28px">How big is your VPP?</h2>
+    <p class="intro">Slide to enroll more homes. The picture above fills in, and the numbers show how much power the fleet gives on a hot evening, how long it lasts, and what it's worth.</p>
+    <div class="bx-build">
+      <div>
+        <fieldset class="box"><legend>Your VPP</legend>
+          <div class="bx-sl"><label for="bxHomes">Homes enrolled</label><output id="bxHomesV" for="bxHomes"></output>
+            <input type="range" id="bxHomes" min="1000" max="100000" step="1000" value="20000"></div>
+          <div class="bx-mixline" id="bxMixLine"></div>
+        </fieldset>
+        <div class="bx-cta"><span>Want to pick the devices yourself, change the season, or see the rebound?</span><button class="btn primary" data-goto="playground" type="button">⚡&#xFE0E; Open the Playground</button></div>
+      </div>
+      <div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Starting power<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">How much load the fleet cuts the instant the event starts at 4 pm, when every device responds at once. This is the <b>peak</b> of the event. It fades after that, which is why the tile beside it matters more.</span></span></div><div class="v" id="bxMW">–</div><div class="s">at 4 pm, when every device responds</div></div>
+          <div class="tile"><div class="k">Lowest point<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">The <b>lowest</b> output between 4 and 8 pm. Thermostats fade as houses warm up and batteries run low, so this is the part a grid planner can count on.</span></span></div><div class="v" id="bxFirm">–</div><div class="s">4 to 8 pm: what you can promise</div></div>
+          <div class="tile"><div class="k">Customers earn<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">At Puget Sound Energy's Flex rates: $40 a year per thermostat, $0.50 per kWh for EVs and batteries (batteries capped at $500 a year), 20 events a year. Sign-up bonuses aren't counted.</span></span></div><div class="v" id="bxEarn">–</div><div class="s" id="bxEarns"></div></div>
+          <div class="tile"><div class="k">Grid saves<span class="tt" tabindex="0" aria-label="Explain"><span class="tt-icon">i</span><span class="tt-box" role="tooltip">Held MW × $56 per kW-year: the gap between a new VPP ($43/kW-yr) and a new gas peaker ($99/kW-yr) in the DOE / Brattle 400 MW case (one modeled utility, 2022 dollars).</span></span></div><div class="v" id="bxSave">–</div><div class="s" id="bxSaves"></div></div>
+        </div>
+        <div class="bx-lesson" id="bxLesson"></div>
+      </div>
+    </div>
+
+    <div class="bx-real">
+      <div class="card" style="border-left-color:var(--fuel-battery)"><div class="k"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" style="color:var(--fuel-battery)"><use href="#i-batt"/></svg>California · Sep 9, 2026</div><div class="v">580 MW for 3 hours</div><p>From about 140,000 home batteries at the evening peak: roughly 4.1 kW each. A record at the time; a newer dispatch reached 745 MW on Oct 6, 2026 (company-reported).</p></div>
+      <div class="card" style="border-left-color:var(--dev-hvac)"><div class="k"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" style="color:var(--dev-hvac)"><use href="#i-hvac"/></svg>ecobee · summer 2025</div><div class="v">108 MW from 143,000 thermostats</div><p>Delivered peak reduction across 11 grid events: about 0.75 kW per thermostat on average. The 108 MW is the combined ability across several grid markets; the evaluator measured about 0.5 kW per device in California and about 1 kW in Texas.</p></div>
+      <div class="card" style="border-left-color:var(--ink)"><div class="k">Puget Sound Energy · Apr 2026</div><div class="v">≈49,000 thermostats · 10,800 EVs · 800 batteries</div><p>Enrolled in PSE's automated Flex programs (as of Apr 3, 2026): about 49,000 thermostats in Flex Smart and ecobee. Washington law asks PSE to plan for about 500 MW of flexible load by 2030. <button class="chip sm" id="bxPse" type="button">Try this fleet in the Playground</button></p></div>
+    </div>
+
+    <details class="bx-math">
+      <summary>How these numbers are worked out</summary>
+      <p>Basics and the Playground use the <b>same model</b>. Basics runs it for a 95°F summer evening, 4 to 8 pm, with this mix of devices.</p>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Device</th><th>Per 100 homes</th><th>Per device, in the event</th><th>Customer earns (PSE, per year)</th></tr></thead>
+        <tbody>
+        <tr><td>Smart thermostat</td><td>70</td><td>≈0.75 kW at 95°F (ecobee 2025: 108 MW ÷ 143,000), fading as homes warm</td><td>$20 a season × 2 = $40 (plus $50 to sign up)</td></tr>
+        <tr><td>Water heater</td><td>20</td><td>0.4 kW average for 4 h (the tank holds heat), a typical value</td><td>— (PSE pilot, rate not published)</td></tr>
+        <tr><td>EV charger</td><td>15</td><td>≈0.5 kW average, a typical value: 7 kW × 60% plugged in × 12% charging at that hour</td><td>$0.50 per kWh shifted (plus $50 to sign up)</td></tr>
+        <tr><td>Home battery</td><td>10</td><td>4.1 kW for ≈3 h, 12 kWh usable (California 2026: 580 MW ÷ 140,000 for 3 h)</td><td>$0.50 per kWh, up to $500 (plus $75/kWh, up to $1,000, to sign up)</td></tr>
+        <tr><td>Rooftop solar</td><td>20</td><td>0 kW at 4–8 pm: the sun is setting</td><td>— (it filled the batteries at midday)</td></tr>
+        </tbody>
+      </table></div>
+      <p>The mix per 100 homes is a typical one, for illustration. 5% of devices are offline and 10% of customers override. Earnings assume 20 events a year (PSE allows up to 15 per season). <b>Grid saves</b> is the held MW times $56 per kW-year: the gap between a new VPP ($43/kW-yr) and a new gas peaker ($99/kW-yr) in the DOE / Brattle 400 MW case (one modeled utility, 2022 dollars). Device values marked "typical" are round figures for learning, not engineering numbers; ⚠ marks a figure still being checked.</p>
+      <p class="asof">As of October 2026. Sources: MGRID, Sep 21 2026 · Market Chameleon on ecobee Grid Resiliency, Feb 11 2026 · PSE 2026 Demand Response RFP · pse.com Flex Smart, Flex EV, Flex Batteries · SEIA on DOE VPP Liftoff · Brattle, Real Reliability (2023)</p>
+    </details>
+
+    <div class="bx-next">Next →
+      <button class="chip" data-goto="playground" type="button">⚡&#xFE0E; Build your own fleet</button>
+      <button class="chip" data-goto="events" type="button">▶ Real scenarios, step by step</button>
+    </div>
+  </section>
+
+  <!-- ================= PLAYGROUND ================= -->
+  <section class="panel" id="panel-playground">
+    <h2>You're the VPP operator</h2>
+    <div class="ctrl-row">
+      <span class="seg" id="pgMode" role="group" aria-label="Playground mode"><button type="button" data-pm="call" aria-pressed="true">A · Meet the call</button><button type="button" data-pm="stagger" aria-pressed="false">B · Stagger the return</button></span>
+    </div>
+    <p class="intro" id="pgIntro"></p>
+    <div class="pg">
+      <div>
+        <fieldset class="box"><legend>Fleet: devices enrolled</legend>
+          <div id="fleetSliders"></div>
+          <div class="nameplate" id="nameplate"></div>
+        </fieldset>
+        <fieldset class="box"><legend>The call</legend>
+          <div class="seg" id="callSeg" role="group" aria-label="Which call" style="margin:4px 0 6px"><button type="button" data-c="summer" aria-pressed="true">Summer 4–8 pm</button><button type="button" data-c="winter" aria-pressed="false">Winter 7–10 am</button><button type="button" data-c="freq" aria-pressed="false">Frequency</button></div>
+          <div class="sl"><label for="sTarget">Target</label><b id="vTarget"></b><input type="range" id="sTarget" min="2" max="60" step="1" value="10"></div>
+          <label class="check-row"><input type="checkbox" id="pace"><span>Pace batteries to last the whole window (lower kW, no cliff)</span></label>
+        </fieldset>
+        <fieldset class="box"><legend>Real life</legend>
+          <div class="sl"><label for="sOver">Opt-out / override rate</label><b id="vOver"></b><input type="range" id="sOver" min="0" max="30" step="1" value="10"></div>
+          <div class="sl"><label for="sTemp">Outdoor temperature</label><b id="vTemp"></b><input type="range" id="sTemp" min="75" max="110" step="1" value="95"></div>
+          <div class="sl"><label for="sPlug">EVs plugged in</label><b id="vPlug"></b><input type="range" id="sPlug" min="0" max="100" step="5" value="60"></div>
+        </fieldset>
+        <fieldset class="box" id="staggerBox" hidden><legend>Stagger the return</legend>
+          <div class="sl"><label for="sGroups">Groups</label><b id="vGroups"></b><input type="range" id="sGroups" min="1" max="6" step="1" value="1"></div>
+          <div class="sl"><label for="sGap">Gap between groups</label><b id="vGap"></b><input type="range" id="sGap" min="0" max="30" step="5" value="15"></div>
+        </fieldset>
+      </div>
+      <div>
+        <div class="result" id="result" aria-live="polite"></div>
+        <div class="tiles" id="pgMoney"></div>
+        <div class="chart-wrap">
+          <div class="legend" id="pgLegend"></div>
+          <svg class="chart" id="chart" viewBox="0 0 760 300" role="img" tabindex="0" aria-label="Fleet response by device over time. Use the left and right arrow keys to move the time cursor."></svg>
+          <div class="scrub"><button class="btn" id="play" type="button">▶ Play</button><input type="range" id="scrub" min="0" max="100" value="0" aria-label="Time"><span id="scrubT"></span></div>
+        </div>
+        <div class="readout" id="readout"></div>
+        <div class="mini">
+          <div class="chart-wrap"><h3>Indoor temperature drift</h3><svg class="chart" id="tempChart" viewBox="0 0 370 120" role="img" aria-label="Indoor temperature drift in thermostat homes"></svg></div>
+          <div class="chart-wrap"><h3>Fleet battery charge</h3><svg class="chart" id="socChart" viewBox="0 0 370 120" role="img" aria-label="Average battery state of charge"></svg></div>
+        </div>
+        <div class="pg-bottom">
+          <div>
+            <div class="eyebrow" style="margin:6px 0">The neighborhood · each house ≈ 500 homes</div>
+            <svg class="chart" id="houses" viewBox="0 0 400 230" role="img" aria-label="Forty houses standing for the fleet; colored houses are responding"></svg>
+            <div class="legend">
+              <span><svg width="14" height="12" aria-hidden="true"><rect width="14" height="12" fill="var(--ink-3)"/></svg>responding (device color)</span>
+              <span><svg width="14" height="12" aria-hidden="true"><rect width="14" height="12" fill="var(--dead)"/></svg>override</span>
+              <span><svg width="14" height="12" aria-hidden="true"><rect width="13" height="11" x=".5" y=".5" fill="none" stroke="var(--ink-3)" stroke-dasharray="2 2"/></svg>offline</span>
+              <span>↑ rebound</span>
+            </div>
+          </div>
+          <div class="lessons">
+            <div class="eyebrow" style="margin:6px 0">Try these</div>
+            <button class="chip" data-preset="pse" type="button">PSE's fleet today</button>
+            <button class="chip" data-preset="mix" type="button">Balanced mix</button>
+            <button class="chip" data-preset="tstat" type="button">Thermostats only</button>
+            <button class="chip" data-preset="batt" type="button">Batteries only</button>
+            <button class="chip" data-preset="exact" type="button">Enroll exactly 10 MW</button>
+            <button class="chip" data-preset="rebound" type="button">Big rebound</button>
+            <div class="lesson" id="lesson">Pick one to see a lesson, then change one slider at a time.</div>
+          </div>
+        </div>
+        <p class="asof" style="margin-top:12px">Per-device values: plan figures as of October 2026, from the California battery record (Sep 2026), ecobee's 2025 season and PSE's Flex programs. Water heater and EV values are typical ones, rounded for learning. A teaching model, not an engineering one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INSIDE THE BOX ================= -->
+  <section class="panel" id="panel-diagram">
+    <div class="eyebrow">Going deeper · after the Basics</div>
+    <h2>Inside the VPP box</h2>
+    <p class="intro"><a href="../04-grid-operations/index.html">Chapter 4</a> drew the VPP as one box. Here it is opened up: four layers, from the grid operator down to the devices in the homes. Click any box.</p>
+    <div class="ctrl-row">
+      <span>Mode</span>
+      <span class="seg" id="modeSeg" role="group" aria-label="Diagram mode"><button type="button" data-mode="idle" aria-pressed="true">Idle</button><button type="button" data-mode="event" aria-pressed="false">Event</button></span>
+      <label for="zoom" style="margin-left:8px">Zoom</label>
+      <input type="range" id="zoom" min="0" max="3" step="1" value="2">
+      <span class="zoomlbl" id="zoomLbl" aria-live="polite"></span>
+    </div>
+    <div class="legend">
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="flow tel"/></svg>telemetry</span>
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="flow ctl"/></svg>commands</span>
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="flow plan"/></svg>bids · forecasts · limits</span>
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="flow biz"/></svg>enrollment · meter data · payment</span>
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="pwr" style="stroke:var(--v-secondary)"/></svg>240 V</span>
+      <span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" class="pwr" style="stroke:var(--v-primary)"/></svg>12 kV feeder</span>
+    </div>
+    <div class="row">
+      <div class="grow">
+        <div class="svgbox"><svg class="dia" id="diaMain" viewBox="0 0 1000 640" role="group" aria-label="The VPP in four layers: grid, VPP software, device clouds, homes"></svg></div>
+      </div>
+      <div class="side">
+        <div class="detail" id="detail" aria-live="polite"><h3>Click a box</h3><p style="color:var(--ink-2);font-size:14.5px;margin:0">Each box tells you what it does, what happens if it fails, and who runs it.</p></div>
+        <div class="huels">
+          <h3>To look like a power plant, a VPP needs…</h3>
+          <label><input type="checkbox" data-huels="vis"> <span><b>Visibility.</b> Telemetry to the control room at least every 5 min.</span></label>
+          <label><input type="checkbox" data-huels="sched"> <span><b>Schedulability.</b> Follows a shape: ramp, hold flat, recover.</span></label>
+          <label><input type="checkbox" data-huels="avail"> <span><b>Availability.</b> 4–6 h at a time, all year.</span></label>
+          <div class="asof" style="margin-top:6px">EnergyHub's "Huels test", Dec 2025. The best VPPs today reach about level 2 of its 0–4 scale.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EVENTS ================= -->
+  <section class="panel" id="panel-events">
+    <h2>Events, step by step</h2>
+    <p class="intro">Pick a scenario and step through it. Only the boxes and messages involved in each step light up.</p>
+    <div class="scen-pick" id="scenPick" role="group" aria-label="Scenario"></div>
+    <div class="row">
+      <div class="side" style="flex-basis:320px">
+        <span class="clock" id="evClock"></span>
+        <div class="step-title" id="evTitle"></div>
+        <p class="step-text" id="evText" aria-live="polite"></p>
+        <div class="steps-nav">
+          <button class="btn" id="evPrev" type="button">← Back</button>
+          <button class="btn primary" id="evNext" type="button">Next →</button>
+          <span class="pips" id="evPips"></span>
+        </div>
+        <div class="gauge" id="evGauge"></div>
+        <div class="anchor" id="evAnchor"></div>
+      </div>
+      <div class="grow">
+        <div class="svgbox"><svg class="dia" id="diaEv" viewBox="0 0 1000 640" role="img" aria-label="Scenario diagram"></svg></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GLOSSARY ================= -->
+  <section class="panel" id="panel-glossary">
+    <h2>VPP glossary</h2>
+    <div class="search-row">
+      <input type="search" id="glossSearch" placeholder="Search terms…" aria-label="Search terms">
+      <select id="glossFilter" aria-label="Filter by category">
+        <option value="all">All categories</option>
+        <option value="basic">Basics</option>
+        <option value="dev">How devices respond</option>
+        <option value="soft">Software and signals</option>
+        <option value="money">Markets and money</option>
+      </select>
+    </div>
+    <div class="card-grid" id="glossGrid"></div>
+    <h3 style="margin-top:28px">Common mix-ups</h3>
+    <div class="table-scroll"><table id="mixTable"><thead><tr><th>Mix-up</th><th>The difference</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section class="panel" id="panel-quiz">
+    <div class="quiz-top"><h2 style="margin:0">Quiz</h2><span id="quizScore"></span><button class="btn" id="quizReset" type="button">Start over</button></div>
+    <div id="quizContainer"></div>
+  </section>
+
+  <!-- ================= VALUE ================= -->
+  <section class="panel" id="panel-value">
+    <h2>Value: who pays, who earns</h2>
+    <p class="intro">A VPP is cheap capacity, but only while a program pays for it. <span class="asof">Figures as of October 2026.</span></p>
+
+    <div class="tiles" style="margin-top:6px">
+      <div class="tile"><div class="k">US VPPs today</div><div class="v">30–33 GW</div><div class="s">DOE, 2025 update</div></div>
+      <div class="tile"><div class="k">North America, 2025</div><div class="v">37.5 GW</div><div class="s">up 13.7% in a year (Wood Mackenzie)</div></div>
+      <div class="tile"><div class="k">DOE goal for 2030</div><div class="v">80–160 GW</div><div class="s">10–20% of US peak demand</div></div>
+      <div class="tile"><div class="k">Worth</div><div class="v">≈$10B /yr</div><div class="s">in grid savings at that scale (DOE)</div></div>
+    </div>
+
+    <div class="vgrid">
+      <div class="card">
+        <h3>VPP vs. gas peaker</h3>
+        <div class="table-scroll"><table>
+          <thead><tr><th></th><th>Gas peaker</th><th>VPP</th></tr></thead>
+          <tbody>
+          <tr><td>Cost of new capacity</td><td class="num">$99 /kW-yr</td><td class="num">$43 /kW-yr</td></tr>
+          <tr><td>Time to launch</td><td>years <span class="chk">⚠</span></td><td>under 6 months for a basic program (DOE)</td></tr>
+          <tr><td>Where it sits</td><td>one site</td><td>thousands of homes</td></tr>
+          <tr><td>Fuel</td><td>gas</td><td>stored energy and shifted load</td></tr>
+          <tr><td>How long it runs</td><td>as long as fuel lasts</td><td>2–4 h, then rebound</td></tr>
+          </tbody>
+        </table></div>
+        <p class="asof">Cost: DOE projection for a 400 MW VPP, via SEIA. Brattle (2023) put VPP net cost at about 40–60% of the alternatives. In PJM's 2027–28 auction, demand-side resources were credited at 92% of their MW, up from 69%.</p>
+      </div>
+
+      <div class="card">
+        <h3>What a customer earns</h3>
+        <p style="margin-top:0">PSE Flex Batteries: $75 per kWh to sign up (up to $1,000), plus $0.50 per kWh discharged in events (up to $500 a year).</p>
+        <div class="sl"><label for="sBk">Battery size</label><b id="vBk"></b><input type="range" id="sBk" min="5" max="30" step="1" value="13"></div>
+        <div class="sl"><label for="sBe">Events a year</label><b id="vBe"></b><input type="range" id="sBe" min="0" max="60" step="5" value="20"></div>
+        <div class="result" id="earn" style="margin-bottom:8px"></div>
+        <p class="asof">Other programs: PSE Flex Smart pays $50 to sign up plus $20 a season per thermostat. California's DSGS paid Powerwall owners $7–$15 per kW-month in 2026, up to about $280 a year (Tesla).</p>
+      </div>
+
+      <div class="card">
+        <h3>What's at risk</h3>
+        <p style="margin-top:0">California's Demand Side Grid Support (DSGS) program paid for the record. <b>A VPP depends on a program that pays for it.</b></p>
+        <ul class="timeline">
+          <li><b>2022</b>DSGS starts (California Energy Commission).</li>
+          <li><b>2023</b>Home batteries can join. About 700 MW enrolled by 2025.</li>
+          <li><b>Jul 29, 2025</b>535 MW from 100,000+ batteries, held flat 7–9 pm.</li>
+          <li><b>Sep 9, 2026</b>580 MW from 140,000+ batteries for 3 hours.</li>
+          <li><b>Oct 6, 2026</b>745 MW, the current record (company-reported).</li>
+          <li class="risk"><b>Dec 2026</b>Funding runs out. The 2027 state budget has no money for DSGS, and a plan to fold it into the CPUC's ELRP was dropped. <span class="chk">⚠ secondary source</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Texas: room to grow</h3>
+        <p style="margin-top:0">ERCOT's ADER pilot lets VPPs sell energy and fast ancillary services. The cap on how much can join has been raised twice as sign-ups filled it.</p>
+        <div class="hbars">
+          <div class="hbar"><span>Launch, Aug 2023</span><div class="track"><div class="fill" style="width:16%;background:var(--fuel-battery)"></div><span class="val" style="left:16%">80 MW</span></div></div>
+          <div class="hbar"><span>First raise</span><div class="track"><div class="fill" style="width:40%;background:var(--fuel-battery)"></div><span class="val" style="left:40%">200 MW</span></div></div>
+          <div class="hbar"><span>Mar 2, 2026</span><div class="track"><div class="fill" style="width:100%;background:var(--fuel-battery)"></div><span class="val" style="left:auto;right:6px;color:var(--sheet)">500 MW</span></div></div>
+        </div>
+        <p class="asof" style="margin-top:8px">Fast ancillary services stay capped at 100 MW across the whole pilot. About 293 MW had qualified by Sep 30, 2026. Base Power, which puts a 25 kWh battery at each home, has a 100 MW deal with CoServ (Mar 2026).</p>
+      </div>
+
+      <div class="card">
+        <h3>Washington: a winter VPP</h3>
+        <p style="margin-top:0">Puget Sound Energy peaks on cold mornings and evenings. A 2024 state law asks it to plan flexible load equal to 10% of its peak from 2030.</p>
+        <div class="hbars">
+          <div class="hbar"><span>2021 target for 2025</span><div class="track"><div class="fill" style="width:4.7%;background:var(--dev-hvac)"></div><span class="val" style="left:4.7%">23.7 MW</span></div></div>
+          <div class="hbar"><span>Today</span><div class="track"><div class="fill" style="width:25.8%;background:var(--dev-hvac)"></div><span class="val" style="left:25.8%">129 MW</span></div></div>
+          <div class="hbar"><span>2030 plan</span><div class="track"><div class="fill" style="width:100%;background:var(--dev-hvac)"></div><span class="val" style="left:auto;right:6px;color:var(--sheet)">≈500 MW</span></div></div>
+        </div>
+        <p class="asof" style="margin-top:8px">PSE 2026 Demand Response RFP (Apr 2026). About 456,000 customers are enrolled by default in Flex event alerts (Apr 2026), a text asking them to cut use; the automated part (thermostats, EVs, batteries) is far smaller but more dependable.</p>
+      </div>
+    </div>
+
+    <details class="sources" open>
+      <summary>Sources (all accessed October 2026)</summary>
+      <h4>National</h4>
+      <ol start="1">
+        <li>US DOE, <i>Pathways to Commercial Liftoff: Virtual Power Plants 2025 Update</i>, via <a href="https://www.renewableenergyworld.com/solar/vpp-adoption-is-growing-in-the-us-but-not-nearly-fast-enough-2/">Renewable Energy World</a>.</li>
+        <li>Utility Dive, <a href="https://www.utilitydive.com/news/in-2026-virtual-power-plants-must-scale-or-risk-being-left-behind/810321/">In 2026, virtual power plants must scale or risk being left behind</a> (Jan 27, 2026).</li>
+        <li>Utility Dive, <a href="https://www.utilitydive.com/news/turing-test-inspired-tool-compares-virtual-power-plants-to-gas-peakers/808162/">Turing test-inspired tool compares virtual power plants to gas peakers</a> (Dec 17, 2025).</li>
+        <li>Oilprice.com, <a href="https://oilprice.com/Energy/Energy-General/Virtual-Power-Plants-The-Grid-Capacity-Nobody-Had-to-Build.html">Virtual Power Plants: The Grid Capacity Nobody Had to Build</a> (2026).</li>
+        <li>PNNL, <a href="https://www.pnnl.gov/publications/ferc-order-2222-der-policy-and-implementation-report-january-2026">FERC Order 2222 DER Policy and Implementation Report</a> (Jan 2026).</li>
+        <li>SEIA, <a href="https://seia.org/blog/virtual-power-plants/">How virtual power plants are making the grid more affordable</a>.</li>
+        <li>Brattle Group, <a href="https://www.brattle.com/real-reliability/">Real Reliability: The Value of Virtual Power</a> (May 2023). The $43 vs. $99 per kW-yr comparison is from one modeled utility, in 2022 dollars.</li>
+        <li>Voltus, <a href="https://www.voltus.co/press/google-voltus-1gw">Google and Voltus 1 GW virtual power plant in PJM</a> (Oct 22, 2026), and <a href="https://www.voltus.co/press/voltus-google-bring-your-own-capacity-pjm">initial 100 MW agreement</a> (Jun 2, 2026).</li>
+        <li>Facilities Dive, <a href="https://www.facilitiesdive.com/news/google-voltus-vpp-virtual-power-pjm/833816/">Google–Voltus VPP in PJM</a> (Oct 23, 2026). Secondary source for the ramp-up period and 2040 term.</li>
+        <li>US DOE, <a href="https://liftoff.energy.gov/vpp/"><i>Pathways to Commercial Liftoff: Virtual Power Plants</i></a> (2025 update, p. 13): net cost of 400 MW of resource adequacy.</li>
+      </ol>
+      <h4>California</h4>
+      <ol start="11">
+        <li>Latitude Media, <a href="https://www.latitudemedia.com/news/running-the-numbers-on-tesla-and-sunruns-massive-california-vpp-test/">Running the numbers on Tesla and Sunrun's massive California VPP test</a> (Aug 2025).</li>
+        <li>Brattle Group, <a href="https://www.brattle.com/wp-content/uploads/2025/08/Assessing-VPP-Performance-Impacts-of-a-Test-Event-in-California-1.pdf">Assessing VPP Performance</a> (Aug 1, 2025).</li>
+        <li>MGRID, <a href="https://mgrid.org/2026/09/21/sunrun-and-tesla-push-580-mw-from-140000-home-batteries-into-californias-evening-peak/">Sunrun and Tesla push 580 MW from 140,000 home batteries</a> (Sep 21, 2026), and Electrek, <a href="https://electrek.co/2026/09/21/sunrun-tesla-580-mw-california-grid-record/">same event</a>.</li>
+        <li>MGRID, <a href="https://mgrid.org/2026/04/07/california-budget-threatens-dsgs-virtual-power-plant-program-in-2027/">California budget threatens DSGS in 2027</a> (Apr 7, 2026).</li>
+        <li>Tesla, <a href="https://www.tesla.com/support/energy/virtual-power-plant/dsgs">California DSGS program</a> (2026 payments).</li>
+        <li>Sunrun, <a href="https://investors.sunrun.com/news-events/press-releases/detail/381/sunrun-and-tesla-dispatch-580-megawatts-to-californias">Sunrun and Tesla dispatch 580 megawatts</a> (Sep 21, 2026). Company-reported.</li>
+        <li>Sunrun, <a href="https://finviz.com/news/402323/sunrun-leads-record-grid-dispatch-delivering-enough-energy-to-power-every-home-in-san-francisco-and-san-jose">Sunrun leads record grid dispatch</a> (Oct 14, 2026), and Electrek, <a href="https://electrek.co/2026/10/14/tesla-powerwall-sunrun-record-745-mw-california-grid-dispatch/">record 745 MW dispatch</a> (Oct 14, 2026). Company-reported.</li>
+        <li>Sunrun, <a href="https://investors.sunrun.com/news-events/press-releases/detail/349/sunrun-dispatches-a-record-amount-of-energy-to">Sunrun dispatches a record amount of energy</a> (Aug 4, 2025), citing Brattle.</li>
+        <li>Canary Media, <a href="https://www.canarymedia.com/articles/virtual-power-plants/california-guts-biggest-virtual-power-plant">California guts its biggest virtual power plant</a> (Sep 1, 2026). Secondary source for the 2027 DSGS budget.</li>
+        <li>California Energy Commission, <a href="https://efiling.energy.ca.gov/GetDocument.aspx?tn=269650&amp;DocumentContentId=106742">DSGS Program Guidelines</a>, 5th ed. (Apr 2026).</li>
+      </ol>
+      <h4>Texas</h4>
+      <ol start="21">
+        <li>ERCOT, <a href="https://www.ercot.com/mktrules/pilots/ader">ADER Pilot Project</a>, and <a href="https://www.ercot.com/services/comm/mkt_notices/M-A030226-01">Market Notice M-A030226-01</a> (Mar 2, 2026).</li>
+        <li>Utility Dive, <a href="https://www.utilitydive.com/news/tesla-virtual-power-plants-vpp-ercot-puc-texas-grid/691713/">2 Tesla virtual power plants cleared to provide energy to Texas grid</a> (Aug 24, 2023).</li>
+        <li>Energy-Storage.news, <a href="https://www.energy-storage.news/?p=96657">Base Power launches 100 MW VPP programme in Texas</a> (Mar 10, 2026).</li>
+        <li>ERCOT, <a href="https://www.ercot.com/files/docs/2026/09/30/ERCOT-ADER-Update-Senate-Business-and-Commerce-September-30-2026.pdf">ADER update to the Texas Senate Business and Commerce Committee</a> (Sep 30, 2026): 293 MW qualified.</li>
+        <li>ERCOT, <a href="https://www.ercot.com/files/docs/2026/10/06/06.-ADER_Phase-4_WMS_10072026.pdf">ADER Phase 4, Wholesale Market Subcommittee</a> (Oct 7, 2026).</li>
+        <li>Base Power, <a href="https://www.basepowercompany.com/blog/aggregated-ders-and-the-capacity-crunch">Aggregated DERs and the capacity crunch</a> (Aug 2026). Company source.</li>
+      </ol>
+      <h4>Washington</h4>
+      <ol start="27">
+        <li>Puget Sound Energy, <a href="https://www.pse.com/-/media/PDFs/001-Energy-Supply/003-Acquiring-Energy/2026-Demand-Response-Request-for-Proposals/2026-DR-RFP.pdf">2026 Demand Response RFP</a> (Apr 2026).</li>
+        <li>Puget Sound Energy, <a href="https://www.pse.com/en/rebates/PSE-flex/flex-batteries">Flex Batteries</a>, <a href="https://www.pse.com/rebates/PSE-flex/flex-smart">Flex Smart</a> and <a href="https://pse.com/en/rebates/PSE-flex/flex-ev">Flex EV</a>.</li>
+        <li>MyNorthwest, <a href="https://mynorthwest.com/local/puget-sound-energy-flex-smart-event-affects-260000-customers-amid-cold-spell/3946409">January flex event affects 260,000 PSE customers</a> (Jan 12, 2024).</li>
+        <li>KIRO 7, <a href="https://www.kiro7.com/news/local/pse-flex-program-faces-first-real-test-heat-hits-puget-sound/3QVKQBSMPVBB5AZGCGYIGEH3LU/">PSE Flex program faces first real test as heat hits Puget Sound</a> (Jul 21, 2026). Its 640,000 enrollment figure was not confirmed against PSE's filings.</li>
+        <li>Puget Sound Energy, <a href="https://apiproxy.utc.wa.gov/cases/GetDocument?docID=4748&amp;year=2026&amp;docketNumber=260005">2026 Demand Response RFP</a>, as filed with the Washington UTC (Docket UE-260005): program enrollments as of Apr 3, 2026.</li>
+        <li>Washington Legislature, <a href="https://lawfilesext.leg.wa.gov/biennium/2023-24/Pdf/Bills/Session%20Laws/House/1589-S.SL.pdf">ESHB 1589</a> (Laws of 2024, ch. 351), and <a href="https://apps.leg.wa.gov/wac/default.aspx?cite=480-96-050&amp;pdf=true">WAC 480-96-050</a>: demand response of at least 10% of peak from 2030. The ≈500 MW figure is PSE's own estimate.</li>
+        <li>Puget Sound Energy, <a href="https://apiproxy.utc.wa.gov/cases/GetDocument?docID=3545&amp;year=2024&amp;docketNumber=240004">2025 Demand Response Equity Action Plan</a>.</li>
+      </ol>
+      <h4>Devices and platforms</h4>
+      <ol start="34">
+        <li>ecobee, <a href="https://www.ecobee.com/en-us/newsroom/press-releases/ecobees-grid-resiliency-service-unlocks-2-8-gw-of-capacity/">Grid Resiliency service unlocks 2.8 GW of capacity</a> (Feb 10, 2026), and Demand Side Analytics, <a href="https://demandsideanalytics.com/ecobee_gr/">ecobee Grid Resiliency evaluation</a>: 143,000 devices, 11 events, 108 MW.</li>
+        <li>Market Chameleon, <a href="https://marketchameleon.com/articles/b/2026/2/11/ecobee-grid-resiliency-generac-expansion-smart-energy-solutions">ecobee Grid Resiliency</a> (Feb 11, 2026): 143,000 thermostats, 108 MW. Secondary source.</li>
+        <li>Bonneville Power Administration CTA-2045 water heater results, <a href="https://aceee.org/sites/default/files/pdf/conferences/hwf/2019/2a-eustis.pdf">ACEEE Hot Water Forum</a> (2019), and the Regional Technical Forum, <a href="https://rtf.nwcouncil.org/demand-response-residential-hot-water-heaters">residential hot water heater demand response</a>.</li>
+        <li>Eversource off-peak EV charging evaluation, <a href="https://puc.nh.gov/Regulatory/Docketbk/2020/20-170/TRANSCRIPTS-OFFICIAL%20EXHIBITS-CLERKS%20REPORT/20-170_2023-02-08_EVERSOURCE_RR-EXH-38.PDF">NH PUC Docket 20-170</a> (2023), and East Kentucky Power Cooperative, <a href="https://psc.ky.gov/pscecf/2026-00163/christian.everly%40ekpc.coop/08242026054814/2026-00163_EKPCs_Responses_to_Staffs_Second_Request.pdf">KY PSC Case 2026-00163</a> (Aug 2026): measured EV load shift of about 0.2–0.25 kW per car.</li>
+        <li>Utility Dive, <a href="https://www.utilitydive.com/news/smart-thermostat-aggregator-rebrands-launches-whole-home-virtual-power-p/832367/">Renew Home becomes Everyday Electric</a> (Oct 7, 2026).</li>
+        <li>EnergyHub, <a href="https://www.energyhub.com/news/energyhub-becomes-the-first-derms-to-exceed-1mm-devices-under-management">First to exceed 1 million devices under management</a> (2024).</li>
+        <li>Renewable Energy World, <a href="https://www.renewableenergyworld.com/power-grid/smart-grids/uplight-to-acquire-derms-provider-autogrid/">Uplight to acquire AutoGrid</a> (2024).</li>
+      </ol>
+    </details>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+const RM = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const fmtMoney = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(v >= 1e7 ? 0 : 1) + 'M' : v >= 1e3 ? '$' + Math.round(v / 1e3) + 'k' : '$' + Math.round(v);
+
+const DEV = {
+  hvac:  { name: 'Smart thermostat + AC / heat pump', short: 'HVAC', color: 'var(--dev-hvac)' },
+  water: { name: 'Water heater', short: 'Water', color: 'var(--dev-water)' },
+  ev:    { name: 'EV charger', short: 'EV', color: 'var(--dev-ev)' },
+  batt:  { name: 'Home battery', short: 'Battery', color: 'var(--fuel-battery)' },
+  solar: { name: 'Rooftop solar', short: 'Solar', color: 'var(--fuel-solar)' }
+};
+/* inline icon in HTML text */
+const ico = (k, size = 18) => `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true" style="color:${DEV[k].color}"><use href="#i-${k}"/></svg>`;
+/* icon inside an SVG drawing */
+function svgIco(k, x, y, size, parent, cls) { return el('use', { href: '#i-' + k, x, y, width: size, height: size, class: cls || 'house-ic', style: `stroke:${DEV[k].color}` }, parent); }
+const CH_DIR = { 1: '01-power-mix', 2: '02-distribution', 3: '03-der-microgrids', 4: '04-grid-operations', 5: '05-batteries' };
+
+/* ============================================================
+   THE MODEL — one simulation for the whole chapter.
+   Basics runs it for a fixed case (95°F summer evening, 4–8 pm, 10% override,
+   5% offline, 60% of EVs plugged in, batteries not paced); the Playground runs
+   it for whatever the reader sets. Same fleet, same MW, on every tab.
+   ============================================================ */
+const FLEET_KEYS = ['hvac', 'water', 'ev', 'batt'];
+const BATT_KWH = 12; // usable kWh per battery after backup reserve (CA 2026: ~4.1 kW for 3 h)
+function battPlan(p, dur) { return p.pace && p.call !== 'freq' ? { kw: Math.min(4.1, BATT_KWH / (dur / 60)), lasts: dur } : { kw: 4.1, lasts: BATT_KWH / 4.1 * 60 }; }
+
+function kw(d, p) { // kW per enrolled device at full response
+  if (d === 'hvac') return p.call === 'winter' ? Math.min(2.2, Math.max(.5, 1 + .03 * (40 - p.temp))) : Math.min(1.4, Math.max(.3, .45 + .03 * (p.temp - 85)));  // 0.75 kW at 95°F (ecobee 2025)
+  if (d === 'water') return p.call === 'winter' ? .5 : .4;
+  if (d === 'ev') return 7 * p.plug * (p.call === 'winter' ? .1 : p.call === 'freq' ? .15 : .12);  // ≈0.5 kW at 60% plugged in (typical value; measured programs show ~0.25 kW)
+  if (d === 'batt') return battPlan(p, p.call === 'winter' ? 180 : 240).kw;
+}
+function simulate(p) {
+  const isF = p.call === 'freq';
+  const W = p.call === 'summer' ? { v0: 14 * 60, v1: 22 * 60, s: 16 * 60, e: 20 * 60, dt: 5 } : p.call === 'winter' ? { v0: 5 * 60, v1: 12 * 60, s: 7 * 60, e: 10 * 60, dt: 5 } : { v0: -2, v1: 30, s: 0, e: 30, dt: .25 };
+  const ramp = { hvac: 5, water: 1, ev: .5, batt: .01 };
+  const tau = p.call === 'winter' ? Math.max(90, 260 - 4 * (40 - p.temp)) : Math.max(90, 260 - 4 * (p.temp - 85));
+  const ts = []; for (let t = W.v0; t <= W.v1 + 1e-9; t += W.dt) ts.push(+t.toFixed(3));
+  const series = { hvac: [], water: [], ev: [], batt: [] };
+  const G = p.groups, dur = W.e - W.s;
+  const temp = [], soc = [];
+  ts.forEach(t => {
+    let tempDrift = 0, socv = 100;
+    FLEET_KEYS.forEach(d => {
+      const n = p.fleet[d] * 0.95, k = kw(d, p);
+      let mw = 0;
+      for (let g = 0; g < G; g++) {
+        const end = W.e + g * p.gap, frac = 1 / G, el = t - W.s;
+        let v = 0;
+        if (t >= W.s && t < end) {
+          let m = Math.min(1, el / ramp[d] + (isF ? 0 : 1)); if (isF) m = Math.min(1, Math.max(0, el / ramp[d]));
+          if (d === 'hvac') m *= Math.exp(-el / tau);
+          if (d === 'water') m *= el < 240 ? 1 : Math.max(0, 1 - (el - 240) / 30);
+          if (d === 'batt') m *= el < battPlan(p, dur).lasts ? 1 : 0;
+          let o = d === 'hvac' ? p.over * (0.4 + 1.2 * Math.min(1, el / dur)) : d === 'batt' ? p.over * 0.2 : p.over * 0.5;
+          v = k * m * (1 - Math.min(1, o));
+        } else if (!isF && t >= end) {
+          const a = t - end;
+          if (d === 'hvac') v = -0.9 * k * (1 - p.over * 0.8) * Math.exp(-a / 40);
+          if (d === 'water') v = -0.7 * k * Math.exp(-a / 60);
+          if (d === 'ev') v = a < 60 ? -0.8 * k : -0.8 * k * Math.exp(-(a - 60) / 30);
+        } else if (!isF && t < W.s && t >= W.s - 60 && d === 'hvac') { v = -0.3 * k; }
+        mw += v * frac;
+      }
+      series[d].push(n * mw / 1000);
+    });
+    const el = t - W.s; if (t >= W.s && t < W.e) { tempDrift = 3 * (1 - Math.exp(-el / 90)) * (p.call === 'winter' ? -1 : 1); { const bp = battPlan(p, dur); socv = Math.max(25, 100 - Math.min(el, bp.lasts) / bp.lasts * 75); } } else if (t >= W.e) { tempDrift = 0; socv = 25; }
+    temp.push(tempDrift); soc.push(socv);
+  });
+  const total = ts.map((_, i) => FLEET_KEYS.reduce((s, d) => s + series[d][i], 0));
+  const inW = ts.map(t => t >= W.s && t < W.e);
+  const wIdx = ts.map((t, i) => i).filter(i => inW[i]);
+  const delivered = wIdx.reduce((s, i) => s + total[i], 0) / Math.max(1, wIdx.length);
+  const held = wIdx.filter(i => total[i] >= p.target * 0.95).length / Math.max(1, wIdx.length);
+  let rb = 0, rbT = null; ts.forEach((t, i) => { if (t >= W.e && -total[i] > rb) { rb = -total[i]; rbT = t; } });
+  let at10s = null; if (isF) { const t10 = 10 / 60; at10s = FLEET_KEYS.reduce((s, d) => { const n = p.fleet[d] * 0.95, k = kw(d, p); const m = Math.min(1, t10 / ramp[d]); const o = d === 'batt' ? p.over * 0.2 : p.over * 0.5; return s + n * k * m * (1 - o) / 1000; }, 0); }
+  const nameplate = FLEET_KEYS.reduce((s, d) => s + p.fleet[d] * kw(d, p) / 1000, 0);
+  return { W, ts, series, total, delivered, held, rb, rbT, at10s, nameplate, temp, soc, isF };
+}
+
+/* Money: shared by Basics and the Playground. PSE customer rates; DOE/Brattle capacity costs. */
+const VPP_PAY = { events: 20, hvacYear: 40, evPerKWh: 0.5, battPerKWh: 0.5, battCap: 500, savePerKWyr: 99 - 43 };
+function vppMoney(p, s) {
+  if (s.isF) return null;
+  const win = s.ts.map((t, i) => i).filter(i => s.ts[i] >= s.W.s && s.ts[i] < s.W.e), dtH = s.W.dt / 60;
+  const part = d => p.fleet[d] * 0.95 * (1 - p.over);
+  const kwhEach = d => { const n = part(d); return n ? win.reduce((a, i) => a + Math.max(0, s.series[d][i]), 0) * dtH * 1000 / n : 0; };
+  const per = { hvac: VPP_PAY.hvacYear, water: 0,
+    ev: VPP_PAY.evPerKWh * kwhEach('ev') * VPP_PAY.events,
+    batt: Math.min(VPP_PAY.battCap, VPP_PAY.battPerKWh * kwhEach('batt') * VPP_PAY.events) };
+  const earn = FLEET_KEYS.reduce((a, d) => a + part(d) * per[d], 0);
+  const firm = Math.max(0, Math.min(...win.map(i => s.total[i])));
+  return { earn, per, firm, save: firm * 1000 * VPP_PAY.savePerKWyr };
+}
+
+/* Basics' fixed case, also used to size the Inside-the-box zoom labels */
+const MIX = { hvac: .70, water: .20, ev: .15, batt: .10, solar: .20 };   // devices per enrolled home (illustrative)
+function basicsCase(homes) {
+  const fleet = {}; FLEET_KEYS.forEach(k => fleet[k] = Math.round(homes * MIX[k]));
+  const p = { fleet, call: 'summer', target: 1, over: 0.10, temp: 95, plug: 0.6, groups: 1, gap: 15, pace: false };
+  const s = simulate(p), win = s.ts.map((t, i) => i).filter(i => s.ts[i] >= s.W.s && s.ts[i] < s.W.e);
+  return { p, s, mw0: s.total[win[0]], firm: Math.max(0, Math.min(...win.map(i => s.total[i]))), money: vppMoney(p, s) };
+}
+
+/* ============================================================
+   BASICS (landing tab)
+   ============================================================ */
+const BASICS = (function () {
+  const PER_ICON = 3000;
+  const D = [
+    { k: 'hvac', unit: 'thermostats', plat: 'Thermostats', brands: ['ecobee · Google Nest', 'Honeywell Home'], name: 'smart thermostats' },
+    { k: 'water', unit: 'water heaters', plat: 'Water heaters', brands: ['Rheem · A. O. Smith', 'CTA-2045 port'], name: 'water heaters' },
+    { k: 'ev', unit: 'EV chargers', plat: 'EV charging', brands: ['ChargePoint · Wallbox', 'Ford · GM · Tesla apps'], name: 'EV chargers' },
+    { k: 'batt', unit: 'batteries', plat: 'Home batteries', brands: ['Tesla · Enphase', 'FranklinWH'], name: 'batteries' },
+    { k: 'solar', unit: 'solar roofs', plat: 'Rooftop solar', brands: ['Enphase · SolarEdge', 'inverter clouds'], name: 'solar roofs' }
+  ];
+  const N = {};
+  let homes = 20000, state = 0, timers = [];
+  const setHomes = h => { homes = h; D.forEach(d => N[d.k] = Math.round(h * MIX[d.k])); };
+  setHomes(20000);
+  const run = () => basicsCase(homes);
+
+  const svg = $('bxSvg');
+  const L = { grid: { x: 470, y: 14, w: 220, h: 60 }, agg: { x: 300, y: 118, w: 560, h: 78 }, pY: 252, pW: 180, pH: 78, pX0: 92, pGap: 13, iconY: 368, feederY: 548, wireX: 1076 };
+  const px = i => L.pX0 + i * (L.pW + L.pGap);
+  const pc = i => px(i) + L.pW / 2;
+  const paths = {}, icons = {};
+
+  function build() {
+    const defs = el('defs', {}, svg);
+    ['ctl', 'tel'].forEach(k => { const m = el('marker', { id: 'bx-ah-' + k, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, defs); el('path', { d: 'M0,0 L10,5 L0,10 z', style: `fill:var(--data-${k})` }, m); });
+    const pm = el('marker', { id: 'bx-ah-pwr', viewBox: '0 0 10 10', refX: 5, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, defs); el('path', { d: 'M0,0 L10,5 L0,10 z', style: 'fill:var(--v-primary)' }, pm);
+
+    [['GRID', 14, 74], ['VPP', 118, 196], ['CLOUDS', 252, 330], ['HOMES', 340, 528]].forEach(([t, a, b]) => {
+      el('line', { x1: 60, y1: a, x2: 60, y2: b, class: 'gutline' }, svg);
+      el('text', { x: 44, y: (a + b) / 2, class: 'gut', 'text-anchor': 'middle', transform: `rotate(-90 44 ${(a + b) / 2})` }, svg).textContent = t;
+    });
+    el('rect', { x: 86, y: 340, width: 966, height: 188, class: 'lyr' }, svg);
+    el('text', { x: 1046, y: L.feederY + 20, class: 'mono', 'text-anchor': 'end' }, svg).textContent = 'numbers = devices enrolled · each icon ≈ ' + fmt(PER_ICON) + ' devices';
+
+    // power path: homes -> feeder -> grid (drawn first so boxes sit on top)
+    const pwr = 'M' + pc(0) + ',' + L.feederY + ' H' + L.wireX + ' V44 H' + (L.grid.x + L.grid.w);
+    el('path', { d: pwr, class: 'feeder', 'marker-end': 'url(#bx-ah-pwr)' }, svg);
+    paths.hilite = el('path', { d: pwr, class: 'hilite' }, svg);
+    el('text', { x: pc(0), y: L.feederY + 20, class: 'mono' }, svg).textContent = '12 kV feeder';
+    el('text', { x: L.wireX + 14, y: 300, class: 'mono', 'text-anchor': 'middle', transform: `rotate(90 ${L.wireX + 14} 300)` }, svg).textContent = 'power flows on the wires, not the internet';
+
+    const g = L.grid; el('rect', { x: g.x, y: g.y, width: g.w, height: g.h, class: 'box' }, svg);
+    el('text', { x: g.x + 16, y: g.y + 26, class: 't1' }, svg).textContent = 'The grid';
+    el('text', { x: g.x + 16, y: g.y + 46, class: 'mono' }, svg).textContent = 'utility or grid operator';
+    paths.gridRx = el('text', { x: g.x + g.w - 12, y: g.y + 26, class: 'monob', 'text-anchor': 'end' }, svg);
+
+    paths.req = el('path', { d: `M560,${g.y + g.h} V${L.agg.y - 2}`, class: 'ctl', 'marker-end': 'url(#bx-ah-ctl)' }, svg);
+    paths.rep = el('path', { d: `M600,${L.agg.y} V${g.y + g.h + 2}`, class: 'tel', 'marker-end': 'url(#bx-ah-tel)' }, svg);
+    el('text', { x: 524, y: 101, class: 'mono', 'text-anchor': 'end' }, svg).textContent = 'asks for power, 4–8 pm';
+    el('text', { x: 636, y: 101, class: 'mono' }, svg).textContent = 'reports the total';
+
+    const a = L.agg; el('rect', { x: a.x, y: a.y, width: a.w, height: a.h, class: 'box', 'stroke-width': 2.5 }, svg);
+    el('text', { x: a.x + 16, y: a.y + 30, class: 't1' }, svg).textContent = 'VPP software · the aggregator';
+    el('text', { x: a.x + 16, y: a.y + 54, class: 'mono' }, svg).textContent = 'e.g. Uplight · EnergyHub · Everyday Electric';
+    paths.mw = el('text', { x: a.x + a.w - 16, y: a.y + 50, class: 'big', 'text-anchor': 'end' }, svg);
+    el('text', { x: a.x + a.w - 16, y: a.y + 70, class: 'mono', 'text-anchor': 'end' }, svg).textContent = 'fleet output';
+
+    paths.split = []; paths.down = [];
+    D.forEach((d, i) => {
+      const ax = a.x + 56 + i * 112, x = px(i), cx = pc(i), color = DEV[d.k].color;
+      paths.split.push(el('path', { d: `M${ax},${a.y + a.h} C${ax},${a.y + a.h + 30} ${cx},${L.pY - 30} ${cx},${L.pY - 2}`, class: 'ctl', 'marker-end': 'url(#bx-ah-ctl)' }, svg));
+      const grp = el('g', { class: 'grp' }, svg);
+      el('rect', { x, y: L.pY, width: L.pW, height: L.pH, class: 'box', style: `fill:color-mix(in srgb,${color} 10%,var(--sheet))` }, grp);
+      el('rect', { x, y: L.pY, width: 5, height: L.pH, style: `fill:${color}` }, grp);
+      el('use', { href: '#i-' + d.k, x: x + 12, y: L.pY + 10, width: 22, height: 22, class: 'ico', style: `stroke:${color}` }, grp);
+      el('text', { x: x + 40, y: L.pY + 27, class: 't2' }, grp).textContent = d.plat;
+      d.brands.forEach((b, j) => { el('text', { x: x + 12, y: L.pY + 50 + j * 16, class: 'mono' }, grp).textContent = b; });
+      paths.down.push(el('path', { d: `M${cx},${L.pY + L.pH} V${L.iconY - 6}`, class: 'ctl', 'marker-end': 'url(#bx-ah-ctl)' }, svg));
+      icons[d.k] = [];
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) icons[d.k].push(el('use', { href: '#i-' + d.k, x: cx - 11 + (c - 2) * 34, y: L.iconY + r * 26, width: 22, height: 22, class: 'ico' }, svg));
+      d.cnt = el('text', { x: cx, y: 512, class: 'monob', 'text-anchor': 'middle' }, svg);
+      el('path', { d: `M${cx},520 V${L.feederY}`, class: 'drop' }, svg);
+    });
+    const badge = (n, x, y) => { const g2 = el('g', {}, svg); el('circle', { cx: x, cy: y, r: 10, style: 'fill:var(--sheet);stroke:var(--ink);stroke-width:1.5' }, g2); el('text', { x, y: y + 4.5, class: 'monob', 'text-anchor': 'middle' }, g2).textContent = n; };
+    badge(1, 540, 97); badge(4, 620, 97); badge(2, 600, 224); badge(3, pc(0) + 18, 344);
+  }
+
+  function paint() {
+    const m = run();
+    const on = (e, yes) => e.style.opacity = yes ? 1 : .35;
+    on(paths.req, state >= 1); paths.split.forEach(p => on(p, state >= 2)); paths.down.forEach(p => on(p, state >= 3)); on(paths.rep, state >= 4);
+    paths.hilite.classList.toggle('on', state >= 4 && m.mw0 > 0);
+    paths.mw.textContent = state >= 4 ? m.mw0.toFixed(1) + ' MW' : '— MW';
+    paths.gridRx.textContent = state >= 4 ? '+' + m.mw0.toFixed(1) + ' MW' : '';
+    D.forEach(d => {
+      const lit = Math.min(25, Math.ceil(N[d.k] / PER_ICON)), color = DEV[d.k].color;
+      d.cnt.textContent = fmt(N[d.k]) + ' ' + d.unit;
+      icons[d.k].forEach((u, i) => {
+        if (i >= lit) { u.style.stroke = 'var(--band)'; u.style.fill = 'none'; u.style.opacity = .35; return; }
+        u.style.opacity = 1; u.style.stroke = color;
+        const active = state >= 3 && d.k !== 'solar';
+        u.style.fill = active ? `color-mix(in srgb,${color} 45%,var(--sheet))` : 'none';
+        if (state >= 3 && d.k === 'solar') u.style.opacity = .45;  // the sun has set
+      });
+    });
+    document.querySelectorAll('#bxSteps li').forEach(li => { const s = +li.dataset.s; li.classList.toggle('on', s === state); li.classList.toggle('done', s < state); li.setAttribute('aria-current', s === state ? 'step' : 'false'); });
+  }
+
+  function pulse(pathEls, kind, ms) {
+    if (RM()) return;
+    pathEls.forEach(p => {
+      const c = el('circle', { r: 5, style: `fill:var(--data-${kind})` }, svg), len = p.getTotalLength(), t0 = performance.now();
+      (function f(now) { const k = Math.min(1, (now - t0) / ms), pt = p.getPointAtLength(len * k); c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y);
+        if (k < 1) requestAnimationFrame(f); else c.remove(); })(t0);
+    });
+  }
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  function goStep(s, animate) {
+    state = s; paint();
+    if (!animate) return;
+    if (s === 1) pulse([paths.req], 'ctl', 700);
+    if (s === 2) pulse(paths.split, 'ctl', 800);
+    if (s === 3) pulse(paths.down, 'ctl', 500);
+    if (s === 4) { pulse([paths.rep], 'tel', 700); countUp(); }
+  }
+  function countUp() {
+    if (RM()) return;
+    const target = run().mw0, t0 = performance.now();
+    (function f(now) { const k = Math.min(1, (now - t0) / 900); if (state < 4) return; paths.mw.textContent = (target * k).toFixed(1) + ' MW'; if (k < 1) requestAnimationFrame(f); })(t0);
+  }
+  function play() {
+    clearTimers(); goStep(0, false);
+    const gap = RM() ? 350 : 1300;
+    [1, 2, 3, 4].forEach((s, i) => timers.push(setTimeout(() => goStep(s, true), 150 + i * gap)));
+  }
+
+  function update() {
+    setHomes(+$('bxHomes').value);
+    $('bxHomesV').textContent = fmt(homes);
+    $('bxMixLine').innerHTML = 'That’s about ' + D.map(d => `<span style="white-space:nowrap">${ico(d.k, 15)} ${fmt(N[d.k])} ${d.name}</span>`).join(', ') + '.<br><small>A typical mix, for illustration (see how the numbers are worked out, below)</small>';
+    const m = run();
+    $('bxMW').textContent = m.mw0.toFixed(1) + ' MW';
+    $('bxFirm').textContent = m.firm.toFixed(1) + ' MW';
+    $('bxEarn').textContent = fmtMoney(m.money.earn) + ' /yr';
+    $('bxEarns').textContent = `≈ $${Math.round(m.money.earn / homes)} per home a year, at PSE’s rates`;
+    $('bxSave').textContent = fmtMoney(m.money.save) + ' /yr';
+    $('bxSaves').textContent = `vs. building a ${m.firm.toFixed(0)} MW gas peaker`;
+    $('bxLesson').textContent = `${fmt(homes)} homes give ${m.mw0.toFixed(0)} MW at 4 pm, about what a small gas peaker makes. It slips to ${m.firm.toFixed(0)} MW by 8 pm as houses warm up and batteries run low. That’s why VPPs mix device types, and why the Playground lets you choose them.`;
+    paint();
+  }
+
+  build();
+  $('bxHomes').addEventListener('input', update);
+  $('bxPlay').addEventListener('click', play);
+  $('bxPlay').classList.add('nudge');
+  $('bxPlay').addEventListener('click', () => $('bxPlay').classList.remove('nudge'), { once: true });
+  $('bxReset').addEventListener('click', () => { clearTimers(); goStep(0, false); });
+  document.querySelectorAll('#bxSteps li').forEach(li => {
+    const go = () => { clearTimers(); goStep(+li.dataset.s, true); };
+    li.addEventListener('click', go);
+    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => { showTab(b.dataset.goto); scrollToTabs(); }));
+  $('bxPse').addEventListener('click', () => { showTab('playground', 'call'); applyPreset('pse'); scrollToTabs(); });
+  update();
+  return { update };
+})();
+
+/* ============================================================
+   INSIDE THE BOX — the four-layer diagram (also drawn on the Events tab)
+   ============================================================ */
+const NODES = {
+  iso:    { x: 30, y: 38, w: 190, h: 54, t: 'ISO / RTO', s: 'CAISO · ERCOT', what: 'Runs the wholesale market and balances the bus (chapter 1). Asks the VPP for MW, like any power plant.', fail: 'The VPP gets no call and earns nothing that hour.', who: 'CAISO, ERCOT, PJM…', ch: [1, 4] },
+  ctrl:   { x: 290, y: 38, w: 260, h: 54, t: 'Utility control room', s: 'ADMS + DERMS', what: 'DERMS knows the feeder limits. It can cap or block a dispatch that would overload a transformer.', fail: 'The VPP could overload a feeder without anyone noticing.', who: 'The utility (PSE, PG&E, Oncor…)', ch: [4, 2] },
+  drms:   { x: 620, y: 38, w: 180, h: 54, t: 'DRMS', s: 'demand response', what: 'The utility’s demand-response program system. Sends program events, often over OpenADR.', fail: 'Program events go out late or by hand.', who: 'The utility', ch: [4] },
+  enroll: { x: 20, y: 162, w: 150, h: 54, t: 'Enrollment', s: 'who, what device', what: 'Customer records: which homes signed up, which devices, which program rules.', fail: 'The optimizer counts devices that aren’t really there.', who: 'VPP platform (aggregator or utility)', ch: [] },
+  fcst:   { x: 195, y: 162, w: 150, h: 54, t: 'Forecasting', s: 'weather · availability', what: 'Predicts how many devices will be online and how much each can give tomorrow. That’s why a VPP enrolls more than it promises.', fail: 'The VPP promises MW it can’t deliver.', who: 'VPP platform', ch: [] },
+  opt:    { x: 370, y: 162, w: 150, h: 54, t: 'Optimizer', s: 'who to call, how much', what: 'Chooses which homes and devices to call, in what order, to hit the target shape: ramp, hold flat, recover.', fail: 'Calls everyone at once; output fades and rebounds hard.', who: 'VPP platform', ch: [] },
+  disp:   { x: 545, y: 162, w: 150, h: 54, t: 'Dispatch', s: 'sends commands', what: 'Turns the plan into commands for each device cloud, and watches the response come back.', fail: 'The event never reaches the homes.', who: 'VPP platform', ch: [4] },
+  mv:     { x: 720, y: 162, w: 170, h: 54, t: 'Measurement + pay', s: 'baseline · M&V', what: 'Compares metered use with an estimated baseline (what each home would have used), then works out payments.', fail: 'Customers aren’t paid correctly; trust drops.', who: 'VPP platform + utility billing', ch: [4] },
+  tcloud: { x: 40, y: 282, w: 180, h: 48, t: 'Thermostat cloud', s: 'ecobee · Nest', what: 'The maker’s cloud. Most thermostats are reached here, over the internet, not directly by the utility.', fail: 'Every thermostat of that brand drops out at once.', who: 'Device maker', ch: [4] },
+  wgate:  { x: 240, y: 282, w: 180, h: 48, t: 'Water heater gateway', s: 'CTA-2045 port', what: 'A plug-in module on the water heater that takes commands.', fail: 'Water heaters keep heating as normal.', who: 'Device maker or utility', ch: [] },
+  evcloud:{ x: 440, y: 282, w: 180, h: 48, t: 'EV / charger cloud', s: 'carmaker · ChargePoint', what: 'Pauses or slows charging through the car or charger maker.', fail: 'Cars keep charging through the event.', who: 'Carmaker or charger company', ch: [] },
+  bcloud: { x: 640, y: 282, w: 220, h: 48, t: 'Battery / inverter cloud', s: 'IEEE 2030.5 · Tesla · Enphase', what: 'Tells batteries when and how hard to discharge, and reports their state of charge.', fail: 'The fastest, flattest part of the fleet goes dark.', who: 'Battery maker', ch: [3, 5] },
+  hvac:   { x: 40, y: 400, w: 145, h: 46, dev: 'hvac', t: 'Thermostat + AC', s: '≈0.75 kW · minutes', what: 'Raises (summer) or lowers (winter) the setpoint 2–3°F. Fades as the house drifts, then rebounds when the event ends.', fail: 'Customer overrides: normal and allowed.', who: 'Homeowner', ch: [] },
+  water:  { x: 200, y: 400, w: 145, h: 46, dev: 'water', t: 'Water heater', s: '≈0.4 kW · hours', what: 'The tank is a heat battery: heating can wait hours with almost no comfort cost.', fail: 'Small loss; few customers notice.', who: 'Homeowner', ch: [] },
+  ev:     { x: 360, y: 400, w: 145, h: 46, dev: 'ev', t: 'EV + charger', s: '0 or ≈7 kW', what: 'Pauses charging. Only useful if the car is plugged in and charging at that hour.', fail: 'The car is ready a bit later.', who: 'Homeowner', ch: [] },
+  batt:   { x: 40, y: 470, w: 145, h: 46, dev: 'batt', t: 'Battery + inverter', s: '≈4 kW · under 1 s', what: 'Discharges into the home. Fast and flat, until it runs empty (about 3 hours). A battery VPP is chapter 5’s home battery multiplied by 100,000.', fail: 'Less backup left for an outage.', who: 'Homeowner or battery company', ch: [5, 3] },
+  solar:  { x: 200, y: 470, w: 145, h: 46, dev: 'solar', t: 'Rooftop solar', s: 'curtail only', what: 'Can be turned down when there’s too much power at midday, never turned up. At a 7 pm peak it’s already dark.', fail: 'Lost export credit.', who: 'Homeowner', ch: [3] },
+  meter:  { x: 360, y: 470, w: 145, h: 46, t: 'Smart meter', s: 'interval data', what: 'Measures what the home actually used, every 15 minutes. Feeds measurement and payment.', fail: 'Performance can’t be proven.', who: 'The utility', ch: [4] },
+  xfmr:   { x: 570, y: 380, w: 150, h: 42, t: 'Transformer', s: 'Feeder 3', what: 'Shared by many homes. Its limit is why location matters: DERMS watches it.', fail: 'Overloads if every EV on the street charges at once.', who: 'The utility', ch: [2] },
+  feeder: { x: 560, y: 450, w: 330, h: 170, t: 'The fleet on the feeder', s: '', what: 'The fleet. At fleet scale, each drawn house stands for about 500 real homes.', fail: 'No single home matters much; the fleet only fails if a whole device cloud or program does.', who: '20,000 customers', ch: [2] }
+};
+const FLOWS = [
+  // [from, to, kind, label, offset, optional label position]
+  ['iso', 'opt', 'plan', 'bid / award', 0, [150, 112]],
+  ['ctrl', 'opt', 'plan', 'feeder limits', 0, [436, 124]],
+  ['drms', 'disp', 'ctl', 'event call', 0],
+  ['fcst', 'opt', 'plan', '', 0],
+  ['enroll', 'opt', 'biz', '', 0],
+  ['opt', 'disp', 'plan', 'schedule', 0],
+  ['disp', 'tcloud', 'ctl', '', -7], ['disp', 'wgate', 'ctl', '', -7], ['disp', 'evcloud', 'ctl', '', -7], ['disp', 'bcloud', 'ctl', '', -7],
+  ['tcloud', 'disp', 'tel', '', 7], ['wgate', 'disp', 'tel', '', 7], ['evcloud', 'disp', 'tel', '', 7], ['bcloud', 'disp', 'tel', '', 7],
+  ['disp', 'iso', 'tel', 'telemetry ≤5 min', 0, [528, 146]],
+  ['tcloud', 'hvac', 'ctl', 'OpenADR', -6], ['wgate', 'water', 'ctl', 'CTA-2045', -6], ['evcloud', 'ev', 'ctl', '', -6], ['bcloud', 'batt', 'ctl', '2030.5', -6], ['bcloud', 'solar', 'ctl', '', 0],
+  ['hvac', 'tcloud', 'tel', '', 6], ['water', 'wgate', 'tel', '', 6], ['ev', 'evcloud', 'tel', '', 6], ['batt', 'bcloud', 'tel', '', 6],
+  ['meter', 'mv', 'biz', 'meter data', 0],
+  ['mv', 'enroll', 'biz', 'payment', 0],
+  ['xfmr', 'ctrl', 'tel', '', 0]
+];
+const fkey = f => f[0] + '|' + f[1];
+
+function anchor(n, side, off) {
+  if (side === 'top') return [n.x + n.w / 2 + off, n.y];
+  if (side === 'bottom') return [n.x + n.w / 2 + off, n.y + n.h];
+  if (side === 'left') return [n.x, n.y + n.h / 2 + off];
+  return [n.x + n.w, n.y + n.h / 2 + off];
+}
+function flowPath(a, b, off) {
+  const A = NODES[a], B = NODES[b];
+  const ay = A.y + A.h / 2, by = B.y + B.h / 2;
+  if (Math.abs(ay - by) < 20) { // same row: dip below
+    const p = anchor(A, 'bottom', off), q = anchor(B, 'bottom', off), d = Math.max(p[1], q[1]) + 36;
+    return `M${p[0]},${p[1]} C${p[0]},${d} ${q[0]},${d} ${q[0]},${q[1]}`;
+  }
+  const down = by > ay;
+  const p = anchor(A, down ? 'bottom' : 'top', off), q = anchor(B, down ? 'top' : 'bottom', off);
+  const my = (p[1] + q[1]) / 2;
+  return `M${p[0]},${p[1]} C${p[0]},${my} ${q[0]},${my} ${q[0]},${q[1]}`;
+}
+function housePath(x, y, w, h) { const r = h * 0.4; return `M${x},${y + r} L${x + w / 2},${y} L${x + w},${y + r} L${x + w},${y + h} L${x},${y + h} Z`; }
+const HOUSE_POS = []; // 8 × 5 grid inside the feeder box
+for (let r = 0; r < 5; r++) for (let c = 0; c < 8; c++) HOUSE_POS.push([580 + c * 38, 485 + r * 26]);
+/* which device each drawn house stands for, in a typical mix, shuffled the same way every time */
+const HOUSE_DEV = (() => { const a = []; const mix = { hvac: 18, water: 8, ev: 6, batt: 6, solar: 2 }; for (const k in mix) for (let i = 0; i < mix[k]; i++) a.push(k);
+  let s = 7; for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; })();
+const HOUSE_RAND = Array.from({ length: 40 }, (_, i) => ((i * 7919) % 101) / 101);
+
+function buildDiagram(svg, opts) {
+  svg.innerHTML = '';
+  const defs = el('defs', {}, svg);
+  ['tel', 'ctl', 'plan', 'biz'].forEach(k => {
+    const m = el('marker', { id: svg.id + '-ah-' + k, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, defs);
+    el('path', { d: 'M0,0 L10,5 L0,10 z', style: `fill:var(--data-${k})` }, m);
+  });
+  [['Grid', 10, 110], ['VPP platform · software', 128, 240], ['Device clouds + gateways', 256, 345], ['Homes · hardware', 360, 632]].forEach(([t, y1, y2]) => {
+    el('rect', { x: 6, y: y1, width: 900, height: y2 - y1, class: 'band-rect' }, svg);
+    el('text', { x: 14, y: y1 + 16, class: 'band-lbl' }, svg).textContent = t;
+  });
+  // speed ruler: how fast each layer acts
+  const rx = 930; el('line', { x1: rx, y1: 20, x2: rx, y2: 620, stroke: 'var(--ink-3)', 'stroke-width': 1 }, svg);
+  [['hours', 60], ['minutes', 300], ['seconds', 480]].forEach(([t, y]) => { el('line', { x1: rx - 5, y1: y, x2: rx + 5, y2: y, stroke: 'var(--ink-3)' }, svg); el('text', { x: rx + 8, y: y + 4, class: 'flow-lbl' }, svg).textContent = t; });
+  el('text', { x: rx - 6, y: 14, class: 'flow-lbl', 'text-anchor': 'middle' }, svg).textContent = 'speed';
+  // one home, in detail
+  el('rect', { x: 28, y: 388, width: 490, height: 236, fill: 'none', stroke: 'var(--ink-2)', 'stroke-width': 1.5 }, svg);
+  el('text', { x: 36, y: 618, class: 'flow-lbl' }, svg).textContent = 'ONE HOME, IN DETAIL';
+  // power: panel bus, meter, transformer, feeder
+  el('line', { x1: 60, y1: 540, x2: 500, y2: 540, class: 'pwr', style: 'stroke:var(--v-secondary)' }, svg);
+  [112, 272, 432].forEach(x => { el('line', { x1: x, y1: 446, x2: x, y2: 470, class: 'pwr', style: 'stroke:var(--v-secondary);stroke-width:2' }, svg); });
+  [112, 272, 432].forEach(x => { el('line', { x1: x, y1: 516, x2: x, y2: 540, class: 'pwr', style: 'stroke:var(--v-secondary);stroke-width:2' }, svg); });
+  el('text', { x: 64, y: 556, class: 'flow-lbl' }, svg).textContent = '240 V PANEL';
+  el('path', { d: 'M500,540 L540,540 L540,401 L570,401', class: 'pwr', style: 'stroke:var(--v-secondary)' }, svg);
+  el('path', { d: 'M720,401 L880,401 L880,450', class: 'pwr', style: 'stroke:var(--v-primary)' }, svg);
+  el('text', { x: 760, y: 394, class: 'flow-lbl' }, svg).textContent = '12 kV FEEDER';
+  // data flows
+  const fg = el('g', {}, svg);
+  FLOWS.forEach(f => {
+    el('path', { d: flowPath(f[0], f[1], f[4]), class: 'flow ' + f[2], 'marker-end': `url(#${svg.id}-ah-${f[2]})`, 'data-k': fkey(f), 'data-kind': f[2] }, fg);
+    if (f[3]) { const A = NODES[f[0]], B = NODES[f[1]], at = f[5] || [(A.x + A.w / 2 + B.x + B.w / 2) / 2 + 6, (A.y + A.h / 2 + B.y + B.h / 2) / 2 + (Math.abs(A.y - B.y) < 20 ? 40 : 0)]; el('text', { class: 'flow-lbl', 'data-k': fkey(f), x: at[0], y: at[1] }, fg).textContent = f[3]; }
+  });
+  // boxes
+  Object.entries(NODES).forEach(([id, n]) => {
+    const g = el('g', { class: 'node', 'data-id': id }, svg);
+    if (opts.onClick) { g.setAttribute('tabindex', 0); g.setAttribute('role', 'button'); g.setAttribute('aria-label', n.t + (n.s ? ', ' + n.s : '')); }
+    if (id === 'feeder') {
+      el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, class: 'box', style: 'fill:transparent;stroke-dasharray:4 3' }, g);
+      el('text', { x: n.x + 10, y: n.y + 20 }, g).textContent = n.t;
+      el('text', { x: n.x + 10, y: n.y + n.h - 8, class: 'small', 'data-zoom': '1' }, g);
+      HOUSE_POS.forEach((p, i) => {
+        const hg = el('g', { class: 'hg', 'data-h': i }, g);
+        el('path', { d: housePath(p[0], p[1], 22, 18), class: 'house', 'stroke-width': 1 }, hg);
+        svgIco(HOUSE_DEV[i], p[0] + 6, p[1] + 6, 10, hg);
+      });
+    } else {
+      const r = el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, class: 'box' }, g);
+      if (n.dev) {
+        const c = DEV[n.dev].color;
+        r.style.fill = `color-mix(in srgb, ${c} 14%, var(--sheet))`;
+        el('rect', { x: n.x, y: n.y, width: 5, height: n.h, style: `fill:${c}` }, g);
+        el('use', { href: '#i-' + n.dev, x: n.x + n.w - 24, y: n.y + 5, width: 18, height: 18, class: 'house-ic', style: `stroke:${c}` }, g);
+      }
+      el('text', { x: n.x + (n.dev ? 12 : 10), y: n.y + 20 }, g).textContent = n.t;
+      el('text', { x: n.x + (n.dev ? 12 : 10), y: n.y + 37, class: 'small' }, g).textContent = n.s;
+    }
+    if (opts.onClick) { g.addEventListener('click', () => opts.onClick(id)); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); opts.onClick(id); } }); }
+  });
+}
+/* house look per state: idle | respond | override | rebound | batt | ev | evcap | pre */
+function paintHouses(svg, state) {
+  svg.querySelectorAll('.hg').forEach(hg => {
+    const i = +hg.dataset.h, d = HOUSE_DEV[i], c = DEV[d].color, h = hg.querySelector('.house'), u = hg.querySelector('use');
+    let fill = 'var(--sheet)', stroke = 'var(--ink-2)', dash = '', icon = c;
+    const lit = () => { fill = c; icon = 'var(--sheet)'; };
+    const tint = p => { fill = `color-mix(in srgb, ${c} ${p}%, var(--sheet))`; };
+    if (i === 3 || i === 29) { dash = '2 2'; stroke = 'var(--ink-3)'; icon = 'var(--ink-3)'; }      // offline
+    else if (state === 'respond' || state === 'override') {
+      if (d !== 'solar') lit();
+      if (state === 'override' && HOUSE_RAND[i] < 0.22 && d !== 'batt') { fill = 'var(--dead)'; icon = 'var(--sheet)'; }
+    }
+    else if (state === 'rebound') { if (d === 'hvac' || d === 'water' || d === 'ev') { tint(45); stroke = c; } }
+    else if (state === 'batt') { if (d === 'batt') lit(); }
+    else if (state === 'ev') { if (d === 'ev') lit(); }
+    else if (state === 'evcap') { if (d === 'ev') { if (i < 20) { tint(40); stroke = c; } else lit(); } }
+    else if (state === 'pre') { if (d === 'hvac' || d === 'water' || d === 'batt') tint(35); }
+    h.style.fill = fill; h.style.stroke = stroke; h.setAttribute('stroke-dasharray', dash); u.style.stroke = icon;
+  });
+}
+
+const diaMain = $('diaMain');
+let diaMode = 'idle';
+buildDiagram(diaMain, { onClick: showDetail });
+function showDetail(id) {
+  const n = NODES[id];
+  diaMain.querySelectorAll('.node').forEach(g => g.classList.toggle('sel', g.dataset.id === id));
+  const chips = n.ch.map(c => `<a class="chip sm" href="../${CH_DIR[c]}/index.html">Seen in chapter ${c} →</a>`).join('');
+  $('detail').innerHTML = `<h3>${n.dev ? ico(n.dev, 20) + ' ' : ''}${n.t}</h3>${n.s ? `<div class="sub2">${n.s}</div>` : ''}
+    <dl><dt>What it does</dt><dd>${n.what}</dd><dt>If it fails</dt><dd>${n.fail}</dd><dt>Who runs it</dt><dd>${n.who}</dd></dl>
+    ${chips ? `<div class="chips">${chips}</div>` : ''}`;
+}
+function applyDiaMode() {
+  diaMain.querySelectorAll('.flow').forEach(p => {
+    const k = p.dataset.kind; p.classList.remove('off');
+    p.classList.toggle('anim', !RM() && (diaMode === 'event' ? (k === 'ctl' || k === 'tel') : k === 'tel'));
+  });
+  paintHouses(diaMain, diaMode === 'event' ? 'respond' : 'idle');
+}
+document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => { diaMode = b.dataset.mode; document.querySelectorAll('#modeSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); applyDiaMode(); }));
+/* zoom labels come from the same model as Basics: 20,000 homes on a 95°F evening */
+const PER_HOME_KW = basicsCase(20000).mw0 * 1000 / 20000;
+const ZOOM = [['1 home', 1, 1], ['Street · 8 homes', 8, 8], ['Feeder · 40 homes', 40, 40], ['Fleet · 20,000 homes', 20000, 40]];
+function applyZoom() {
+  const [name, homes, drawn] = ZOOM[+$('zoom').value], kW = PER_HOME_KW * homes;
+  $('zoomLbl').textContent = `${name} → ≈${kW >= 1000 ? (kW / 1000).toFixed(0) + ' MW' : (kW < 10 ? kW.toFixed(1) : Math.round(kW)) + ' kW'} at 4 pm`;
+  diaMain.querySelectorAll('.hg').forEach(h => h.style.display = (+h.dataset.h) < drawn ? '' : 'none');
+  diaMain.querySelector('[data-zoom]').textContent = homes > 40 ? 'each house ≈ 500 real homes' : 'each house = 1 home';
+}
+$('zoom').addEventListener('input', applyZoom);
+const HUELS = { vis: { nodes: ['tcloud', 'wgate', 'evcloud', 'bcloud', 'disp', 'iso', 'meter'], kinds: ['tel'] }, sched: { nodes: ['fcst', 'opt', 'disp', 'iso'], kinds: ['plan', 'ctl'] }, avail: { nodes: ['enroll', 'hvac', 'water', 'ev', 'batt', 'feeder'], kinds: [] } };
+document.querySelectorAll('[data-huels]').forEach(cb => cb.addEventListener('change', () => {
+  const on = [...document.querySelectorAll('[data-huels]:checked')].map(c => HUELS[c.dataset.huels]);
+  const nodes = new Set(on.flatMap(h => h.nodes)), kinds = new Set(on.flatMap(h => h.kinds));
+  diaMain.querySelectorAll('.node').forEach(g => { g.classList.toggle('dim', on.length > 0 && !nodes.has(g.dataset.id)); g.classList.toggle('hl', nodes.has(g.dataset.id)); });
+  diaMain.querySelectorAll('.flow').forEach(p => p.classList.toggle('dim', on.length > 0 && !kinds.has(p.dataset.kind)));
+}));
+applyDiaMode(); applyZoom();
+
+/* ============================================================
+   EVENTS — chapter 4's SCEN shape {when, title, nodes, flows, text}
+   ============================================================ */
+const CL = ['disp|tcloud', 'disp|wgate', 'disp|evcloud', 'disp|bcloud', 'tcloud|hvac', 'wgate|water', 'evcloud|ev', 'bcloud|batt'];
+const TL = ['hvac|tcloud', 'water|wgate', 'ev|evcloud', 'batt|bcloud', 'tcloud|disp', 'wgate|disp', 'evcloud|disp', 'bcloud|disp', 'disp|iso'];
+const SCEN = {
+  summer: { name: 'Summer evening peak', tag: 'California-style', anchor: 'For real: on Sep 9, 2026 about 140,000 California home batteries did this at 580 MW for three hours, about 4.1 kW each (MGRID, Sep 2026).',
+    gauge: { unit: 'MW', max: 70, target: 50 }, steps: [
+    { when: 'Day before · 2 pm', title: 'Price signal', nodes: ['iso', 'opt'], flows: ['iso|opt'], mw: 0, h: 'idle', text: 'CAISO’s day-ahead price for tomorrow evening is above $200/MWh. Under California’s DSGS program, that triggers an event.' },
+    { when: 'Day before · 4 pm', title: 'Plan the fleet', nodes: ['fcst', 'enroll', 'opt'], flows: ['fcst|opt', 'enroll|opt'], mw: 0, h: 'idle', text: 'The VPP forecasts tomorrow’s weather and how many devices will be online. To promise 50 MW, it lines up about 62 MW: some homes will override, some devices will be offline or already idle.' },
+    { when: 'Noon', title: 'Top up and pre-cool', nodes: ['disp', 'bcloud', 'tcloud', 'batt', 'hvac', 'solar'], flows: ['disp|bcloud', 'bcloud|batt', 'disp|tcloud', 'tcloud|hvac'], mw: 0, h: 'pre', text: 'Batteries charge from midday solar. Thermostats cool homes a little extra now, so they can coast through the evening.' },
+    { when: '3:45 pm', title: 'Check the feeders', nodes: ['ctrl', 'opt', 'xfmr'], flows: ['xfmr|ctrl', 'ctrl|opt'], mw: 0, h: 'idle', text: 'DERMS runs a power-flow check. No feeder will be overloaded by the plan, so it clears it.' },
+    { when: '7:00 pm', title: 'Dispatch', nodes: ['disp', 'tcloud', 'wgate', 'evcloud', 'bcloud', 'hvac', 'water', 'ev', 'batt'], flows: CL, mw: 50, h: 'respond', text: 'Commands go out through each maker’s cloud. Batteries respond in under a second, thermostats within minutes. The fleet ramps to 50 MW.' },
+    { when: '8:00 pm', title: 'Hold flat, report back', nodes: ['hvac', 'water', 'ev', 'batt', 'tcloud', 'wgate', 'evcloud', 'bcloud', 'disp', 'iso'], flows: TL, mw: 50, h: 'override', text: 'Telemetry flows up every few minutes. As some customers override and houses warm up, the optimizer calls more batteries to keep the total flat.' },
+    { when: '9:00 pm', title: 'Event ends: staggered return', nodes: ['disp', 'tcloud', 'hvac', 'water', 'ev'], flows: ['disp|tcloud', 'tcloud|hvac', 'disp|wgate', 'wgate|water', 'disp|evcloud', 'evcloud|ev'], mw: 12, h: 'rebound', text: 'If every AC restarted at once, load would spike above normal (rebound). The VPP brings homes back in waves.' },
+    { when: 'Next days', title: 'Measure and pay', nodes: ['meter', 'mv', 'enroll'], flows: ['meter|mv', 'mv|enroll'], mw: 0, h: 'idle', text: 'Meter data is compared with a baseline of what each home would have used. Payments follow.' }
+  ] },
+  frequency: { name: 'Frequency dip', tag: 'Texas-style', anchor: 'ERCOT’s ADER pilot lets VPPs sell fast ancillary services, capped at 100 MW across the whole pilot. The pilot’s total cap was raised to 500 MW in March 2026.',
+    gauge: { unit: 'MW', max: 15, target: 10 }, steps: [
+    { when: 't = 0 s', title: 'A big plant trips', nodes: ['iso'], flows: [], mw: 0, h: 'idle', text: 'A large generator drops off. With less supply than demand, frequency falls below 60 Hz within seconds (chapter 1: the bus must balance).' },
+    { when: 't = 0.5 s', title: 'Batteries respond on their own', nodes: ['batt'], flows: [], mw: 8, h: 'batt', text: 'Battery inverters sense the frequency locally and discharge immediately. No cloud round-trip: there isn’t time.' },
+    { when: 't = 5 s', title: 'Report back', nodes: ['batt', 'bcloud', 'disp', 'iso'], flows: ['batt|bcloud', 'bcloud|disp', 'disp|iso'], mw: 10, h: 'batt', text: 'Telemetry confirms the response. Thermostats are still too slow to help.' },
+    { when: 't = 2 min', title: 'Slower devices join', nodes: ['disp', 'evcloud', 'ev', 'wgate', 'water'], flows: ['disp|evcloud', 'evcloud|ev', 'disp|wgate', 'wgate|water'], mw: 12, h: 'respond', text: 'EV charging pauses and water heaters switch off, so the batteries can ease back.' },
+    { when: 't = 10 min', title: 'Hand back', nodes: ['iso', 'opt', 'disp'], flows: ['iso|opt', 'opt|disp'], mw: 3, h: 'idle', text: 'Other plants have ramped up. The VPP is released and batteries will recharge later.' }
+  ] },
+  feeder: { name: 'Feeder overload', tag: 'Location matters', anchor: 'Chapter 2: feeders and transformers have limits. 1 MW spread across a city doesn’t relieve one overloaded feeder.',
+    gauge: { unit: '%', max: 150, target: 100 }, steps: [
+    { when: '10:30 pm', title: 'Cheap power at 11', nodes: ['opt', 'fcst'], flows: ['fcst|opt'], mw: 60, h: 'idle', text: 'Wholesale prices will drop at 11 pm. The optimizer plans to start charging every enrolled EV right then.' },
+    { when: '10:45 pm', title: 'DERMS runs power flow', nodes: ['ctrl', 'xfmr', 'opt'], flows: ['xfmr|ctrl'], mw: 135, h: 'ev', text: 'If every EV on Feeder 3 starts at 11, its transformer would hit 135% of its rating.' },
+    { when: '10:50 pm', title: 'Limit sent', nodes: ['ctrl', 'opt'], flows: ['ctrl|opt'], mw: 135, h: 'ev', text: 'DERMS sends a limit for Feeder 3. The optimizer caps those homes at a lower charging rate and staggers their start times.' },
+    { when: '11:00 pm', title: 'Charging, within limits', nodes: ['disp', 'evcloud', 'ev', 'xfmr'], flows: ['disp|evcloud', 'evcloud|ev', 'xfmr|ctrl'], mw: 92, h: 'evcap', text: 'Homes on Feeder 3 (lighter) charge slower; the rest charge at full speed.' },
+    { when: '6:00 am', title: 'Every car is full', nodes: ['ev'], flows: [], mw: 40, h: 'idle', text: 'All cars finished in time. Same energy, spread out so the transformer never overloaded.' }
+  ] },
+  winter: { name: 'Winter cold morning', tag: 'PSE-style', anchor: 'For real: Puget Sound Energy, Jan 12, 2024, 4–8 pm, about 260,000 customers alerted. Flex Smart pre-heated, then lowered thermostats 2–3°F. A Feb 2024 test ran 7–10 am.',
+    gauge: { unit: 'MW', max: 45, target: 30 }, steps: [
+    { when: 'Day before', title: 'Cold snap forecast', nodes: ['fcst', 'drms', 'opt', 'disp'], flows: ['fcst|opt', 'drms|disp'], mw: 0, h: 'idle', text: 'PSE’s peak comes on cold mornings and evenings, not summer afternoons. The utility calls a Flex event for 7–10 am.' },
+    { when: '5:30 am', title: 'Pre-heat', nodes: ['disp', 'tcloud', 'hvac', 'wgate', 'water'], flows: ['disp|tcloud', 'tcloud|hvac', 'disp|wgate', 'wgate|water'], mw: 0, h: 'pre', text: 'Homes and water tanks heat a little extra before the event starts.' },
+    { when: '7:00 am', title: 'Event starts', nodes: ['disp', 'tcloud', 'wgate', 'bcloud', 'hvac', 'water', 'batt'], flows: CL, mw: 30, h: 'respond', text: 'Thermostats drop 2–3°F, water heaters switch off, batteries discharge.' },
+    { when: '8:15 am', title: 'Some customers override', nodes: ['hvac', 'tcloud', 'disp'], flows: ['hvac|tcloud', 'tcloud|disp'], mw: 24, h: 'override', text: 'Some houses turn grey: people turned the heat back up. That’s allowed, with no penalty. Programs plan for it.' },
+    { when: '10:00 am', title: 'Return', nodes: ['disp', 'tcloud', 'hvac', 'water'], flows: ['disp|tcloud', 'tcloud|hvac', 'disp|wgate', 'wgate|water'], mw: -6, h: 'rebound', text: 'Heat pumps and water heaters come back on, in waves, to soften the rebound.' }
+  ] },
+  money: { name: 'Follow the money', tag: 'Enrollment → payment', anchor: 'PSE Flex Batteries pays $0.50 per kWh discharged in events, up to $500 a year (as of 2026).',
+    gauge: { unit: '$', max: 10, target: 0 }, steps: [
+    { when: 'Sign-up', title: 'Enroll', nodes: ['enroll'], flows: [], mw: 0, h: 'idle', text: 'A customer enrolls a battery. The platform records the device, its size and the program rules.' },
+    { when: 'Before the event', title: 'Baseline', nodes: ['mv', 'meter'], flows: ['meter|mv'], mw: 0, h: 'idle', text: '“What would this home have used?” is never measured. It’s estimated, usually from similar recent days.' },
+    { when: 'Event', title: 'Event happens', nodes: ['disp', 'bcloud', 'batt'], flows: ['disp|bcloud', 'bcloud|batt'], mw: 0, h: 'batt', text: 'The battery discharges 8 kWh over two hours.' },
+    { when: 'Next day', title: 'Meter data', nodes: ['meter', 'mv'], flows: ['meter|mv'], mw: 0, h: 'idle', text: '15-minute meter data arrives through the utility’s meter data system (MDMS, chapter 4).' },
+    { when: 'Next week', title: 'Performance', nodes: ['mv'], flows: [], mw: 4, h: 'idle', text: 'Measured use vs. baseline: 8 kWh delivered. 8 × $0.50 = $4.' },
+    { when: 'Next bill', title: 'Paid', nodes: ['mv', 'enroll'], flows: ['mv|enroll'], mw: 4, h: 'idle', text: 'A $4 bill credit appears.' }
+  ] }
+};
+const diaEv = $('diaEv');
+buildDiagram(diaEv, {});
+let scen = 'summer', step = 0, gaugeShown = 0;
+const sp = $('scenPick');
+Object.entries(SCEN).forEach(([k, s], i) => {
+  const b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.dataset.s = k;
+  b.innerHTML = `${i + 1} · ${s.name} <span>(${s.tag})</span>`;
+  b.addEventListener('click', () => { scen = k; step = 0; renderEv(true); });
+  sp.appendChild(b);
+});
+function evPulse(flowEl, kind) {
+  if (RM()) return;
+  const len = flowEl.getTotalLength(), t0 = performance.now(), c = el('circle', { r: 5, style: `fill:var(--data-${kind})` }, diaEv);
+  (function f(now) { const k = Math.min(1, (now - t0) / 900), pt = flowEl.getPointAtLength(len * k); c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y);
+    if (k < 1) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+function gaugeText(G, v) { return G.unit === '$' ? `$${v.toFixed(2)}` : G.unit === '%' ? `${Math.round(v)}%` : `${v < 0 ? '' : ''}${Math.round(v)} MW`; }
+function renderEv(push) {
+  const S = SCEN[scen], st = S.steps[step];
+  sp.querySelectorAll('button').forEach(b => { const on = b.dataset.s === scen; b.classList.toggle('active', on); b.setAttribute('aria-pressed', on); });
+  $('evClock').textContent = st.when;
+  $('evTitle').textContent = st.title;
+  $('evText').textContent = st.text;
+  $('evAnchor').textContent = S.anchor;
+  $('evPips').innerHTML = S.steps.map((_, i) => `<button type="button" class="${i <= step ? 'on' : ''}" data-i="${i}" aria-label="Step ${i + 1}"${i === step ? ' aria-current="step"' : ''}></button>`).join('');
+  $('evPips').querySelectorAll('button').forEach(p => p.addEventListener('click', () => { step = +p.dataset.i; renderEv(false); }));
+  $('evPrev').disabled = step === 0;
+  $('evNext').disabled = step === S.steps.length - 1;
+  const nodes = new Set(st.nodes), flows = new Set(st.flows);
+  diaEv.querySelectorAll('.node').forEach(g => { g.classList.toggle('dim', !nodes.has(g.dataset.id) && g.dataset.id !== 'feeder'); g.classList.toggle('hl', nodes.has(g.dataset.id)); });
+  diaEv.querySelectorAll('.flow').forEach(p => { const on = flows.has(p.dataset.k); p.classList.toggle('off', !on); p.classList.toggle('anim', on && !RM()); if (on) evPulse(p, p.dataset.kind); });
+  diaEv.querySelectorAll('text.flow-lbl[data-k]').forEach(t => t.style.display = flows.has(t.dataset.k) ? '' : 'none');
+  paintHouses(diaEv, st.h);
+  // gauge: the bar slides, the number counts from the last step's value
+  const G = S.gauge, v = st.mw, from = push ? 0 : gaugeShown;
+  const pct = Math.max(0, Math.min(100, v / G.max * 100)), tp = G.target / G.max * 100;
+  const cap = G.unit === '%' ? 'Feeder 3 transformer, % of rating' : G.unit === '$' ? 'Customer credit, one home' : 'Fleet output';
+  const foot = G.unit === '%' ? 'dashed = 100% of rating' : G.target ? `dashed = target ${G.target} MW` : '';
+  $('evGauge').innerHTML = `<div class="cap">${cap}</div><div class="big" id="gBig"></div>
+    <div class="track"><div class="fill${G.unit === '%' && v > 100 ? ' over' : ''}" id="gFill" style="width:${Math.max(0, Math.min(100, from / G.max * 100))}%"></div>${G.target ? `<div class="tgt" style="left:${tp}%"></div>` : ''}</div>
+    <div class="cap" style="margin-top:4px">${foot ? foot + ' · ' : ''}step ${step + 1} of ${S.steps.length}</div>`;
+  const big = $('gBig'), label = x => (v < 0 ? 'rebound ' : '') + gaugeText(G, Math.abs(x));
+  requestAnimationFrame(() => { $('gFill').style.width = pct + '%'; });
+  if (RM() || from === v) big.textContent = label(v);
+  else { const t0 = performance.now(); (function f(now) { const k = Math.min(1, (now - t0) / 600); big.textContent = label(from + (v - from) * k); if (k < 1) requestAnimationFrame(f); })(t0); }
+  gaugeShown = v;
+  if (push !== false) setHash('events/' + scen);
+}
+$('evPrev').addEventListener('click', () => { if (step > 0) { step--; renderEv(false); } });
+$('evNext').addEventListener('click', () => { if (step < SCEN[scen].steps.length - 1) { step++; renderEv(false); } });
+
+/* ============================================================
+   PLAYGROUND — you're the VPP operator
+   ============================================================ */
+const fleet = { hvac: 8000, water: 4000, ev: 1500, batt: 1000 };
+const FMAX = { hvac: 60000, water: 20000, ev: 20000, batt: 10000 };
+FLEET_KEYS.forEach(k => {
+  $('fleetSliders').insertAdjacentHTML('beforeend', `<div class="sl"><label for="s-${k}">${ico(k)}${DEV[k].name}</label><b id="v-${k}"></b><input type="range" id="s-${k}" min="0" max="${FMAX[k]}" step="250" value="${fleet[k]}"></div>`);
+});
+let call = 'summer', pgMode = 'call', sim = null;
+
+function params() {
+  return { fleet: { ...fleet }, call, target: +$('sTarget').value, over: +$('sOver').value / 100, temp: +$('sTemp').value, plug: +$('sPlug').value / 100,
+    groups: pgMode === 'stagger' ? +$('sGroups').value : 1, gap: +$('sGap').value, pace: $('pace').checked };
+}
+const fmtT = (t, isF) => isF ? (t < 1 ? `${Math.round(t * 60)} s` : `${t.toFixed(t % 1 ? 2 : 0)} min`) : `${Math.floor(t / 60) % 12 || 12}:${String(Math.round(t % 60)).padStart(2, '0')} ${t >= 720 ? 'pm' : 'am'}`;
+
+function renderPgMoney(p) {
+  const m = vppMoney(p, sim), box = $('pgMoney');
+  if (!m) { box.innerHTML = '<div class="tile small"><div class="k">Money</div><div class="s">A frequency event lasts minutes. It’s paid as an ancillary service, not per kWh. Switch to Summer or Winter to see earnings.</div></div>'; return; }
+  const people = FLEET_KEYS.reduce((a, d) => a + p.fleet[d], 0);
+  box.innerHTML = `<div class="tile small"><div class="k">Lowest point</div><div class="v">${m.firm.toFixed(1)} MW</div><div class="s">what you can promise for the whole event</div></div>
+    <div class="tile small"><div class="k">Customers earn</div><div class="v">${fmtMoney(m.earn)} /yr</div><div class="s">${people ? '≈ $' + Math.round(m.earn / (people * 0.95 * (1 - p.over))) + ' per device, at PSE’s rates' : 'enroll some devices'}</div></div>
+    <div class="tile small"><div class="k">Grid saves</div><div class="v">${fmtMoney(m.save)} /yr</div><div class="s">vs. a ${m.firm.toFixed(0)} MW gas peaker ($56/kW-yr)</div></div>`;
+}
+
+const CH = { L: 48, R: 14, T: 16, B: 30, w: 760, h: 300 };
+function drawChart() {
+  const p = params(); sim = simulate(p); const { W, ts, series, total } = sim;
+  const svg = $('chart'); svg.innerHTML = '';
+  const { L, R, T, B, w, h } = CH;
+  const posSum = ts.map((_, i) => FLEET_KEYS.reduce((s, d) => s + Math.max(0, series[d][i]), 0));
+  const negSum = ts.map((_, i) => FLEET_KEYS.reduce((s, d) => s + Math.min(0, series[d][i]), 0));
+  const ymax = Math.max(p.target * 1.3, ...posSum, 1) * 1.05;
+  const ymin = Math.min(0, ...negSum) * 1.1;
+  const X = t => L + (t - W.v0) / (W.v1 - W.v0) * (w - L - R), Y = v => T + (ymax - v) / (ymax - ymin) * (h - T - B);
+  // event window
+  el('rect', { x: X(W.s), y: T, width: X(Math.min(W.e, W.v1)) - X(W.s), height: h - T - B, fill: 'var(--grid)', opacity: .7 }, svg);
+  el('text', { x: X(Math.min(W.e, W.v1)) - 4, y: T + 11, class: 'ax', 'text-anchor': 'end' }, svg).textContent = 'event window';
+  // y grid
+  const stepY = ymax > 80 ? 20 : ymax > 40 ? 10 : ymax > 16 ? 5 : 2;
+  for (let v = Math.ceil(ymin / stepY) * stepY; v <= ymax; v += stepY) { el('line', { x1: L, x2: w - R, y1: Y(v), y2: Y(v), stroke: 'var(--grid)' }, svg); el('text', { x: L - 6, y: Y(v) + 3, class: 'ax', 'text-anchor': 'end' }, svg).textContent = v; }
+  el('text', { x: 12, y: T + (h - T - B) / 2, class: 'ax', transform: `rotate(-90 12 ${T + (h - T - B) / 2})`, 'text-anchor': 'middle' }, svg).textContent = 'MW of load reduced';
+  const xs = sim.isF ? [0, 5, 10, 15, 20, 25, 30] : ts.filter(t => t % 60 === 0);
+  xs.forEach(t => { el('text', { x: X(t), y: h - B + 16, class: 'ax', 'text-anchor': 'middle' }, svg).textContent = sim.isF ? t + ' min' : fmtT(t).replace(':00', ''); });
+  // stacked bands, positive up and rebound down; texture on top of each fill, 2px sheet gap between
+  const order = ['batt', 'water', 'ev', 'hvac'];
+  const posBase = ts.map(() => 0), negBase = ts.map(() => 0), labels = [];
+  order.forEach(d => {
+    if (!p.fleet[d]) return;
+    const top = [], bot = [];
+    let best = { th: 0 };
+    ts.forEach((t, i) => {
+      const v = series[d][i];
+      if (v >= 0) { const b0 = posBase[i]; bot.push([X(t), Y(b0)]); posBase[i] += v; top.push([X(t), Y(posBase[i])]);
+        const th = Y(b0) - Y(posBase[i]), f = (t - W.s) / (W.e - W.s); if (f >= .35 && f <= .9 && th > best.th) best = { th, x: X(t), y: (Y(b0) + Y(posBase[i])) / 2 }; }
+      else { bot.push([X(t), Y(negBase[i])]); negBase[i] += v; top.push([X(t), Y(negBase[i])]); }
+    });
+    const pts = top.concat(bot.reverse()).map(q => q.join(',')).join(' ');
+    el('polygon', { points: pts, style: `fill:${DEV[d].color};stroke:var(--sheet);stroke-width:2;stroke-linejoin:round` }, svg);
+    if (d !== 'batt') el('polygon', { points: pts, fill: `url(#tx-${d})`, stroke: 'none' }, svg);
+    if (best.th > 15) labels.push({ d, ...best });
+  });
+  // baseline, target, total
+  el('line', { x1: L, x2: w - R, y1: Y(0), y2: Y(0), stroke: 'var(--ink-3)', 'stroke-dasharray': '5 4', 'stroke-width': 1.5 }, svg);
+  el('text', { x: L + 4, y: Y(0) - 5, class: 'ax axh' }, svg).textContent = 'baseline';
+  el('line', { x1: X(W.s), x2: X(Math.min(W.e, W.v1)), y1: Y(p.target), y2: Y(p.target), stroke: 'var(--ink)', 'stroke-dasharray': '8 5', 'stroke-width': 1.5 }, svg);
+  el('text', { x: X(W.s) + 4, y: Y(p.target) - 5, class: 'ax axh', style: 'fill:var(--ink)' }, svg).textContent = `target ${p.target} MW`;
+  el('polyline', { points: ts.map((t, i) => X(t) + ',' + Y(total[i])).join(' '), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 2 }, svg);
+  labels.forEach(l => { el('text', { x: l.x, y: l.y + 4, class: 'dl', 'text-anchor': 'middle' }, svg).textContent = DEV[l.d].short; });
+  if (ymin < -0.5 && !sim.isF) el('text', { x: w - R - 4, y: Y(ymin) - 4, class: 'ax axh', 'text-anchor': 'end' }, svg).textContent = 'below the baseline = rebound (extra load)';
+  el('line', { id: 'scrubLine', x1: 0, x2: 0, y1: T, y2: h - B, stroke: 'var(--ink)', 'stroke-width': 1 }, svg);
+  svg._X = X;
+  // result card
+  const ratio = sim.nameplate / p.target;
+  if (sim.isF) $('result').innerHTML = `At 10 s: <b>${sim.at10s.toFixed(1)} of ${p.target} MW</b> · ${sim.at10s >= p.target * .95 ? '✓ met in time' : '✗ too slow'}<br>Only fast devices count here: batteries in under a second, thermostats take minutes.`;
+  else $('result').innerHTML = `Delivered <b>${sim.delivered.toFixed(1)} of ${p.target} MW</b> · held ${Math.round(sim.held * 100)}% of the window · rebound peak ${sim.rb > 0.05 ? `<b>+${sim.rb.toFixed(1)} MW</b> at ${fmtT(sim.rbT)}` : 'none'}`;
+  renderPgMoney(p);
+  $('nameplate').innerHTML = `Enrolled ≈ <b>${sim.nameplate.toFixed(1)} MW</b> nameplate<br>for a ${p.target} MW promise: ${ratio.toFixed(2)}× ${ratio < 1.2 ? '<span class="warn">(tight)</span>' : ''}`;
+  $('pgLegend').innerHTML = FLEET_KEYS.filter(d => p.fleet[d]).map(d => `<span><svg width="14" height="12" aria-hidden="true"><rect width="14" height="12" style="fill:${DEV[d].color}"/>${d !== 'batt' ? `<rect width="14" height="12" fill="url(#tx-${d})"/>` : ''}</svg>${ico(d, 15)}${DEV[d].short}</span>`).join('') +
+    `<span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" stroke="var(--ink)" stroke-width="2"/></svg>fleet total</span><span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" stroke="var(--ink)" stroke-dasharray="6 4"/></svg>target</span><span><svg width="26" height="6" aria-hidden="true"><line x1="0" y1="3" x2="26" y2="3" stroke="var(--ink-3)" stroke-dasharray="5 4"/></svg>baseline: what homes would have used</span>`;
+  drawMini();
+  $('scrub').max = ts.length - 1;
+  if (+$('scrub').value > ts.length - 1) $('scrub').value = 0;
+  scrubTo(+$('scrub').value);
+}
+
+/* small charts: indoor drift and battery charge, on the same time axis */
+function drawMini() {
+  const { W, ts } = sim, p = params();
+  const mk = (id, vals, lo, hi, color, unit, empty) => {
+    const svg = $(id); svg.innerHTML = '';
+    const L = 36, R = 8, T = 8, B = 20, w = 370, h = 120;
+    const X = t => L + (t - W.v0) / (W.v1 - W.v0) * (w - L - R), Y = v => T + (hi - v) / (hi - lo) * (h - T - B);
+    el('rect', { x: X(W.s), y: T, width: X(Math.min(W.e, W.v1)) - X(W.s), height: h - T - B, fill: 'var(--grid)', opacity: .7 }, svg);
+    [lo, (lo + hi) / 2, hi].forEach(v => { el('line', { x1: L, x2: w - R, y1: Y(v), y2: Y(v), stroke: 'var(--grid)' }, svg); el('text', { x: L - 4, y: Y(v) + 3, class: 'ax', 'text-anchor': 'end' }, svg).textContent = (v > 0 && unit === '°F' ? '+' : '') + v + unit; });
+    if (empty) { el('text', { x: (L + w - R) / 2, y: h / 2, class: 'ax', 'text-anchor': 'middle' }, svg).textContent = empty; }
+    else el('polyline', { points: ts.map((t, i) => X(t) + ',' + Y(vals[i])).join(' '), fill: 'none', stroke: color, 'stroke-width': 2.5 }, svg);
+    el('line', { class: 'miniScrub', x1: 0, x2: 0, y1: T, y2: h - B, stroke: 'var(--ink)', 'stroke-width': 1 }, svg);
+    svg._X = X;
+  };
+  const winter = p.call === 'winter';
+  mk('tempChart', sim.temp, winter ? -3 : 0, winter ? 0 : 3, 'var(--dev-hvac)', '°F',
+    !p.fleet.hvac ? 'no thermostats enrolled' : sim.isF ? 'too short to change the room' : '');
+  mk('socChart', sim.soc, 0, 100, 'var(--fuel-battery)', '%', !p.fleet.batt ? 'no batteries enrolled' : '');
+}
+
+// house grid (playground): 40 houses, each ≈ 500 homes, shared out by enrolled device count
+const hsvg = $('houses');
+for (let i = 0; i < 40; i++) {
+  const c = i % 8, r = Math.floor(i / 8), x = 12 + c * 48, y = 14 + r * 42;
+  const g = el('g', { 'data-h': i }, hsvg);
+  el('path', { d: housePath(x, y, 36, 30), class: 'house', 'stroke-width': 1.5 }, g);
+  el('use', { href: '#i-hvac', x: x + 10, y: y + 12, width: 16, height: 16, class: 'house-ic' }, g);
+  el('text', { x: x + 31, y: y + 11, class: 'ax', 'text-anchor': 'middle', style: 'font-weight:700' }, g);
+}
+function houseDevs() { // largest remainder by enrolled count, then interleaved
+  const tot = FLEET_KEYS.reduce((s, d) => s + fleet[d], 0) || 1;
+  const a = FLEET_KEYS.map(d => { const v = fleet[d] / tot * 40; return [d, Math.floor(v), v - Math.floor(v)]; });
+  let left = 40 - a.reduce((s, x) => s + x[1], 0); a.slice().sort((x, y) => y[2] - x[2]).forEach(x => { if (left > 0 && x[2] > 0) { x[1]++; left--; } });
+  const out = []; a.forEach(([d, n]) => { for (let i = 0; i < n; i++) out.push(d); }); while (out.length < 40) out.push(null);
+  return out.map((d, i) => [d, (i * 17) % 40]).sort((x, y) => x[1] - y[1]).map(x => x[0]);
+}
+function scrubTo(i) {
+  if (!sim) return;
+  const p = params(), t = sim.ts[i], X = $('chart')._X;
+  const ln = $('scrubLine'); if (ln) { ln.setAttribute('x1', X(t)); ln.setAttribute('x2', X(t)); }
+  ['tempChart', 'socChart'].forEach(id => { const s = $(id), l = s.querySelector('.miniScrub'); if (l) { l.setAttribute('x1', s._X(t)); l.setAttribute('x2', s._X(t)); } });
+  $('scrubT').textContent = fmtT(t, sim.isF);
+  $('readout').innerHTML = FLEET_KEYS.filter(d => p.fleet[d]).map(d => `<div><span>${ico(d, 14)}${DEV[d].short}</span><b>${sim.series[d][i].toFixed(1)} MW</b></div>`).join('') +
+    `<div><span>Fleet</span><b>${sim.total[i].toFixed(1)} MW</b></div>` + (sim.isF || !p.fleet.hvac ? '' : `<div><span>Indoor drift</span><b>${sim.temp[i] >= 0 ? '+' : ''}${sim.temp[i].toFixed(1)}°F</b></div>`) + (p.fleet.batt ? `<div><span>Battery charge</span><b>${Math.round(sim.soc[i])}%</b></div>` : '');
+  const devs = houseDevs(), W = sim.W, inEv = t >= W.s && t < W.e + (p.groups - 1) * p.gap, after = t >= W.e && !sim.isF;
+  hsvg.querySelectorAll('g[data-h]').forEach(g => {
+    const k = +g.dataset.h, d = devs[k], h = g.querySelector('path'), u = g.querySelector('use'), lab = g.querySelector('text');
+    let fill = 'var(--sheet)', stroke = 'var(--ink-2)', dash = '', icon = d ? DEV[d].color : 'none', txt = '';
+    if (!d) { stroke = 'var(--grid)'; }
+    else if (k % 20 === 7) { dash = '3 2'; stroke = 'var(--ink-3)'; icon = 'var(--ink-3)'; }   // offline
+    else {
+      const full = p.fleet[d] * kw(d, p) * 0.95 / 1000, share = full > 0 ? sim.series[d][i] / full : 0;
+      if (share > 0 && HOUSE_RAND[k] < share) { fill = DEV[d].color; icon = 'var(--sheet)'; }
+      else if (inEv && share >= 0 && t >= W.s && HOUSE_RAND[k] < p.over * 1.5 && d !== 'batt') { fill = 'var(--dead)'; icon = 'var(--sheet)'; }
+      else if (share < -0.05 && after && HOUSE_RAND[k] < -share * 1.6) { fill = `color-mix(in srgb, ${DEV[d].color} 35%, var(--sheet))`; stroke = DEV[d].color; txt = '↑'; }
+    }
+    h.style.fill = fill; h.style.stroke = stroke; h.setAttribute('stroke-dasharray', dash);
+    if (d) u.setAttribute('href', '#i-' + d);
+    u.style.stroke = icon; u.style.display = d ? '' : 'none';
+    lab.textContent = txt; lab.style.fill = 'var(--ink)';
+  });
+}
+let playT = null;
+function stopPlay() { if (playT) { clearInterval(playT); playT = null; } $('play').textContent = '▶ Play'; }
+$('play').addEventListener('click', () => {
+  if (playT) { stopPlay(); return; }
+  if (+$('scrub').value >= +$('scrub').max) $('scrub').value = 0;
+  $('play').textContent = '❚❚ Pause';
+  playT = setInterval(() => { const s = $('scrub'); if (+s.value >= +s.max) { stopPlay(); return; } s.value = +s.value + 1; scrubTo(+s.value); }, RM() ? 20 : 90);
+});
+$('scrub').addEventListener('input', e => scrubTo(+e.target.value));
+// hover or drag on the chart moves the time cursor; arrow keys step it
+function chartIndex(evt) {
+  const svg = $('chart'), pt = svg.createSVGPoint(); pt.x = evt.clientX; pt.y = evt.clientY;
+  const x = pt.matrixTransform(svg.getScreenCTM().inverse()).x, { W, ts } = sim;
+  const t = W.v0 + (x - CH.L) / (CH.w - CH.L - CH.R) * (W.v1 - W.v0);
+  return Math.max(0, Math.min(ts.length - 1, Math.round((t - W.v0) / W.dt)));
+}
+$('chart').addEventListener('pointermove', e => { if (!sim) return; stopPlay(); const i = chartIndex(e); $('scrub').value = i; scrubTo(i); });
+$('chart').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  e.preventDefault(); stopPlay();
+  const s = $('scrub'), i = Math.max(0, Math.min(+s.max, +s.value + (e.key === 'ArrowRight' ? 1 : -1))); s.value = i; scrubTo(i);
+});
+
+function syncLabels() {
+  FLEET_KEYS.forEach(k => { fleet[k] = +$('s-' + k).value; $('v-' + k).textContent = fmt(fleet[k]); });
+  $('vTarget').textContent = $('sTarget').value + ' MW';
+  $('vOver').textContent = $('sOver').value + '%';
+  $('vTemp').textContent = $('sTemp').value + '°F';
+  $('vPlug').textContent = $('sPlug').value + '%';
+  $('vGroups').textContent = $('sGroups').value;
+  $('vGap').textContent = $('sGap').value + ' min';
+}
+function onInput() { syncLabels(); drawChart(); }
+document.querySelectorAll('#panel-playground input[type=range]:not(#scrub)').forEach(i => i.addEventListener('input', onInput));
+$('pace').addEventListener('change', onInput);
+document.querySelectorAll('#callSeg button').forEach(b => b.addEventListener('click', () => setCall(b.dataset.c)));
+function setCall(c) {
+  call = c; document.querySelectorAll('#callSeg button').forEach(x => x.setAttribute('aria-pressed', x.dataset.c === c));
+  const t = $('sTemp'), was = +t.value;
+  if (c === 'winter') { t.min = 10; t.max = 50; t.value = was <= 50 ? was : 30; } else { t.min = 75; t.max = 110; t.value = was >= 75 ? was : 95; }
+  $('scrub').value = 0; stopPlay(); onInput();
+}
+function setPgMode(m, push) {
+  pgMode = m; document.querySelectorAll('#pgMode button').forEach(x => x.setAttribute('aria-pressed', x.dataset.pm === m));
+  $('staggerBox').hidden = m !== 'stagger';
+  $('pgIntro').innerHTML = m === 'call' ? 'The grid operator asks for <b>10 MW</b>. Build a fleet, set real-life conditions, and see whether you can hold the target for the whole window. Press ▶ or move along the chart to watch the neighborhood respond.'
+    : 'Same event, but now watch what happens <b>after</b> it ends. Split the fleet into groups that come back one after another, and watch the rebound below the baseline shrink.';
+  if (m === 'stagger' && call === 'freq') setCall('summer');
+  onInput(); if (push !== false) setHash('playground/' + m);
+}
+document.querySelectorAll('#pgMode button').forEach(b => b.addEventListener('click', () => setPgMode(b.dataset.pm)));
+const PRESETS = {
+  mix: { f: { hvac: 7000, water: 6000, ev: 2000, batt: 1500 }, t: 10, pace: true, msg: 'A mix holds flattest: paced batteries, water heaters and EVs give a steady floor; thermostats add a lot early and fade. Untick “pace batteries” to see the cliff.' },
+  tstat: { f: { hvac: 16000, water: 0, ev: 0, batt: 0 }, t: 10, msg: 'Thermostats only: strong start, then it fades as houses drift and people override. And a big rebound afterward.' },
+  batt: { f: { hvac: 0, water: 0, ev: 0, batt: 3000 }, t: 10, pace: false, msg: 'Batteries only: perfectly flat… until they run empty after about 3 hours. Then nothing.' },
+  pse: { f: { hvac: 48750, water: 500, ev: 10750, batt: 750 }, t: 30, call: 'winter', temp: 30, pace: true, msg: 'PSE’s automated home devices, April 2026 (Flex Smart + ecobee, Flex EV, Flex Batteries, water-heater pilot), on a 30°F winter morning. Thermostats on heat pumps and electric heat do most of the work, which suits a utility that peaks in winter.' },
+  exact: { f: { hvac: 5000, water: 3000, ev: 1000, batt: 750 }, t: 10, msg: 'Enrolled nameplate ≈ the promise. With overrides and offline devices you fall short. Real VPPs enroll about 20–30% more than they promise.' },
+  rebound: { f: { hvac: 18000, water: 6000, ev: 2000, batt: 0 }, t: 10, msg: 'Lots of thermostats and no batteries: watch the bands drop below the baseline at 8 pm. Switch to mode B and add groups to soften it.' }
+};
+function applyPreset(name) {
+  const P = PRESETS[name];
+  FLEET_KEYS.forEach(k => $('s-' + k).value = P.f[k]);
+  $('sTarget').value = P.t;
+  if ('pace' in P) $('pace').checked = P.pace;
+  if (P.call) setCall(P.call); else if (call === 'freq') setCall('summer');
+  if (P.temp) $('sTemp').value = P.temp;
+  $('lesson').textContent = P.msg;
+  document.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', b.dataset.preset === name));
+  onInput();
+}
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
+
+/* ============================================================
+   GLOSSARY
+   ============================================================ */
+const CATS = { basic: 'Basics', dev: 'How devices respond', soft: 'Software and signals', money: 'Markets and money' };
+const TERMS = [
+  ['Virtual power plant (VPP)', 'basic', 'Many small devices in many homes, coordinated by software to act like one power plant.'],
+  ['DER', 'basic', 'Distributed energy resource: a small device that makes, stores or flexes power at a home or business (chapter 3).'],
+  ['Aggregator', 'basic', 'A company that enrolls devices and sells their combined response. It may be the utility itself or a third party.'],
+  ['Fleet', 'basic', 'All the devices a VPP can call on.'],
+  ['Enrollment', 'basic', 'A customer signing a device up to a program.'],
+  ['Event', 'basic', 'A period when the VPP is asked to reduce load or supply power, such as 4–8 pm on a hot day.'],
+  ['Dispatch', 'basic', 'Sending the commands that start an event.'],
+  ['Nameplate vs. delivered', 'basic', 'What the fleet could give on paper vs. what it actually gave once overrides and offline devices are counted.'],
+  ['Flexible load', 'basic', 'Use that can move in time without much harm, like water heating or EV charging.'],
+  ['Load shed vs. load shift', 'dev', 'Shed: the use goes away. Shift: the use moves to another time, and often comes back as rebound.'],
+  ['Pre-cooling / pre-heating', 'dev', 'Running heating or cooling extra before an event so the house can coast through it.'],
+  ['Setback', 'dev', 'Moving the thermostat setpoint a few degrees during an event.'],
+  ['Rebound (snapback)', 'dev', 'The load spike when many devices restart at once after an event.'],
+  ['Staggering', 'dev', 'Ending the event for groups of homes at different times to soften the rebound.'],
+  ['Managed charging', 'dev', 'Controlling when and how fast EVs charge.'],
+  ['V2G / V2H', 'dev', 'Vehicle-to-grid / vehicle-to-home: an EV discharging its battery into the grid or the house.'],
+  ['Curtailment', 'dev', 'Turning solar output down. It can’t be turned up.'],
+  ['DERMS', 'soft', 'Utility software that knows feeder limits and manages DERs. It can cap a VPP dispatch (chapter 4).'],
+  ['DRMS', 'soft', 'Utility software that runs demand-response programs.'],
+  ['VPP platform / optimizer', 'soft', 'The aggregator’s software that forecasts, chooses devices and dispatches them.'],
+  ['OEM cloud', 'soft', 'The device maker’s cloud (ecobee, Tesla, ChargePoint…). Most home devices are reached through it.'],
+  ['Telemetry', 'soft', 'Status data coming back from devices. To look like a power plant, a VPP reports at least every 5 minutes.'],
+  ['Setpoint', 'soft', 'The target value a device is told to hold, like 76°F.'],
+  ['OpenADR', 'soft', 'A standard for sending demand-response events to device clouds.'],
+  ['IEEE 2030.5', 'soft', 'A standard for utilities talking to inverters and other DERs (chapter 3).'],
+  ['CTA-2045', 'soft', 'A plug-in port standard for water heaters and other appliances.'],
+  ['Opt-out / override', 'soft', 'A customer declining an event or changing the setting back. Normal and allowed.'],
+  ['Demand response', 'money', 'Paying customers to use less at certain times.'],
+  ['Behavioral vs. automated DR', 'money', 'A text asking you to cut use vs. a device doing it automatically. Only the automated kind is a VPP in the strict sense.'],
+  ['Baseline', 'money', 'The estimate of what a home would have used without the event. Never measured; usually modeled from similar recent days.'],
+  ['M&V', 'money', 'Measurement and verification: checking what was really delivered, against the baseline.'],
+  ['Capacity', 'money', 'Power a resource promises to have ready when called. Planners pay for it per kW per year.'],
+  ['Ancillary services', 'money', 'Fast grid services like frequency response, paid separately from energy.'],
+  ['FERC Order 2222', 'money', 'A 2020 federal rule that opens wholesale markets to aggregations of DERs. Rollout differs by market.'],
+  ['ADER', 'money', 'ERCOT’s Aggregated Distributed Energy Resource pilot in Texas.'],
+  ['DSGS', 'money', 'California’s Demand Side Grid Support program, which paid for the 2025 and 2026 battery records.'],
+  ['ELRP', 'money', 'California’s Emergency Load Reduction Program, run through the utilities.'],
+  ['Load flexibility (DALCU)', 'money', 'Washington’s 2024 law (ESHB 1589) requiring PSE to plan flexible load equal to 10% of its peak from 2030.']
+];
+const MIXUPS = [
+  ['VPP vs. DERMS vs. DRMS vs. microgrid', 'A VPP aggregates devices to sell their response. DERMS is utility software that keeps feeders safe. DRMS runs demand-response programs. A microgrid is one site that can island (chapter 3).'],
+  ['DER vs. DERMS', 'A DER is a device. DERMS is utility software that manages them.'],
+  ['Device cloud vs. VPP', 'ecobee, Nest and Tesla run device clouds. The VPP software sits on top of many of them.'],
+  ['Behavioral DR vs. automated VPP', 'PSE has about 456,000 customers enrolled by default in behavioral event alerts, but its dependable MW come from the much smaller automated part.'],
+  ['Enrolled vs. delivered MW', 'Enrollment isn’t capacity: overrides, offline devices and devices that are already idle all cut it down.'],
+  ['Utility VPP vs. third-party aggregator', 'The difference is who runs the platform and who the customer signs up with.']
+];
+function renderGlossary() {
+  const q = $('glossSearch').value.trim().toLowerCase(), f = $('glossFilter').value;
+  const list = TERMS.filter(([t, c, d]) => (f === 'all' || c === f) && (!q || (t + ' ' + d).toLowerCase().includes(q)));
+  $('glossGrid').innerHTML = list.length ? list.map(([t, c, d]) => `<div class="term-card"><div class="info-tag">${CATS[c]}</div><h3>${t}</h3><p>${d}</p></div>`).join('')
+    : '<p class="empty">No terms match. Try a shorter word, or set the category to All.</p>';
+}
+$('mixTable').querySelector('tbody').innerHTML = MIXUPS.map(([a, b]) => `<tr><td><b>${a}</b></td><td>${b}</td></tr>`).join('');
+$('glossSearch').addEventListener('input', renderGlossary);
+$('glossFilter').addEventListener('change', renderGlossary);
+
+/* ============================================================
+   QUIZ (progress saved per viewer under a namespaced key)
+   ============================================================ */
+const QUIZ = [
+  { q: 'A VPP promises the grid operator 10 MW. Why does it enroll about 13 MW?', opts: ['To sell the extra 3 MW later', 'Some homes override, and some devices are offline or already idle', 'The law requires 30% extra', 'Batteries lose 30% to heat'], correct: 1, explain: 'Enrollment isn’t delivery: overrides, offline devices and devices that are already idle all cut into it.', go: ['diagram', 'fcst'] },
+  { q: 'Which device can respond to a frequency dip in under a second?', opts: ['Smart thermostat', 'Water heater', 'Home battery (inverter)', 'An EV that isn’t plugged in'], correct: 2, explain: 'Battery inverters sense frequency locally and respond almost instantly.', go: ['events', 'frequency'] },
+  { q: 'What usually happens in the hour after a thermostat event ends?', opts: ['Load stays low all evening', 'Rebound: many ACs or heat pumps start at once', 'Grid frequency rises', 'Batteries recharge immediately'], correct: 1, explain: 'Houses drifted warm (or cool), so they all try to catch up together. Staggering softens it.', go: ['diagram', 'hvac'] },
+  { q: 'What can stop a VPP dispatch that would overload a feeder?', opts: ['The ISO', 'The smart meter', 'The thermostat cloud', 'DERMS, using power-flow limits'], correct: 3, explain: 'DERMS knows feeder and transformer limits (chapter 4).', go: ['events', 'feeder'] },
+  { q: 'How do most home thermostats get the VPP’s signal?', opts: ['Through the maker’s cloud, over the internet', 'Over the power line', 'By radio from the substation', 'The utility phones the homeowner'], correct: 0, explain: 'Most home devices are reached through the maker’s (OEM) cloud, not directly by the utility.', go: ['diagram', 'tcloud'] },
+  { q: 'In September 2026, about 140,000 California home batteries delivered about 580 MW. Roughly how much per battery?', opts: ['0.4 kW', '40 kW', '13.5 kW', 'About 4 kW'], correct: 3, explain: '580 MW ÷ 140,000 ≈ 4.1 kW.', go: ['diagram', 'batt'] },
+  { q: 'Why does Puget Sound Energy run more winter events than summer ones?', opts: ['Its peak demand is in winter', 'Its solar is strongest in winter', 'Summer events aren’t allowed in Washington', 'Batteries work better in the cold'], correct: 0, explain: 'PSE’s winter peak was higher than its summer peak every year from 2019 to 2025.', go: ['events', 'winter'] },
+  { q: 'How is a VPP’s performance measured?', opts: ['Customer surveys', 'Metered use compared with an estimated baseline', 'The device maker’s estimate', 'The grid frequency'], correct: 1, explain: 'Baselines are estimates, usually from similar recent days.', go: ['diagram', 'mv'] },
+  { q: 'Which pair is a common mix-up?', opts: ['Volt vs. amp', 'Solar vs. wind', 'DER (a device) vs. DERMS (utility software)', 'Feeder vs. transmission line'], correct: 2, explain: 'One is hardware in a home, the other is software in a control room.', go: ['diagram', 'ctrl'] },
+  { q: 'What makes water heaters useful in a VPP?', opts: ['They can export power', 'They respond in milliseconds', 'They’re the biggest load in a home', 'The tank stores heat, so heating can wait hours'], correct: 3, explain: 'The tank is a heat battery: shifting it costs almost no comfort.', go: ['diagram', 'water'] }
+];
+const QKEY = 'gfg-vpp-quiz-v1';
+let quizAnswers = {};
+try { quizAnswers = JSON.parse(localStorage.getItem(QKEY) || '{}') || {}; } catch (e) { quizAnswers = {}; }
+function saveQuiz() { try { localStorage.setItem(QKEY, JSON.stringify(quizAnswers)); } catch (e) {} }
+function goTo([tab, what]) {
+  if (tab === 'events') { showTab('events', what); }
+  else { showTab('diagram'); showDetail(what); }
+  scrollToTabs();
+}
+function renderQuiz() {
+  const c = $('quizContainer'); c.innerHTML = '';
+  QUIZ.forEach((item, idx) => {
+    const block = document.createElement('div'); block.className = 'quiz-q';
+    block.innerHTML = `<h3 class="q-text">${idx + 1}. ${item.q}</h3>`;
+    const btns = [];
+    const mark = chosen => btns.forEach((b, j) => { b.disabled = true; if (j === item.correct) b.classList.add('correct'); else if (j === chosen) b.classList.add('wrong'); });
+    item.opts.forEach((opt, oi) => {
+      const b = document.createElement('button'); b.className = 'opt'; b.type = 'button'; b.textContent = String.fromCharCode(65 + oi) + '. ' + opt;
+      b.addEventListener('click', () => { if (idx in quizAnswers) return; quizAnswers[idx] = oi; saveQuiz(); mark(oi); ex.classList.add('show'); scoreQuiz(); });
+      btns.push(b); block.appendChild(b);
+    });
+    const ex = document.createElement('div'); ex.className = 'explain';
+    ex.textContent = item.explain + ' ';
+    const link = document.createElement('button'); link.type = 'button'; link.className = 'chip sm';
+    if (item.go[0] === 'events') {  // "Inside the box" tab is hidden, so only Events links remain
+      link.textContent = 'Step through it in Events →';
+      link.addEventListener('click', () => goTo(item.go));
+      ex.appendChild(link);
+    }
+    block.appendChild(ex);
+    c.appendChild(block);
+    if (idx in quizAnswers) { mark(quizAnswers[idx]); ex.classList.add('show'); }
+  });
+  scoreQuiz();
+}
+function scoreQuiz() {
+  const ans = Object.keys(quizAnswers), right = ans.filter(k => QUIZ[k] && quizAnswers[k] === QUIZ[k].correct).length;
+  $('quizScore').textContent = ans.length ? `Score: ${right} / ${ans.length} answered (of ${QUIZ.length})` : `${QUIZ.length} questions`;
+}
+$('quizReset').addEventListener('click', () => { quizAnswers = {}; saveQuiz(); renderQuiz(); });
+
+/* ============================================================
+   VALUE — what a battery owner earns (PSE Flex Batteries)
+   ============================================================ */
+function renderEarn() {
+  const k = +$('sBk').value, e = +$('sBe').value; $('vBk').textContent = k + ' kWh'; $('vBe').textContent = e;
+  const perEvent = Math.min(k * 0.8, BATT_KWH);        // keep a fifth for backup; at most ≈4.1 kW × 3 h
+  const up = Math.min(1000, 75 * k), yr = Math.min(500, e * perEvent * 0.5);
+  $('earn').innerHTML = `Sign-up: <b>$${fmt(up)}</b>${75 * k > 1000 ? ' (capped)' : ''}<br>Events: ${perEvent.toFixed(0)} kWh × $0.50 × ${e} = <b>$${fmt(yr)}</b> a year${e * perEvent * 0.5 > 500 ? ' (capped at $500)' : ''}`;
+}
+$('sBk').addEventListener('input', renderEarn); $('sBe').addEventListener('input', renderEarn);
+
+/* ============================================================
+   TABS (hash deep links: #basics, #playground/call|stagger, #diagram,
+   #events/summer|frequency|feeder|winter|money, #glossary, #quiz, #value)
+   ============================================================ */
+function setHash(h) { if (location.hash !== '#' + h) history.replaceState(null, '', '#' + h); }
+function scrollToTabs() { document.querySelector('.tabs').scrollIntoView({ block: 'start', behavior: RM() ? 'auto' : 'smooth' }); }
+function showTab(name, sub, fromHash) {
+  if (name === 'diagram' || !$('panel-' + name)) name = 'basics';  // "Inside the box" is hidden for now
+  document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.tab === name; t.classList.toggle('active', on); t.setAttribute('aria-selected', on); });
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  if (name === 'events') { if (sub && SCEN[sub] && sub !== scen) { scen = sub; step = 0; } renderEv(false); setHash('events/' + scen); }
+  else if (name === 'playground') { setPgMode(sub === 'stagger' || sub === 'call' ? sub : pgMode); }
+  else if (!fromHash || location.hash.slice(1) !== name) setHash(name);
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+function fromHash() { const [tab, sub] = location.hash.replace('#', '').split('/'); if (tab) showTab(tab, sub, true); }
+window.addEventListener('hashchange', () => { fromHash(); scrollToTabs(); });
+
+/* ============================================================
+   INIT
+   ============================================================ */
+syncLabels(); setPgMode('call', false);
+renderEv(false); renderGlossary(); renderQuiz(); renderEarn();
+fromHash();
+
+</script>
+</body>
+</html>
