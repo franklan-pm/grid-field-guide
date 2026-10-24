@@ -171,7 +171,7 @@ svg{font-family:var(--f-mono)}
   <div class="panel">
     <div class="head">
       <div class="titlebar">
-        <div><div class="eyebrow">Chapter 4 of 5 · How do the software systems run all of it?</div>
+        <div><div class="eyebrow">Chapter 4 of 6 · How do the software systems run all of it?</div>
         <h1>Grid operations: how the layers work together</h1></div>
       </div>
       <div class="legend">
@@ -243,7 +243,8 @@ const NODES = [
    det:{does:'Bundles many small DERs into one resource that behaves like a power plant, for example to shave a local peak or bid into the ISO market. A utility-run VPP dispatches through DERMS so feeder limits are respected. Third-party aggregators often reach devices through their own clouds instead.',
         in:'Forecasts from Analytics, DER availability from DERMS, prices and dispatch from the ISO.',
         out:'Dispatch schedules down to DERMS; bids to the ISO.',
-        rate:'Minutes to hours.'}},
+        rate:'Minutes to hours.',
+        look:{href:'../06-vpp/index.html#diagram', text:'Look inside → Chapter 6: Virtual power plants'}}},
   {id:'drms', x:1118, y:178, w:310, h:106, title:'DR Management (DRMS)', sub:'customer programs',
    lines:['Pays customers to cut or shift use','at peaks. Events go out through vendor','clouds, never through SCADA.'], chip:'OpenADR events',
    rel:['meters'],
@@ -952,7 +953,8 @@ function renderDetail(){
       `<div class="out"><b>Sends</b>${esc(n.det.out)}</div>` +
       `<div class="rt"><b>Update rate</b>${esc(n.det.rate)}</div>` +
       `<div class="cn"><b>Connected to</b>${esc(names.join(', ') || 'none drawn')}</div>` +
-    `</div>`;
+    `</div>`+
+    (n.det.look ? `<p style="margin:12px 0 0"><a href="${n.det.look.href}">${esc(n.det.look.text)}</a></p>` : '');
 }
 
 /* scenario UI */

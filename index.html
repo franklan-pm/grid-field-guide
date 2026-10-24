@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grid Field Guide</title>
-<meta name="description" content="Five interactive chapters that follow electricity from the power plant to the meter, up into the control room that runs it, and into the batteries that store it.">
+<meta name="description" content="Six interactive chapters that follow electricity from the power plant to the meter, up into the control room that runs it, into the batteries that store it, and out to homes that act together as a virtual power plant.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap">
@@ -155,6 +155,7 @@ svg text{font-family:var(--f-mono);fill:var(--ink-3);font-size:11px;letter-spaci
 footer{margin-top:72px;border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:16px 40px;padding-block:24px 36px;font-size:13.5px;color:var(--ink-2)}
 footer p{margin:0;max-width:72ch}
+footer .about-text{display:grid;gap:12px;font-size:15px;flex:1 1 320px;max-width:72ch}
 @media (prefers-reduced-motion:reduce){.flow{animation:none;display:none}}
 @media (max-width:1100px){
   .row{grid-template-columns:96px minmax(0,1fr) auto}
@@ -211,7 +212,7 @@ footer p{margin:0;max-width:72ch}
   <section class="intro" aria-labelledby="title">
     <h1 id="title">Follow the power, then the decisions.</h1>
     <div>
-      <p class="lede">Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room, and into the batteries that store it. For program managers and other non-engineers who work around the grid. No engineering degree required.</p>
+      <p class="lede">Six interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room, into the batteries that store it, and out to thousands of homes acting as one power plant. For program managers and other non-engineers who work around the grid. No engineering degree required.</p>
       <div class="cta">
         <a class="btn primary" href="apps/01-power-mix/index.html">Start with chapter 1 <span aria-hidden="true">→</span></a>
         <a class="btn" href="#chapters">Sheet index</a>
@@ -224,7 +225,7 @@ footer p{margin:0;max-width:72ch}
     <div class="zm side l" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
     <div class="inner">
       <div class="scroll" tabindex="0" aria-label="One-line diagram of the guide; scrolls sideways on small screens">
-      <svg viewBox="0 0 1600 602" role="group" aria-label="One-line diagram of the five chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, and a battery rack behind an inverter sits beside the DER site.">
+      <svg viewBox="0 0 1600 742" role="group" aria-label="One-line diagram of the six chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, a battery rack behind an inverter sits beside the DER site, and along the bottom a street of homes is run by VPP software as one power plant.">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--v-primary)"/></marker>
         </defs>
@@ -358,6 +359,20 @@ footer p{margin:0;max-width:72ch}
           </g>
           <text class="dev" x="1289" y="566">RACK · MODULE · CELL</text>
         </a>
+        <!-- Chapter 6: virtual power plants. A street of homes on the secondary, each with a thermostat,
+             water heater, EV charger or battery (device tints), run by VPP software as one plant. -->
+        <path class="sec" d="M738 553 V708 H1520 M814 700 V708 M870 700 V708 M926 700 V708 M982 700 V708 M1038 700 V708 M1094 700 V708 M1150 700 V708 M1206 700 V708 M1262 700 V708 M1318 700 V708 M1374 700 V708 M1430 700 V708 M1486 700 V708"/>
+        <a class="zone" data-ch="6" href="apps/06-vpp/index.html" aria-label="Chapter 6: Virtual power plants">
+          <rect class="bg" x="375" y="600" width="1171" height="130"/>
+          <text class="tag" x="390" y="622">CHAPTER 6</text>
+          <text class="name" x="390" y="647">VIRTUAL POWER PLANTS →</text>
+          <rect class="box sys" x="399" y="662" width="196" height="46"/>
+          <text class="lbl" x="411" y="682">VPP software</text>
+          <text class="sub" x="411" y="698">many homes, one plant</text>
+          <path class="data" d="M595 685 H640 V664 H1486 M814 664 V674 M870 664 V674 M926 664 V674 M982 664 V674 M1038 664 V674 M1094 664 V674 M1150 664 V674 M1206 664 V674 M1262 664 V674 M1318 664 V674 M1374 664 V674 M1430 664 V674 M1486 664 V674"/>
+          <path d="M800 700 V686 L814 674 L828 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="810" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M856 700 V686 L870 674 L884 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="866" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M912 700 V686 L926 674 L940 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="922" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M968 700 V686 L982 674 L996 686 V700 Z" fill="color-mix(in srgb, var(--dev-ev) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="978" y="688" width="8" height="8" fill="var(--dev-ev)"/><path d="M1024 700 V686 L1038 674 L1052 686 V700 Z" fill="color-mix(in srgb, var(--dev-water) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1034" y="688" width="8" height="8" fill="var(--dev-water)"/><path d="M1080 700 V686 L1094 674 L1108 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1090" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1136 700 V686 L1150 674 L1164 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1146" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M1192 700 V686 L1206 674 L1220 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1202" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1248 700 V686 L1262 674 L1276 686 V700 Z" fill="color-mix(in srgb, var(--dev-ev) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1258" y="688" width="8" height="8" fill="var(--dev-ev)"/><path d="M1304 700 V686 L1318 674 L1332 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1314" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1360 700 V686 L1374 674 L1388 686 V700 Z" fill="color-mix(in srgb, var(--dev-water) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1370" y="688" width="8" height="8" fill="var(--dev-water)"/><path d="M1416 700 V686 L1430 674 L1444 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1426" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M1472 700 V686 L1486 674 L1500 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1482" y="688" width="8" height="8" fill="var(--dev-hvac)"/>
+          <text class="dev" x="1520" y="724" text-anchor="end">THERMOSTATS · WATER HEATERS · EVs · BATTERIES</text>
+        </a>
       </svg>
       </div>
 
@@ -377,7 +392,7 @@ footer p{margin:0;max-width:72ch}
           <p class="fl">Notes</p>
           <ol class="notes">
             <li>Click a region to open that chapter.</li>
-            <li>Simplified on purpose: one feeder, one lateral, one DER site.</li>
+            <li>Simplified on purpose: one feeder, one lateral, one DER site, one street.</li>
             <li>Line color means voltage class, never fuel type. Fuel colors appear only in charts.</li>
           </ol>
         </div>
@@ -388,7 +403,7 @@ footer p{margin:0;max-width:72ch}
             <p>Plant → meter → control room</p>
           </div>
           <div><p class="fl">Drawn by</p><p class="v">F. Lan</p></div>
-          <div class="c2"><p class="fl">Sheets</p><p class="v">5 chapters</p></div>
+          <div class="c2"><p class="fl">Sheets</p><p class="v">6 chapters</p></div>
           <div><p class="fl">Scale</p><p class="v">Not to scale</p></div>
           <div class="c2"><p class="fl">Status</p><p class="v status">For learning</p></div>
           <div class="wide">
@@ -405,7 +420,7 @@ footer p{margin:0;max-width:72ch}
   <section id="chapters" aria-labelledby="ch-title">
     <div class="section-head">
       <h2 id="ch-title">Sheet index</h2>
-      <p>Chapters 1 to 3 follow the electricity. Chapter 4 steps back to show the systems that watch and steer it. Chapter 5 opens up the battery, the one device that moves energy through time.</p>
+      <p>Chapters 1 to 3 follow the electricity. Chapter 4 steps back to show the systems that watch and steer it. Chapter 5 opens up the battery, the one device that moves energy through time. Chapter 6 adds up thousands of homes until they act like one power plant.</p>
     </div>
 
     <ol class="index">
@@ -479,6 +494,20 @@ footer p{margin:0;max-width:72ch}
         </div>
         <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
+      <li class="row" data-ch="6">
+        <div class="num" aria-hidden="true">06</div>
+        <div class="head">
+          <h3><a href="apps/06-vpp/index.html"><span class="sr">Chapter 6: </span>Virtual power plants</a></h3>
+          <p class="q">How do 20,000 homes act like one power plant?</p>
+          <p class="fl">20,000 homes · 21 MW</p>
+        </div>
+        <div class="what">
+          <p class="desc">Thermostats, water heaters, EV chargers and home batteries, run by software as one plant. Send a call and watch the fleet respond, build your own fleet and try to hold 10 MW for four hours, then open the VPP box and step through real events from California, Texas and Washington.</p>
+          <p class="inc"><span class="fl">Includes</span> · Basics · Playground · Inside the box · Events · Glossary · Quiz · Value</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-secondary)" title="Secondary, 120/240 V"></span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span></p>
+        </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
+      </li>
     </ol>
   </section>
 
@@ -496,7 +525,11 @@ footer p{margin:0;max-width:72ch}
 
 <footer id="about">
   <div class="wrap">
-    <p>Built by Frank Lan while learning how the electric grid works, from equipment on the pole to the systems in the control room. Each chapter is one self-contained HTML file with no build step.</p>  </div>
+    <div class="about-text">
+      <p>Hi! I'm Frank. I work where software, data, and power lines meet. I spent ten years at Microsoft building AI and analytics products, including generative AI features in Power Apps, then moved into energy because I wanted to work on the grid itself. Today I run electric distribution programs at Puget Sound Energy, helping keep the lights on (and the bills reasonable) around Puget Sound.</p>
+      <p>I'm curious about grid modernization, distributed energy, and how data centers and AI are changing power demand. The Grid Field Guide is a demo project I built to explore some of those ideas. Take a look around!</p>
+    </div>
+  </div>
 </footer>
 
 <script>
