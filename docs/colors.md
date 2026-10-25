@@ -73,6 +73,21 @@ These never color a **line** on a one-line diagram: lines are always voltage cla
 - Limits, such as gas max and gas minimum, are thin dashed `--ink-3` lines with a label.
 - Curtailment is an `--ink-3` hatch. It's waste, not a fault.
 
+### Device colors (chapter 6)
+
+The devices in a virtual power plant get identity colors that work like the fuel colors: a soft tint and a solid left bar on device boxes, the stroke of device icons, and fills in charts. **Never on a line.** The home battery and rooftop solar reuse `--fuel-battery` and `--fuel-solar`, so a battery is the same green in chapters 5 and 6.
+
+| Token | Vellum | Blueprint | Device |
+|---|---|---|---|
+| `--dev-hvac` | `#0195CA` | `#0096AF` | Thermostat + AC or heat pump (one resource: the thermostat controls, the AC or heat pump is the load) |
+| `--dev-water` | `#B46187` | `#D95B7F` | Water heater (warm rose, clearly not fault red) |
+| `--dev-ev` | `#53458D` | `#7C89F6` | EV + charger |
+
+- Color is never alone: every device also has an SVG icon (dial, tank, plug, battery, sun), and stacked chart bands carry a texture (HVAC horizontal lines, water heater dots, EV 45° hatch, battery solid) with a 2px `--sheet` gap and a direct label.
+- Validation (OKLab, Machado CVD) passes for all five device colors in vellum; in blueprint the new three pass, and the only failures are the existing `--fuel-battery` / `--fuel-solar` pastels (lightness and chroma, 14.9 normal-vision gap between them). Those are guide-wide tokens, left as they are.
+- `--dev-ev` vellum sits ΔE 7.6 from `--data-plan`. Fine for a fill next to a dash-dot line, but never put an EV fill directly behind a plan line.
+- Chart lines in chapter 6: the ISO's target is a dashed `--ink` line with a label, the fleet total a solid 2px `--ink` line, and the baseline (what homes would have used) a dashed `--ink-3` line.
+
 ## UI
 
 - `--ok` (`#1B7A45` / `#7FD3A0`): correct quiz answers and success states only. `--ok-bg` and `--fault-bg` are its quiz-option tints.

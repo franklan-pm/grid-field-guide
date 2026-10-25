@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grid Field Guide</title>
-<meta name="description" content="Five interactive chapters that follow electricity from the power plant to the meter, up into the control room that runs it, and into the batteries that store it.">
+<meta name="description" content="Six interactive chapters that follow electricity from the power plant to the meter, up into the control room that runs it, into the batteries that store it, and out to homes that act together as a virtual power plant.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap">
@@ -204,7 +204,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 /* energized lines: a bead of the line's own legend color travelling in the direction of power */
 .surge{fill:none;stroke:currentColor;stroke-width:5;stroke-dasharray:12 28;stroke-linecap:butt;opacity:0;pointer-events:none;
   filter:drop-shadow(0 0 3px currentColor);transition:opacity .2s}
-.s-hv{color:var(--v-hv)}.s-prim{color:var(--v-primary)}.s-sec{color:var(--v-secondary)}
+.s-hv{color:var(--v-hv)}.s-prim{color:var(--v-primary)}.s-sec{color:var(--v-secondary)}.s-data{color:var(--data)}
 .zone.hot .surge,.scroll svg .surge.hot{opacity:1;animation:surge 1.1s linear infinite}
 @keyframes surge{to{stroke-dashoffset:-40}}
 .zone.hot .bus{filter:drop-shadow(0 0 5px var(--v-hv))}
@@ -277,7 +277,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   <section class="intro" aria-labelledby="title">
     <h1 id="title">Follow the power, then the decisions.</h1>
     <div>
-      <p class="lede">Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room, and into the batteries that store it. For anyone interested in the grid. No engineering degree required.</p>
+      <p class="lede">Six interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room, into the batteries that store it, and out to thousands of homes acting as one power plant. For anyone interested in the grid. No engineering degree required.</p>
       <div class="cta">
         <a class="btn primary" href="apps/01-power-mix/index.html">Start with chapter 1 <span aria-hidden="true">→</span></a>
         <a class="btn" href="#chapters">Sheet index</a>
@@ -290,7 +290,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
     <div class="zm side l" aria-hidden="true"><span>D</span><span>C</span><span>B</span><span>A</span></div>
     <div class="inner">
       <div class="scroll" tabindex="0" aria-label="One-line diagram of the guide; scrolls sideways on small screens">
-      <svg id="sheet" viewBox="0 0 1600 602" role="group" aria-label="One-line diagram of the five chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, and a battery rack behind an inverter sits beside the DER site.">
+      <svg id="sheet" viewBox="0 0 1600 742" role="group" aria-label="One-line diagram of the six chapters. Generation feeds a bus and a substation, a 12 kV feeder carries power past a recloser and switch to a customer and a DER site, control-room systems above monitor and control the field equipment, a battery rack behind an inverter sits beside the DER site, and along the bottom a street of homes is run by VPP software as one power plant.">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--v-primary)"/></marker>
         </defs>
@@ -492,6 +492,33 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
             <path d="M1410 192 V210"/>
           </g>
         </a>
+        <!-- Chapter 6: virtual power plants. A street of homes on the secondary, each with a thermostat,
+             water heater, EV charger or battery (device tints), run by VPP software as one plant. -->
+        <path class="sec" data-ch="6" d="M738 553 V708 H1520 M814 700 V708 M870 700 V708 M926 700 V708 M982 700 V708 M1038 700 V708 M1094 700 V708 M1150 700 V708 M1206 700 V708 M1262 700 V708 M1318 700 V708 M1374 700 V708 M1430 700 V708 M1486 700 V708"/>
+        <path class="surge s-sec" data-ch="6" d="M738 553 V708 H1520"/>
+        <a class="zone" data-ch="6" href="apps/06-vpp/index.html" aria-label="Chapter 6: Virtual power plants">
+          <rect class="bg" x="375" y="600" width="1171" height="130"/>
+          <text class="tag" x="390" y="622">CHAPTER 6</text>
+          <text class="name" x="390" y="647">VIRTUAL POWER PLANTS →</text>
+          <rect class="box sys" x="399" y="662" width="196" height="46"/>
+          <text class="lbl" x="411" y="682">VPP software</text>
+          <text class="sub" x="411" y="698">many homes, one plant</text>
+          <path class="data" d="M595 685 H640 V664 H1486 M814 664 V674 M870 664 V674 M926 664 V674 M982 664 V674 M1038 664 V674 M1094 664 V674 M1150 664 V674 M1206 664 V674 M1262 664 V674 M1318 664 V674 M1374 664 V674 M1430 664 V674 M1486 664 V674"/>
+          <path d="M800 700 V686 L814 674 L828 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="810" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M856 700 V686 L870 674 L884 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="866" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M912 700 V686 L926 674 L940 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="922" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M968 700 V686 L982 674 L996 686 V700 Z" fill="color-mix(in srgb, var(--dev-ev) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="978" y="688" width="8" height="8" fill="var(--dev-ev)"/><path d="M1024 700 V686 L1038 674 L1052 686 V700 Z" fill="color-mix(in srgb, var(--dev-water) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1034" y="688" width="8" height="8" fill="var(--dev-water)"/><path d="M1080 700 V686 L1094 674 L1108 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1090" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1136 700 V686 L1150 674 L1164 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1146" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M1192 700 V686 L1206 674 L1220 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1202" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1248 700 V686 L1262 674 L1276 686 V700 Z" fill="color-mix(in srgb, var(--dev-ev) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1258" y="688" width="8" height="8" fill="var(--dev-ev)"/><path d="M1304 700 V686 L1318 674 L1332 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1314" y="688" width="8" height="8" fill="var(--dev-hvac)"/><path d="M1360 700 V686 L1374 674 L1388 686 V700 Z" fill="color-mix(in srgb, var(--dev-water) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1370" y="688" width="8" height="8" fill="var(--dev-water)"/><path d="M1416 700 V686 L1430 674 L1444 686 V700 Z" fill="color-mix(in srgb, var(--fuel-battery) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1426" y="688" width="8" height="8" fill="var(--fuel-battery)"/><path d="M1472 700 V686 L1486 674 L1500 686 V700 Z" fill="color-mix(in srgb, var(--dev-hvac) 22%, var(--sheet))" stroke="var(--ink)" stroke-width="1.2"/><rect x="1482" y="688" width="8" height="8" fill="var(--dev-hvac)"/>
+          <text class="dev" x="1520" y="724" text-anchor="end">THERMOSTATS · WATER HEATERS · EVs · BATTERIES</text>
+          <!-- hover extras -->
+          <path class="ticks" d="M367 622 V592 H389 M1554 622 V592 H1532 M367 708 V738 H389 M1554 708 V738 H1532"/>
+          <path class="surge s-data" d="M595 685 H640 V664 H1486"/>
+          <g class="callout">
+            <path d="M497 708 V713"/><circle cx="497" cy="722" r="9"/><text x="497" y="726">1</text>
+            <path d="M1318 655 V672"/><circle cx="1318" cy="646" r="9"/><text x="1318" y="650">2</text>
+          </g>
+          <g class="readout">
+            <rect x="720" y="604" width="372" height="46"/>
+            <text class="dev" x="732" y="620">TRY</text>
+            <text class="lbl rd" x="732" y="640">See how thousands of devices can act together.</text>
+          </g>
+        </a>
       </svg>
       </div>
 
@@ -511,7 +538,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <p class="fl">Notes</p>
           <ol class="notes">
             <li>Click a region to open that chapter.</li>
-            <li>Simplified on purpose: one feeder, one lateral, one DER site.</li>
+            <li>Simplified on purpose: one feeder, one lateral, one DER site, one street.</li>
             <li>Line color means voltage class, never fuel type. Fuel colors appear only in charts.</li>
             <li>Real AC power alternates direction 60 times a second (in the US). The animated flow here runs one way, like DC, to make it easier to follow.</li>
           </ol></div>
@@ -524,7 +551,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
             <p>Plant → meter → control room</p>
           </div>
           <div><p class="fl">Drawn by</p><p class="v">F. Lan</p></div>
-          <div class="c2"><p class="fl">Sheets</p><p class="v" id="sheets-val">5 chapters</p></div>
+          <div class="c2"><p class="fl">Sheets</p><p class="v" id="sheets-val">6 chapters</p></div>
           <div><p class="fl">Scale</p><p class="v">Not to scale</p></div>
           <div class="c2"><p class="fl">Status</p><p class="v status">For learning</p></div>
           <div class="wide">
@@ -614,6 +641,20 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
         </div>
         <span class="btn open" aria-hidden="true">Open chapter →</span>
       </li>
+      <li class="row" data-ch="6">
+        <div class="num" aria-hidden="true">06</div>
+        <div class="head">
+          <h3><a href="apps/06-vpp/index.html"><span class="sr">Chapter 6: </span>Virtual power plants</a></h3>
+          <p class="q">How do 20,000 homes act like one power plant?</p>
+          <p class="fl">20,000 homes · 21 MW</p>
+        </div>
+        <div class="what">
+          <p class="desc">Thermostats, water heaters, EV chargers and home batteries, run by software as one plant. Send a call and watch the fleet respond, build your own fleet and try to hold 10 MW for four hours, then open the VPP box and step through real events from California, Texas and Washington.</p>
+          <p class="inc"><span class="fl">Includes</span> · Basics · Events · Playground · Glossary · Quiz · Value</p>
+          <p class="lines"><span class="fl">Lines</span><span class="sw" style="border-color:var(--v-secondary)" title="Secondary, 120/240 V"></span><span class="sw" style="border-color:var(--v-primary)" title="Primary"></span><span class="sw d" style="border-color:var(--data)" title="Data and control"></span></p>
+        </div>
+        <span class="btn open" aria-hidden="true">Open chapter →</span>
+      </li>
     </ol>
   </section>
 
@@ -654,16 +695,17 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   var sheets=document.getElementById('sheets-val'), TOTAL=rows.length;
   var rulers={top:[].slice.call(document.querySelectorAll('.zm.top span')),bot:[].slice.call(document.querySelectorAll('.zm.bot span')),
               l:[].slice.call(document.querySelectorAll('.zm.l span')),r:[].slice.call(document.querySelectorAll('.zm.r span'))};
-  var VB={w:1600,h:602};   // matches the SVG viewBox
+  var VB={w:1600,h:742};   // matches the SVG viewBox
 
   var CUSTOM={
     '1':[['Bus','supply must equal demand in every interval.'],['Solar PV','peaks at noon, when it can exceed demand.']],
     '2':[['Recloser','trips, then recloses to clear a temporary fault.'],['Fuse','blows to isolate a lateral so the feeder stays on.']],
     '3':[['Two-way flow','the site can import from the feeder or export to it.'],['PCC meter','the point of common coupling, where the utility ends and the site begins.']],
     '4':[['SCADA','sees the field in real time.'],['ADMS','decides: outages, fault isolation, voltage.'],['DERMS','controls: dispatches distributed energy.']],
-    '5':[['BMS','watches every cell and talks to the inverter.'],['PCS','the inverter: AC on the grid side, DC on the rack side.'],['Rack','modules of cells, where the energy is stored.']]
+    '5':[['BMS','watches every cell and talks to the inverter.'],['PCS','the inverter: AC on the grid side, DC on the rack side.'],['Rack','modules of cells, where the energy is stored.']],
+    '6':[['VPP software','adds up thousands of devices and asks them to act as one plant.'],['Home devices','thermostats, water heaters and EV chargers wait or ease off, and batteries send power back.']]
   };
-  var TREATED={'1':1,'2':1,'3':1,'4':1,'5':1};   // any other chapter keeps the original hover only
+  var TREATED={'1':1,'2':1,'3':1,'4':1,'5':1,'6':1};   // any other chapter keeps the original hover only
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
 
   function preview(ch){

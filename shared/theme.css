@@ -36,6 +36,8 @@
 
   /* charts only, never on a one-line diagram */
   --fuel-gas:#C99A78;  --fuel-wind:#C9D3DD;  --fuel-solar:#F2C94C;  --fuel-battery:#8FD6B4;
+  /* device identity (chapter 6): fills, tints and chart bands only, never a line */
+  --dev-hvac:#0096AF;  --dev-water:#D95B7F;  --dev-ev:#7C89F6;
 
   /* UI feedback: correct answers and success states only */
   --ok:#7FD3A0;
@@ -51,6 +53,7 @@
     --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
     --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B; --zone-sec:#8A6400;
     --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
+    --dev-hvac:#0195CA; --dev-water:#B46187; --dev-ev:#53458D;
     --ok:#1B7A45;
     color-scheme:light;
   }
@@ -61,6 +64,7 @@
   --v-hv:#18202B; --v-primary:#B84C0B; --v-secondary:#1D5FA6; --data:#6A4BB5; --fault:#B42318; --dead:#A8A398;
   --data-tel:#0B7A75; --data-ctl:#A3307A; --data-plan:#6A4BB5; --data-biz:#566F1B; --zone-sec:#8A6400;
   --fuel-gas:#8A5A3C; --fuel-wind:#6F7F8E; --fuel-solar:#A88000; --fuel-battery:#2F7D55;
+  --dev-hvac:#0195CA; --dev-water:#B46187; --dev-ev:#53458D;
   --ok:#1B7A45;
   color-scheme:light;
 }

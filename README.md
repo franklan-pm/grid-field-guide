@@ -2,7 +2,7 @@
 
 **Live site:** https://franklan.net/
 
-Five interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room that runs it, and into the batteries that store it. Written for anyone interested in the grid, no engineering degree required.
+Six interactive chapters that follow electricity from the power plant to the customer's meter, up into the control room that runs it, into the batteries that store it, and out to the thousands of homes that act together as a virtual power plant. Written for anyone interested in the grid, no engineering degree required.
 
 | # | Chapter | Question | Folder |
 |---|---|---|---|
@@ -11,6 +11,7 @@ Five interactive chapters that follow electricity from the power plant to the cu
 | 3 | DER & microgrids | What changes when a customer makes power too? | `apps/03-der-microgrids` |
 | 4 | Grid operations | How do the software systems run all of it? | `apps/04-grid-operations` |
 | 5 | Batteries | How do batteries move energy in time? | `apps/05-batteries` |
+| 6 | Virtual power plants | How do 20,000 homes act like one power plant? | `apps/06-vpp` |
 
 The guide is styled as an engineering drawing sheet: vellum (light, the default) and blueprint (dark). Every page is plain HTML with no build step. Open `index.html` in a browser, or serve the folder with any static server.
 

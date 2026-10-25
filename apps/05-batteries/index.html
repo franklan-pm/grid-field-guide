@@ -271,7 +271,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Chapter 5 of 5 · How do batteries move energy in time?</div>
+  <div class="eyebrow">Chapter 5 of 6 · How do batteries move energy in time?</div>
   <h1>Battery Storage Field Guide</h1>
   <p class="sub">Solar and wind generate on nature's schedule, not ours. Batteries don't make energy; they <b>move it in time</b>, from cheap midday sun to the expensive evening. Follow the same town as Chapter 1 through <b>a home</b>, <b>a grocery store</b> and <b>a small factory</b> to see what's inside a battery, how long it lasts, how to size one and what it really costs.</p>
 
@@ -606,7 +606,8 @@ const PARTS = {
   rack: { title: 'Rack / pack', tag: 'Modules stacked · DC',
     does: 'Modules stacked in a frame with busbars, fuses, a disconnect and a rack-level BMS. A home battery is roughly one small pack; a grid container holds a dozen or more racks side by side.',
     fails: 'Fuses and contactors open to isolate the rack. A site with many racks can keep running at reduced capacity while one is repaired.',
-    cost: 'Cells, modules, rack and BMS together are "the pack": about $70/kWh in 2025.' },
+    cost: 'Cells, modules, rack and BMS together are "the pack": about $70/kWh in 2025.',
+    link: 'Chapter 6: 100,000 of these home packs together make a virtual power plant', href: '../06-vpp/index.html' },
   bms: { title: 'Battery management system (BMS)', tag: 'Fastest protection · milliseconds',
     does: "Watches every cell's voltage, temperature and current. Balances cells so none is overcharged, and estimates state of charge (how full) and state of health (how worn).",
     fails: 'When anything goes out of range it opens the contactors within milliseconds, before any software higher up has noticed. It is the fastest layer in the Chapter 4 stack: fast layers protect, slow layers plan.',
@@ -1006,7 +1007,7 @@ function renderInfo() {
   const p = PARTS[selectedPart]; if (!p) return;
   $('infoCard').innerHTML = `<div class="info-tag">${p.tag}</div><div class="info-title">${p.title}</div>
     <div class="info-cols"><div><h4>What it does</h4><p>${p.does}</p></div><div><h4>If it fails</h4><p>${p.fails}</p></div><div><h4>Rough cost</h4><p class="cost">${p.cost}</p></div></div>
-    ${p.link ? `<div class="chlink">↔ ${p.link}</div>` : ''}`;
+    ${p.link ? `<div class="chlink">↔ ${p.href ? `<a href="${p.href}">${p.link}</a>` : p.link}</div>` : ''}`;
 }
 
 /* ============================================================
