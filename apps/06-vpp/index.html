@@ -37,7 +37,6 @@
   .intro{font-size:16px;color:var(--ink-2);margin:0 0 16px;line-height:1.5;max-width:800px;}
   .intro b{color:var(--ink);}
   .asof{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em;}
-  .chk{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3);}
 
   /* icons: 24-unit SVG symbols, stroked in the device color */
   .ic{display:inline-block;vertical-align:-4px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;}
@@ -144,6 +143,9 @@
   .bx-real p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.45;}
   .bx-math{margin-top:14px;font-size:14px;color:var(--ink-2);}
   .bx-math summary{cursor:pointer;font:700 12px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);}
+  .bx-math + .bx-math{margin-top:10px;}
+  .bx-math ul.src{margin:8px 0;padding-left:18px;font-size:13px;color:var(--ink-3);line-height:1.5;}
+  .bx-math tr.tot td{font-weight:700;border-top:1px solid var(--ink);}
   .bx-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;align-items:center;font:400 13px var(--f-mono);color:var(--ink-3);}
 
   /* ---- tables ---- */
@@ -309,7 +311,7 @@
 <div class="wrap">
   <div class="eyebrow">Chapter 6 of 6 · How do 20,000 homes act like one power plant?</div>
   <h1>Virtual Power Plant Field Guide</h1>
-  <p class="sub">A gas peaker is one big machine in one place. A <b>virtual power plant</b> is thousands of small machines in thousands of homes: thermostats, water heaters, EV chargers, batteries and solar. Software makes them act as one. To the grid operator, both can look like <b>50 MW</b>.</p>
+  <p class="sub">A gas peaker is one big machine in one place, often 50–100 MW. A <b>virtual power plant</b> is thousands of small machines in thousands of homes: thermostats, water heaters, EV chargers, batteries and solar. Software makes them act as one.</p>
 
   <div class="tabs" role="tablist">
     <button class="tab active" data-tab="basics" role="tab">◉ Basics</button>
@@ -369,25 +371,44 @@
 
     <div class="bx-real">
       <div class="card" style="border-left-color:var(--fuel-battery)"><div class="k"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" style="color:var(--fuel-battery)"><use href="#i-batt"/></svg>California · Sep 9, 2026</div><div class="v">580 MW for 3 hours</div><p>From about 140,000 home batteries at the evening peak: roughly 4.1 kW each. A record at the time; a newer dispatch reached 745 MW on Oct 6, 2026 (company-reported).</p></div>
-      <div class="card" style="border-left-color:var(--dev-hvac)"><div class="k"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" style="color:var(--dev-hvac)"><use href="#i-hvac"/></svg>ecobee · summer 2025</div><div class="v">108 MW from 143,000 thermostats</div><p>Delivered peak reduction across 11 grid events: about 0.75 kW per thermostat on average. The 108 MW is the combined ability across several grid markets; the evaluator measured about 0.5 kW per device in California and about 1 kW in Texas.</p></div>
+      <div class="card" style="border-left-color:var(--dev-hvac)"><div class="k"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" style="color:var(--dev-hvac)"><use href="#i-hvac"/></svg>ecobee · summer 2025</div><div class="v">108 MW from 143,000 thermostats</div><p>108 MW of load reduction from 143,000 thermostats across 11 events, about 0.75 kW each. California homes averaged about 0.5 kW and Texas about 1 kW.</p></div>
       <div class="card" style="border-left-color:var(--ink)"><div class="k">Puget Sound Energy · Apr 2026</div><div class="v">≈49,000 thermostats · 10,800 EVs · 800 batteries</div><p>Enrolled in PSE's automated Flex programs (as of Apr 3, 2026): about 49,000 thermostats in Flex Smart and ecobee. Washington law asks PSE to plan for about 500 MW of flexible load by 2030. <button class="chip sm" id="bxPse" type="button">Try this fleet in the Playground</button></p></div>
     </div>
 
     <details class="bx-math">
-      <summary>How these numbers are worked out</summary>
-      <p>Basics and the Playground use the <b>same model</b>. Basics runs it for a 95°F summer evening, 4 to 8 pm, with this mix of devices.</p>
+      <summary>How the power numbers are worked out</summary>
+      <p>Each device cuts a little power during the event. Add them all up and you get the fleet's megawatts. Basics and the Playground use the <b>same model</b>. Here it runs for a 95°F summer evening, 4 to 8 pm. (1 kW is a few toasters. 1,000 kW is 1 MW.)</p>
+      <div class="table-scroll"><table id="bxMathT">
+        <thead><tr><th>Device</th><th>Devices per 100 homes</th><th>Power cut per device</th><th>Power from 100 homes</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p id="bxMathNote"></p>
+      <ul class="src">
+        <li><b>Thermostat:</b> ecobee's 2025 season, 108 MW ÷ 143,000 thermostats, at 95°F. It fades as homes warm up.</li>
+        <li><b>Water heater:</b> a typical value, averaged over 4 hours. The tank holds heat, so it can wait.</li>
+        <li><b>EV charger:</b> a typical value: 7 kW × 60% plugged in × 12% charging at that hour.</li>
+        <li><b>Home battery:</b> California, Sep 2026, 580 MW ÷ 140,000 batteries. It holds about 3 hours (12 kWh usable).</li>
+        <li><b>Rooftop solar:</b> no help at 4–8 pm. It filled the batteries at midday.</li>
+      </ul>
+      <p>The mix per 100 homes is a typical one, for illustration, and homes can have several devices. Values marked "typical" are round figures for learning, not engineering numbers.</p>
+      <p class="asof">As of October 2026. Sources: MGRID, Sep 21 2026 · Market Chameleon on ecobee Grid Resiliency, Feb 11 2026</p>
+    </details>
+
+    <details class="bx-math">
+      <summary>How customer earnings and grid savings are worked out</summary>
+      <p>What a customer earns depends on the program. These are Puget Sound Energy's Flex rates.</p>
       <div class="table-scroll"><table>
-        <thead><tr><th>Device</th><th>Per 100 homes</th><th>Per device, in the event</th><th>Customer earns (PSE, per year)</th></tr></thead>
+        <thead><tr><th>Device</th><th>Earns each year</th><th>Sign-up bonus</th></tr></thead>
         <tbody>
-        <tr><td>Smart thermostat</td><td>70</td><td>≈0.75 kW at 95°F (ecobee 2025: 108 MW ÷ 143,000), fading as homes warm</td><td>$20 a season × 2 = $40 (plus $50 to sign up)</td></tr>
-        <tr><td>Water heater</td><td>20</td><td>0.4 kW average for 4 h (the tank holds heat), a typical value</td><td>— (PSE pilot, rate not published)</td></tr>
-        <tr><td>EV charger</td><td>15</td><td>≈0.5 kW average, a typical value: 7 kW × 60% plugged in × 12% charging at that hour</td><td>$0.50 per kWh shifted (plus $50 to sign up)</td></tr>
-        <tr><td>Home battery</td><td>10</td><td>4.1 kW for ≈3 h, 12 kWh usable (California 2026: 580 MW ÷ 140,000 for 3 h)</td><td>$0.50 per kWh, up to $500 (plus $75/kWh, up to $1,000, to sign up)</td></tr>
-        <tr><td>Rooftop solar</td><td>20</td><td>0 kW at 4–8 pm: the sun is setting</td><td>— (it filled the batteries at midday)</td></tr>
+        <tr><td>Smart thermostat</td><td>$20 a season, 2 seasons a year = $40</td><td>$50</td></tr>
+        <tr><td>Water heater</td><td>Not published (PSE pilot)</td><td>—</td></tr>
+        <tr><td>EV charger</td><td>$0.50 per kWh shifted</td><td>$50</td></tr>
+        <tr><td>Home battery</td><td>$0.50 per kWh discharged, up to $500</td><td>$75 per kWh of battery, up to $1,000</td></tr>
+        <tr><td>Rooftop solar</td><td>—</td><td>—</td></tr>
         </tbody>
       </table></div>
-      <p>The mix per 100 homes is a typical one, for illustration. 5% of devices are offline and 10% of customers override. Earnings assume 20 events a year (PSE allows up to 15 per season). <b>Grid saves</b> is the held MW times $56 per kW-year: the gap between a new VPP ($43/kW-yr) and a new gas peaker ($99/kW-yr) in the DOE / Brattle 400 MW case (one modeled utility, 2022 dollars). Device values marked "typical" are round figures for learning, not engineering numbers; ⚠ marks a figure still being checked.</p>
-      <p class="asof">As of October 2026. Sources: MGRID, Sep 21 2026 · Market Chameleon on ecobee Grid Resiliency, Feb 11 2026 · PSE 2026 Demand Response RFP · pse.com Flex Smart, Flex EV, Flex Batteries · SEIA on DOE VPP Liftoff · Brattle, Real Reliability (2023)</p>
+      <p>The "Customers earn" tile assumes 20 events a year (PSE allows up to 15 per season) and leaves out sign-up bonuses. <b>Grid saves</b> is the held MW times $56 per kW-year: the gap between a new VPP ($43/kW-yr) and a new gas peaker ($99/kW-yr) in the DOE / Brattle 400 MW case (one modeled utility, 2022 dollars).</p>
+      <p class="asof">As of October 2026. Sources: PSE 2026 Demand Response RFP · pse.com Flex Smart, Flex EV, Flex Batteries · SEIA on DOE VPP Liftoff · Brattle, Real Reliability (2023)</p>
     </details>
 
     <div class="bx-next">Next →
@@ -568,7 +589,7 @@
           <thead><tr><th></th><th>Gas peaker</th><th>VPP</th></tr></thead>
           <tbody>
           <tr><td>Cost of new capacity</td><td class="num">$99 /kW-yr</td><td class="num">$43 /kW-yr</td></tr>
-          <tr><td>Time to launch</td><td>years <span class="chk">⚠</span></td><td>under 6 months for a basic program (DOE)</td></tr>
+          <tr><td>Time to launch</td><td>several years (permits, equipment, interconnection)</td><td>under 6 months for a basic program (DOE)</td></tr>
           <tr><td>Where it sits</td><td>one site</td><td>thousands of homes</td></tr>
           <tr><td>Fuel</td><td>gas</td><td>stored energy and shifted load</td></tr>
           <tr><td>How long it runs</td><td>as long as fuel lasts</td><td>2–4 h, then rebound</td></tr>
@@ -588,14 +609,14 @@
 
       <div class="card">
         <h3>What's at risk</h3>
-        <p style="margin-top:0">California's Demand Side Grid Support (DSGS) program paid for the record. <b>A VPP depends on a program that pays for it.</b></p>
+        <p style="margin-top:0">California's Demand Side Grid Support (DSGS) program paid for the 2025 and 2026 records; the separate Emergency Load Reduction Program (ELRP) joined it for the October one. <b>A VPP depends on a program that pays for it.</b></p>
         <ul class="timeline">
           <li><b>2022</b>DSGS starts (California Energy Commission).</li>
           <li><b>2023</b>Home batteries can join. About 700 MW enrolled by 2025.</li>
           <li><b>Jul 29, 2025</b>535 MW from 100,000+ batteries, held flat 7–9 pm.</li>
           <li><b>Sep 9, 2026</b>580 MW from 140,000+ batteries for 3 hours.</li>
-          <li><b>Oct 6, 2026</b>745 MW, the current record (company-reported).</li>
-          <li class="risk"><b>Dec 2026</b>Funding runs out. The 2027 state budget has no money for DSGS, and a plan to fold it into the CPUC's ELRP was dropped. <span class="chk">⚠ secondary source</span></li>
+          <li><b>Oct 6, 2026</b>745 MW, the current record (company-reported). Called by both DSGS and ELRP.</li>
+          <li class="risk"><b>Dec 2026</b>Funding runs out. The final 2026–27 budget added no money for 2027, and a plan to move the program to the CPUC was left out. No successor is funded yet.</li>
         </ul>
       </div>
 
@@ -1124,6 +1145,17 @@ function applyDiaMode() {
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => { diaMode = b.dataset.mode; document.querySelectorAll('#modeSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); applyDiaMode(); }));
 /* zoom labels come from the same model as Basics: 20,000 homes on a 95°F evening */
 const PER_HOME_KW = basicsCase(20000).mw0 * 1000 / 20000;
+/* Basics "How the power numbers are worked out": built from the same model, so the table can't drift from the tiles */
+(function () {
+  const c = basicsCase(100), p = c.p, rows = [['hvac', 'Smart thermostat'], ['water', 'Water heater'], ['ev', 'EV charger'], ['batt', 'Home battery'], ['solar', 'Rooftop solar']];
+  let total = 0;
+  const body = rows.map(([k, name]) => {
+    const n = Math.round(100 * MIX[k]), each = k === 'solar' ? 0 : kw(k, p); total += n * each;
+    return `<tr><td>${name}</td><td>${n}</td><td>${+each.toFixed(2)} kW</td><td>${(n * each).toFixed(1)} kW</td></tr>`;
+  }).join('') + `<tr class="tot"><td>Total</td><td></td><td></td><td>≈ ${total.toFixed(0)} kW</td></tr>`;
+  $('bxMathT').querySelector('tbody').innerHTML = body;
+  $('bxMathNote').textContent = `Not every device responds: some are offline (5%) and some customers override (10%), so the fleet delivers a little less. Scaled up to 20,000 homes, the model gives about ${basicsCase(20000).mw0.toFixed(0)} MW when the event starts at 4 pm. That's the "Starting power" tile above.`;
+})();
 const ZOOM = [['1 home', 1, 1], ['Street · 8 homes', 8, 8], ['Feeder · 40 homes', 40, 40], ['Fleet · 20,000 homes', 20000, 40]];
 function applyZoom() {
   const [name, homes, drawn] = ZOOM[+$('zoom').value], kW = PER_HOME_KW * homes;
@@ -1174,7 +1206,7 @@ const SCEN = {
     { when: '11:00 pm', title: 'Charging, within limits', nodes: ['disp', 'evcloud', 'ev', 'xfmr'], flows: ['disp|evcloud', 'evcloud|ev', 'xfmr|ctrl'], mw: 92, h: 'evcap', text: 'Homes on Feeder 3 (lighter) charge slower; the rest charge at full speed.' },
     { when: '6:00 am', title: 'Every car is full', nodes: ['ev'], flows: [], mw: 40, h: 'idle', text: 'All cars finished in time. Same energy, spread out so the transformer never overloaded.' }
   ] },
-  winter: { name: 'Winter cold morning', tag: 'PSE-style', anchor: 'For real: Puget Sound Energy, Jan 12, 2024, 4–8 pm, about 260,000 customers alerted. Flex Smart pre-heated, then lowered thermostats 2–3°F. A Feb 2024 test ran 7–10 am.',
+  winter: { name: 'Winter cold morning', tag: 'PSE-style', anchor: 'Modeled on PSE’s Flex Smart events. On Jan 12, 2024 (4–8 pm), about 260,000 customers were alerted; thermostats pre-heated, then dropped 2–3°F, and customers could override with no penalty. PSE also ran a 7–10 am test in Feb 2024.',
     gauge: { unit: 'MW', max: 45, target: 30 }, steps: [
     { when: 'Day before', title: 'Cold snap forecast', nodes: ['fcst', 'drms', 'opt', 'disp'], flows: ['fcst|opt', 'drms|disp'], mw: 0, h: 'idle', text: 'PSE’s peak comes on cold mornings and evenings, not summer afternoons. The utility calls a Flex event for 7–10 am.' },
     { when: '5:30 am', title: 'Pre-heat', nodes: ['disp', 'tcloud', 'hvac', 'wgate', 'water'], flows: ['disp|tcloud', 'tcloud|hvac', 'disp|wgate', 'wgate|water'], mw: 0, h: 'pre', text: 'Homes and water tanks heat a little extra before the event starts.' },
@@ -1249,7 +1281,7 @@ $('evNext').addEventListener('click', () => { if (step < SCEN[scen].steps.length
 const fleet = { hvac: 8000, water: 4000, ev: 1500, batt: 1000 };
 const FMAX = { hvac: 60000, water: 20000, ev: 20000, batt: 10000 };
 FLEET_KEYS.forEach(k => {
-  $('fleetSliders').insertAdjacentHTML('beforeend', `<div class="sl"><label for="s-${k}">${ico(k)}${DEV[k].name}</label><b id="v-${k}"></b><input type="range" id="s-${k}" min="0" max="${FMAX[k]}" step="250" value="${fleet[k]}"></div>`);
+  $('fleetSliders').insertAdjacentHTML('beforeend', `<div class="sl"><label for="s-${k}">${ico(k)}${DEV[k].name}</label><b id="v-${k}"></b><input type="range" id="s-${k}" min="0" max="${FMAX[k]}" step="50" value="${fleet[k]}"></div>`);
 });
 let call = 'summer', pgMode = 'call', sim = null;
 
@@ -1446,7 +1478,7 @@ const PRESETS = {
   mix: { f: { hvac: 7000, water: 6000, ev: 2000, batt: 1500 }, t: 10, pace: true, msg: 'A mix holds flattest: paced batteries, water heaters and EVs give a steady floor; thermostats add a lot early and fade. Untick “pace batteries” to see the cliff.' },
   tstat: { f: { hvac: 16000, water: 0, ev: 0, batt: 0 }, t: 10, msg: 'Thermostats only: strong start, then it fades as houses drift and people override. And a big rebound afterward.' },
   batt: { f: { hvac: 0, water: 0, ev: 0, batt: 3000 }, t: 10, pace: false, msg: 'Batteries only: perfectly flat… until they run empty after about 3 hours. Then nothing.' },
-  pse: { f: { hvac: 48750, water: 500, ev: 10750, batt: 750 }, t: 30, call: 'winter', temp: 30, pace: true, msg: 'PSE’s automated home devices, April 2026 (Flex Smart + ecobee, Flex EV, Flex Batteries, water-heater pilot), on a 30°F winter morning. Thermostats on heat pumps and electric heat do most of the work, which suits a utility that peaks in winter.' },
+  pse: { f: { hvac: 49000, water: 400, ev: 10800, batt: 800 }, t: 30, call: 'winter', temp: 30, pace: true, msg: 'PSE’s automated home devices, April 2026 (Flex Smart + ecobee, Flex EV, Flex Batteries, water-heater pilot), on a 30°F winter morning. Thermostats on heat pumps and electric heat do most of the work, which suits a utility that peaks in winter.' },
   exact: { f: { hvac: 5000, water: 3000, ev: 1000, batt: 750 }, t: 10, msg: 'Enrolled nameplate ≈ the promise. With overrides and offline devices you fall short. Real VPPs enroll about 20–30% more than they promise.' },
   rebound: { f: { hvac: 18000, water: 6000, ev: 2000, batt: 0 }, t: 10, msg: 'Lots of thermostats and no batteries: watch the bands drop below the baseline at 8 pm. Switch to mode B and add groups to soften it.' }
 };
@@ -1503,8 +1535,8 @@ const TERMS = [
   ['Ancillary services', 'money', 'Fast grid services like frequency response, paid separately from energy.'],
   ['FERC Order 2222', 'money', 'A 2020 federal rule that opens wholesale markets to aggregations of DERs. Rollout differs by market.'],
   ['ADER', 'money', 'ERCOT’s Aggregated Distributed Energy Resource pilot in Texas.'],
-  ['DSGS', 'money', 'California’s Demand Side Grid Support program, which paid for the 2025 and 2026 battery records.'],
-  ['ELRP', 'money', 'California’s Emergency Load Reduction Program, run through the utilities.'],
+  ['DSGS', 'money', 'California’s Demand Side Grid Support program, which called the 2025 and 2026 battery records. ELRP joined it for the October 2026 one.'],
+  ['ELRP', 'money', 'California’s Emergency Load Reduction Program: a separate emergency program run through the utilities and overseen by the CPUC. It also called batteries in October 2026.'],
   ['Load flexibility (DALCU)', 'money', 'Washington’s 2024 law (ESHB 1589) requiring PSE to plan flexible load equal to 10% of its peak from 2030.']
 ];
 const MIXUPS = [
