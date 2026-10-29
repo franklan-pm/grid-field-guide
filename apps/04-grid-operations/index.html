@@ -636,7 +636,7 @@ const SCEN = [
    {when:'4:00 pm', title:'Event starts', nodes:['derms','derhe','der','drms','loads','grid'], flows:['derms|derhe','derhe|der','drms|derhe','derhe|loads'],
     text:'DERMS sends setpoints through the DER head-end and batteries begin discharging. The DR event raises enrolled thermostats a few degrees and pauses EV charging. Thousands of small reductions add up to tens of megawatts.'},
    {when:'4:30 pm', title:'VVO squeezes out a little more', nodes:['vvo','pf','scada','fep','sub','regs'], flows:['pf|vvo','scada|vvo|ctl','fep|scada|ctl','fep|sub'],
-    text:'VVO runs conservation voltage reduction (CVR): it lowers the substation LTC and regulator settings so customers sit near the bottom of the allowed voltage band. Many appliances draw less at lower voltage, which typically trims load by 1 to 3%.'},
+    text:'VVO runs conservation voltage reduction (CVR): it lowers the voltage setpoints at the substation and along the feeders. The substation transformer has a load tap changer (LTC), which sets the voltage leaving the substation, and line regulators do the same further out. Lower settings keep customers near the bottom of the allowed voltage band, so many appliances draw less power, which can trim load by 1 to 3%.'},
    {when:'5:00 pm', title:'Operators watch the margins', nodes:['op','scada','fep','sub','ems'], flows:['fep|scada|tel','fep|sub'],
     text:'The control room watches substation transformer loading live through SCADA. If a transformer still runs hot, operators can shift part of a feeder to a neighboring one by switching. The transmission EMS sees lower net demand at the substation.'},
    {when:'7:00 pm', title:'The event ends, and the rebound', nodes:['drms','derhe','loads'], flows:['drms|derhe','derhe|loads'],
