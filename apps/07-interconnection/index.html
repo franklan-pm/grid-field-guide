@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interconnection queues · Grid Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Who is waiting to connect to the grid, what gets built, and what to expect: power plant interconnection queues, from Berkeley Lab data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
+<script src="../../shared/nav.js" defer></script>
+<style>
+  /* Mockup of chapter 7, part 1. Fuel colors follow docs/colors.md (charts only).
+     Solar + storage is the solar fill with battery stripes; "Other" is the neutral --band.
+     Queue outcomes: built = ink, withdrawn = --dead (leaving isn't a fault), still waiting = hatch. */
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:17px;padding:28px 16px 70px;}
+  .wrap{max-width:1120px;margin:0 auto;}
+  .eyebrow{font:400 12px var(--f-mono);letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;}
+  h1{font:700 clamp(32px,5vw,48px)/1 var(--f-display);text-transform:uppercase;margin:0 0 12px;}
+  h2{font:600 26px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:0 0 8px;}
+  h2 .num{display:inline-block;min-width:30px;color:var(--ink-3);}
+  .sub{color:var(--ink-2);font-size:18px;line-height:1.55;max-width:760px;margin:0 0 18px;}
+  .sub b,.lead b{color:var(--ink);}
+  .lead{color:var(--ink-2);font-size:17px;line-height:1.55;max-width:780px;margin:0 0 14px;}
+
+  /* filter row: one row, scopes every chart */
+  .filters{position:sticky;top:0;z-index:5;background:var(--ground);display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ink);margin-bottom:8px;}
+  .filters label{font:700 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:8px;}
+  select{font:500 15px var(--f-body);color:var(--ink);background:var(--sheet);border:2px solid var(--ink);padding:5px 8px;border-radius:0;}
+  .seg{display:inline-flex;border:2px solid var(--ink);}
+  .seg button{all:unset;cursor:pointer;font:600 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);}
+  .seg button:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 12.5px var(--f-mono);color:var(--ink-2);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend svg{flex:none;}
+  .legend .has-tip{cursor:help;text-decoration:underline dotted;text-underline-offset:3px;}
+
+  section.part{border:1px solid var(--ink);background:var(--sheet);padding:22px 22px 18px;margin:22px 0;}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:6px 0 16px;}
+  .tile{border:1px solid var(--band);border-top:4px solid var(--ink);padding:9px 12px;background:var(--sheet);}
+  .tile .k{font:400 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);}
+  .tile .v{font:600 30px/1.15 var(--f-body);margin-top:2px;}
+  .tile .s{font-size:13.5px;color:var(--ink-2);line-height:1.4;}
+  .chart{position:relative;width:100%;}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible;}
+  .ax{font:400 11px var(--f-mono);fill:var(--ink-3);}
+  .axl{font:700 10.5px var(--f-mono);fill:var(--ink-3);letter-spacing:.08em;}
+  .lab{font:600 12.5px var(--f-body);fill:var(--ink);}
+  .lab2{font:400 12px var(--f-body);fill:var(--ink-2);}
+  .gridl{stroke:var(--grid);stroke-width:1;}
+  .base{stroke:var(--ink-3);stroke-width:1;}
+  .seg-r{stroke:var(--sheet);stroke-width:1.5;}
+  .hit{fill:transparent;cursor:default;}
+  .row-sel{fill:var(--hover-fill);}
+  .cap{font:400 12px/1.5 var(--f-mono);color:var(--ink-3);margin:8px 0 0;max-width:860px;}
+  .fn{font-size:13.5px;color:var(--ink-2);line-height:1.5;margin:12px 0 0;max-width:900px;}
+  .fn b{color:var(--ink);}
+  details.fn summary{cursor:pointer;}
+  details.fn p{margin:8px 0 0;}
+  table.rec{max-width:560px;margin:12px 0 0;}
+  table.rec td{padding:4px 8px;font-size:14px;}
+  table.rec tr.sub td{font-weight:600;border-top:1px solid var(--ink);}
+  table.rec td.neg{color:var(--ink-2);}
+  table.rec td:last-child{white-space:nowrap;}
+  .viewseg{margin:2px 0 12px;display:flex;align-items:center;gap:10px;font:700 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+  .mapbox{position:relative;border:1px solid var(--band);background:var(--ground);}
+  .mapbox svg{display:block;width:100%;height:auto;}
+  .rg{stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;cursor:pointer;}
+  .rg:hover{stroke-width:2.2;}
+  .rglab{font:700 12.5px var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--ground);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none;}
+  .lead-line{stroke:var(--ink-3);stroke-width:1;}
+  .bub{stroke:var(--ground);stroke-width:.7;}
+  .bub:hover{stroke:var(--ink);stroke-width:1.6;}
+  .rg0{stroke:var(--ink);stroke-width:1.2;stroke-linejoin:round;fill:var(--ink);fill-opacity:.06;pointer-events:none;}
+  details.adv{margin-top:18px;border:1px solid var(--band);padding:0 14px;background:var(--sheet);}
+  details.adv summary{cursor:pointer;font:700 12.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:11px 0;}
+  details.adv[open] summary{border-bottom:1px solid var(--band);margin-bottom:12px;}
+  .adv-ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 10px;font:700 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
+  .adv-ctl input[type=range]{width:min(320px,100%);accent-color:var(--ink);}
+  #adv-year{font:600 30px/1 var(--f-display);color:var(--ink);letter-spacing:.02em;min-width:58px;}
+  #adv-readout{font-size:15px;color:var(--ink-2);margin:0 0 10px;}
+  #adv-readout b{color:var(--ink);}
+  #adv-mix svg{display:block;width:100%;height:auto;max-width:860px;margin:6px 0 4px;}
+  .adv-body{padding-bottom:14px;}
+  .tip-row{display:flex;align-items:center;gap:7px;margin-top:3px;}
+  .tip-sw{flex:none;width:11px;height:11px;border:1px solid var(--sheet);}
+  .tip-row span.v{margin-left:auto;padding-left:14px;font-variant-numeric:tabular-nums;}
+  .tip-sub{font:400 11.5px var(--f-mono);color:var(--ink-3);margin-top:6px;}
+  .note{font-size:14px;color:var(--ink-2);line-height:1.5;border-left:4px solid var(--ink);padding:8px 12px;margin:14px 0 0;background:var(--ground);max-width:860px;}
+  .note b{color:var(--ink);}
+  #tip{position:fixed;pointer-events:none;z-index:20;background:var(--sheet);color:var(--ink);border:1px solid var(--ink);padding:7px 10px;font:400 13px/1.4 var(--f-body);max-width:260px;display:none;box-shadow:0 2px 0 var(--ink);}
+  #tip b{font-weight:600;}
+  #tip .m{font:400 11.5px var(--f-mono);color:var(--ink-3);}
+
+  /* forecast */
+  .big{font:600 44px/1 var(--f-body);}
+  .bigs{color:var(--ink-2);font-size:15px;line-height:1.45;margin:4px 0 12px;}
+  details.tbl{margin-top:14px;}
+  details.tbl summary{cursor:pointer;font:400 12.5px var(--f-mono);}
+  table{border-collapse:collapse;font-size:13.5px;margin-top:8px;width:100%;max-width:760px;}
+  th,td{border-bottom:1px solid var(--band);padding:5px 8px;text-align:right;font-variant-numeric:tabular-nums;}
+  th:first-child,td:first-child{text-align:left;}
+  th{font:700 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);}
+  .sources{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin-top:22px;}
+  .sources summary{cursor:pointer;font:400 12.5px var(--f-mono);color:var(--ink);}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="p-hybrid" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="7" height="7" style="fill:var(--fuel-solar)"/><rect width="2.6" height="7" style="fill:var(--fuel-battery)"/>
+    </pattern>
+    <pattern id="p-est" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="6" height="6" style="fill:var(--sheet)"/><rect width="1.2" height="6" style="fill:var(--fuel-battery)"/>
+    </pattern>
+    <pattern id="p-wait" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="6" height="6" style="fill:var(--sheet)"/><rect width="1.6" height="6" style="fill:var(--ink-3)"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <div class="eyebrow">Chapter 7 · Part 1 of 3 · Power plants</div>
+  <h1>Where will the new power come from?</h1>
+  <p class="sub">Demand is growing, so the grid needs new power plants. Every one of them has to <b>get in line</b> first: before a plant can connect to the transmission grid, it files a request and waits while the grid operator studies it. Those lines, called <b>interconnection queues</b>, are public. Imagine you're buying power for a utility or a data center. The queue is your shopping list. Here's what's on it, and how much of it you can count on.</p>
+  <div class="note" id="load-err" hidden></div>
+
+  <div class="filters" role="group" aria-label="Filters for every chart on this page">
+    <label>Region <select id="f-region"></select></label>
+    <label>Measure <span class="seg" id="f-measure"><button type="button" data-m="gw" aria-pressed="true">Gigawatts</button><button type="button" data-m="n" aria-pressed="false">Projects</button></span></label>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- 1 -->
+  <section class="part" id="s1">
+    <h2><span class="num">1</span>What's waiting in line</h2>
+    <p class="lead" id="s1-lead"></p>
+    <div class="tiles" id="s1-tiles"></div>
+    <div class="viewseg">View <span class="seg" id="f-view"><button type="button" data-v="map" aria-pressed="true">Map</button><button type="button" data-v="bars" aria-pressed="false">Bars</button></span></div>
+    <div class="mapbox" id="c-map-wrap"><div id="c-map"></div></div>
+    <div class="chart" id="c-regions" hidden></div>
+    <div class="legend" style="margin-top:8px" id="legend-s1"></div>
+    <p class="cap">Active requests at the end of 2025, by region. Click a region (or use the Region menu) to follow it through the page. <span id="s1-capnote"></span></p>
+    <details class="adv" id="adv">
+      <summary>Advanced: watch the queue grow, year by year</summary>
+      <div class="adv-body">
+        <p class="lead" style="margin-bottom:10px">Every request, placed on the map in the year it entered the queue. Press play to watch where projects were proposed and how the mix of types changed. The Region and Measure menus above apply here too.</p>
+        <div class="adv-ctl">
+          <span class="seg" id="adv-mode"><button type="button" data-m="cum" aria-pressed="true">Through this year</button><button type="button" data-m="one" aria-pressed="false">This year only</button></span>
+          <span class="seg"><button type="button" id="adv-play" aria-pressed="false">&#9654; Play</button></span>
+          <input type="range" id="adv-range" min="2005" max="2025" step="1" value="2025" aria-label="Request year">
+          <span id="adv-year" aria-live="polite">2025</span>
+        </div>
+        <p id="adv-readout"></p>
+        <div class="legend" id="adv-legend" style="margin:0 0 8px"></div>
+        <div class="mapbox" id="adv-map"></div>
+        <div id="adv-mix"></div>
+        <p class="cap">Each bubble is a county; its size is the <span id="adv-unit"></span> requested there and its color is the type with the most. The bubble scale is the same in every year, so years can be compared. All requests count, whatever happened to them later (built, withdrawn or still waiting). Requests with no county or no request date (about 6% of requests) are not shown.</p>
+      </div>
+    </details>
+
+    <details class="tbl" id="s1-recwrap">
+      <summary>Why the headline and the charts differ</summary>
+      <div id="s1-rec"></div>
+    </details>
+    <details class="fn" id="fn-hybrid">
+      <summary><b>† Hybrid batteries:</b> the project data leaves out about 197 GW of battery capacity nationwide, so charts understate storage.</summary>
+      <p>Many grid operators list a solar-plus-battery plant as one request and don't give the battery's size: <b>1,389 of the 1,716</b> active solar + battery requests in the data file list no battery size. Berkeley Lab fills the gaps with an estimate, using the battery-to-solar ratio from hybrids that do list both (<i>Queued Up 2026</i>, slides 8, 16 and 30), and includes it in the report's headline totals. The published project data leaves those estimates out, so every chart built from it, including the rest of this page, <b>understates storage</b> and solar + storage. The report doesn't publish the ratios. The estimated part is <b>about 197 GW</b> of the 2,061 GW. CAISO lists almost every hybrid's battery, so it needs little estimating. For ERCOT the report's total (408 GW) equals the project rows, so no estimate was added there, and the data file lists no separate battery size for ERCOT's hybrids. ⚠ Whether those rows hold the solar size or the whole plant is not stated; to confirm with Berkeley Lab.</p>
+    </details>
+  </section>
+
+  <!-- 2 -->
+  <section class="part" id="s2">
+    <h2><span class="num">2</span>What developers are asking for</h2>
+    <p class="lead" id="s2-lead"></p>
+    <div class="chart" id="c-requests"></div>
+    <p class="cap">Every request by the year it entered the queue, whatever happened to it later. Bar height is what was asked for, not what was built. Storage and solar + storage are understated †.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="part" id="s3">
+    <h2><span class="num">3</span>What actually got built</h2>
+    <p class="lead" id="s3-lead"></p>
+    <div class="chart" id="c-online"></div>
+    <p class="cap" id="s3-cap"></p>
+  </section>
+
+  <!-- 4 -->
+  <section class="part" id="s4">
+    <h2><span class="num">4</span>How many make it</h2>
+    <p class="lead" id="s4-lead"></p>
+    <div class="chart" id="c-outcome"></div>
+    <div class="legend" style="margin-top:8px" id="legend-out"></div>
+    <p class="cap">Status at the end of 2025, by the year each request entered. Requests from 2021 on are too young to judge: with a 5-year lead time, most haven't had time to finish.</p>
+  </section>
+
+  <details class="sources">
+    <summary>Sources and method</summary>
+    <p>Rand et al., <i>Queued Up: 2026 Edition</i> data file (Lawrence Berkeley National Laboratory and Interconnection.fyi, May 2026), data through the end of 2025: tab 3 (every request), and tab 21 for EIA's count of new transmission-connected capacity. Built from <code>docs/data/build-ch7.py</code>. Capacity is the sum of each project's listed parts (MW 1–3), so a hybrid's battery counts only where the queue gives its size (see note † in section 1). Headline and regional totals of active capacity (2,061 GW) are the report's own, from tab 10. The report counts 8,244 active projects and the data file lists 8,513 (the report text says 47 non-ISO balancing areas and the file says 50); this is not reconciled. ⚠ Types: Solar; Solar + storage (Solar+Battery); Storage (Battery, Other Storage); Wind (incl. offshore and Wind+Battery); Gas (incl. gas hybrids); Other (hydro, nuclear, geothermal, coal, oil and other mixes). Regions are the 7 ISOs/RTOs plus non-ISO West and Southeast.</p>
+  </details>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+var DATA_V = '1';
+Promise.all(['data/ch7-queue.json', 'data/ch7-map.json'].map(function(u){
+  return fetch(u + '?v=' + DATA_V).then(function(r){ if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
+})).then(function(r){ init(r[0], r[1]); }).catch(function(e){
+  var n = document.getElementById('load-err'); n.hidden = false;
+  n.innerHTML = '<b>The data did not load.</b> This chapter fetches its data files, so open it from a web server (for example <code>python -m http.server</code> in the project folder), not as a file. (' + e.message + ')';
+});
+function init(D, M){
+var G = ['solar','hybrid','storage','wind','gas','other'];
+var GL = {solar:'Solar',hybrid:'Solar + storage',storage:'Storage',wind:'Wind',gas:'Gas',other:'Other'};
+var FILL = {solar:'var(--fuel-solar)',hybrid:'url(#p-hybrid)',storage:'var(--fuel-battery)',wind:'var(--fuel-wind)',gas:'var(--fuel-gas)',other:'var(--band)'};
+var REG = ['CAISO','ERCOT','ISO-NE','MISO','NYISO','PJM','SPP','Southeast','West'];
+var RL = {US:'All U.S.',CAISO:'CAISO (California)',ERCOT:'ERCOT (Texas)','ISO-NE':'ISO-NE (New England)',MISO:'MISO (Midwest)',NYISO:'NYISO (New York)',PJM:'PJM (Mid-Atlantic)',SPP:'SPP (Central)',Southeast:'Southeast (non-ISO)',West:'West (non-ISO)'};
+var S = {region:'US', measure:'gw', view:'map'};
+var SWCSS = {solar:'var(--fuel-solar)',hybrid:'repeating-linear-gradient(45deg,var(--fuel-solar) 0 3px,var(--fuel-battery) 3px 5px)',storage:'var(--fuel-battery)',wind:'var(--fuel-wind)',gas:'var(--fuel-gas)',other:'var(--band)',o:'var(--ink)',a:'repeating-linear-gradient(45deg,var(--sheet) 0 2px,var(--ink-3) 2px 3px)',w:'var(--dead)',est:'repeating-linear-gradient(-45deg,var(--sheet) 0 2px,var(--fuel-battery) 2px 3px)'};
+var NOW = 2026, LEAD = 5;
+
+/* ---------- helpers ---------- */
+function v(n, mw){ return S.measure === 'gw' ? mw / 1000 : n; }
+function inReg(r){ return S.region === 'US' || r === S.region; }
+function fmt(x){ if (S.measure === 'gw') return (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(0) : x.toFixed(1)) + ' GW'; return Math.round(x).toLocaleString() + ' projects'; }
+function fmtN(x, unit){ return unit === 'gw' ? (x >= 10 ? Math.round(x) : x.toFixed(1)) + ' GW' : Math.round(x).toLocaleString(); }
+function pct(x){ return Math.round(x * 100) + '%'; }
+function el(tag, a, txt){ var s = '<' + tag; for (var k in a) s += ' ' + k + '="' + a[k] + '"'; return s + (txt != null ? '>' + txt + '</' + tag + '>' : '/>'); }
+function nice(m){ if (m <= 0) return 1; var p = Math.pow(10, Math.floor(Math.log10(m))), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 4 ? 4 : f <= 5 ? 5 : f <= 6 ? 6 : f <= 8 ? 8 : 10) * p; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+/* hover card: a title, then one row per type with a color chip, its value and its share */
+function tipCard(title, rows, o){ o = o || {};
+  var tot = rows.reduce(function(s, r){ return s + r.val; }, 0);
+  var h = '<b>' + title + '</b>' + (o.sub ? '<div class="m">' + o.sub + '</div>' : '');
+  var th = S.measure === 'gw' ? .05 : .5;
+  rows.filter(function(r){ return r.val > 0 && (o.pctMode || r.val >= th); }).forEach(function(r){
+    h += '<div class="tip-row"><span class="tip-sw" style="background:' + SWCSS[r.key] + '"></span>' + r.label + '<span class="v">' + (r.text || fmt(r.val)) + (o.noShare || !tot ? '' : ' · ' + pct(r.val / tot)) + '</span></div>'; });
+  if (o.total !== false) h += '<div class="tip-sub">' + (o.totalLabel || 'total') + ' ' + (o.totalText || fmt(tot)) + '</div>';
+  if (o.foot) h += '<div class="tip-sub">' + o.foot + '</div>';
+  return h; }
+var tip = document.getElementById('tip');
+document.addEventListener('mousemove', function(e){
+  var t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t) { tip.style.display = 'none'; return; }
+  tip.innerHTML = t.getAttribute('data-tip'); tip.style.display = 'block';
+  var x = e.clientX + 14, y = e.clientY + 14, w = tip.offsetWidth, h = tip.offsetHeight;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14; if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+});
+
+/* ---------- filters ---------- */
+var sel = document.getElementById('f-region');
+sel.innerHTML = ['US'].concat(REG).map(function(r){ return '<option value="' + r + '">' + RL[r] + '</option>'; }).join('');
+sel.value = S.region;
+sel.addEventListener('change', function(){ S.region = sel.value; render(); });
+document.querySelectorAll('#f-view button').forEach(function(b){
+  b.addEventListener('click', function(){ S.view = b.dataset.v; document.querySelectorAll('#f-view button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); render(); });
+});
+document.querySelectorAll('#f-measure button').forEach(function(b){
+  b.addEventListener('click', function(){ S.measure = b.dataset.m;
+    document.querySelectorAll('#f-measure button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); render(); });
+});
+function swatch(fill){ return '<svg width="14" height="14" aria-hidden="true"><rect x="0" y="0" width="14" height="14" style="fill:' + fill + '"/></svg>'; }
+var LEG = {solar:'Solar',hybrid:'Solar + storage †',storage:'Storage †',wind:'Wind',gas:'Gas',other:'Other'};
+var OTHER_TIP = esc('<b>Other includes</b><br>• Hydropower<br>• Geothermal<br>• Biomass/biofuel<br>• Landfill gas<br>• Solar thermal<br>• Oil/diesel');
+function legSpan(g){ return '<span' + (g === 'other' ? ' class="has-tip" data-tip="' + OTHER_TIP + '"' : '') + '>' + swatch(FILL[g]) + LEG[g] + '</span>'; }
+document.getElementById('legend').innerHTML = G.map(legSpan).join('');
+var OUT = [['o','Built','var(--ink)'],['a','Still waiting (incl. suspended)','url(#p-wait)'],['w','Withdrew','var(--dead)']];
+document.getElementById('legend-out').innerHTML = OUT.map(function(o){ return '<span>' + swatch(o[2]) + o[1] + '</span>'; }).join('');
+
+/* ---------- generic stacked columns ---------- */
+function columns(id, years, data, o){
+  o = o || {};
+  var box = document.getElementById(id), W = Math.max(320, box.clientWidth), H = o.h || 250, L = 46, R = 10, T = 14, B = 30;
+  var pw = W - L - R, ph = H - T - B, bw = pw / years.length, gap = Math.max(2, bw * .22);
+  var max = 0; years.forEach(function(y){ var s = 0; (o.keys || G).forEach(function(g){ s += (data[y] && data[y][g]) || 0; }); max = Math.max(max, s, o.lineMax ? (o.line[y] || 0) : 0); });
+  var top = o.pct ? 1 : nice(max * 1.05), s = '';
+  if (o.shade) { var x0 = L + (o.shade[0] - years[0]) * bw; s += el('rect', {x: x0, y: T, width: L + pw - x0, height: ph, style: 'fill:var(--hover-fill)'}); s += el('text', {x: L + pw, y: T - 4, 'text-anchor': 'end', class: 'axl'}, o.shadeLabel); }
+  var NT = (!o.pct && top <= 10 && top % 1 === 0) ? top : 4;
+  for (var i = 0; i <= NT; i++) { var yv = top * i / NT, yy = T + ph - ph * i / NT;
+    s += el('line', {x1: L, x2: L + pw, y1: yy, y2: yy, class: i ? 'gridl' : 'base'});
+    s += el('text', {x: L - 6, y: yy + 4, 'text-anchor': 'end', class: 'ax'}, o.pct ? Math.round(yv * 100) + '%' : (top < 10 && yv % 1 ? yv.toFixed(1) : Math.round(yv).toLocaleString())); }
+  s += el('text', {x: L, y: T - 4, class: 'axl'}, o.pct ? 'SHARE OF ' + (S.measure === 'gw' ? 'CAPACITY' : 'PROJECTS') : (S.measure === 'gw' ? 'GW' : 'PROJECTS'));
+  years.forEach(function(y, i){
+    var x = L + i * bw + gap / 2, w = bw - gap, acc = 0, tot = 0, d = data[y] || {};
+    (o.keys || G).forEach(function(g){ tot += d[g] || 0; });
+    var lines = [];
+    (o.keys || G).forEach(function(g){
+      var val = d[g] || 0; if (!val) return; var hgt = ph * val / top, yy = T + ph - ph * acc / top - hgt;
+      s += el('rect', {x: x, y: yy, width: w, height: Math.max(hgt, .5), class: 'seg-r', style: 'fill:' + (o.fill ? o.fill[g] : FILL[g])});
+      acc += val; lines.push([g, val]);
+    });
+    var rowsT = (o.keys || G).slice().reverse().map(function(g){ return {key: g, label: (o.label ? o.label[g] : GL[g]), val: d[g] || 0, text: o.pct ? pct(d[g] || 0) : null}; });
+    var tipTxt = tipCard(o.tipYear ? o.tipYear(y) : y, rowsT, {noShare: !!o.pct, pctMode: !!o.pct, total: !o.pct && !o.noTotal, totalLabel: 'total'}) + (o.extraTip ? o.extraTip(y) : '');
+    s += el('rect', {x: L + i * bw, y: T, width: bw, height: ph, class: 'hit', 'data-tip': esc(tipTxt)});
+    var every = years.length > 14 ? (W < 560 ? 5 : 2) : 1;
+    if (i % every === 0 || i === years.length - 1) s += el('text', {x: L + i * bw + bw / 2, y: T + ph + 16, 'text-anchor': 'middle', class: 'ax'}, o.xLabel ? o.xLabel(y) : (years.length > 14 && W < 560 ? "'" + String(y).slice(2) : y));
+  });
+  if (o.line && S.measure === 'gw') {
+    var pts = years.filter(function(y){ return o.line[y] != null; }).map(function(y){ return [L + (y - years[0]) * bw + bw / 2, T + ph - ph * o.line[y] / top]; });
+    s += el('polyline', {points: pts.map(function(p){ return p.join(','); }).join(' '), style: 'fill:none;stroke:var(--ink);stroke-width:2'});
+    pts.forEach(function(p){ s += el('circle', {cx: p[0], cy: p[1], r: 3.5, style: 'fill:var(--ink);stroke:var(--sheet);stroke-width:2'}); });
+    var lp = pts[pts.length - 1]; s += el('text', {x: lp[0] - 6, y: lp[1] - 10, 'text-anchor': 'end', class: 'lab'}, o.lineLabel);
+  }
+  box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(o.aria || '') + '">' + s + '</svg>';
+}
+
+/* ---------- 1. what's waiting ---------- */
+function active(reg, dated){ var t = {n: 0, mw: 0, g: {}}; G.forEach(function(g){ t.g[g] = {n: 0, mw: 0}; });
+  D.requests.forEach(function(r){ if (r[3] !== 'a' || (reg !== 'US' && r[0] !== reg) || (dated && !r[2])) return; t.n += r[4]; t.mw += r[5]; t.g[r[1]].n += r[4]; t.g[r[1]].mw += r[5]; }); return t; }
+function regionTip(reg, t){
+  var rows = G.map(function(g){ return {key: g, label: GL[g], val: v(t.g[g].n, t.g[g].mw)}; }).sort(function(a, b){ return b.val - a.val; });
+  var est = S.measure === 'gw' ? Math.max(0, D.reported[reg] - t.mw / 1000) : 0;
+  if (est > 0.5) rows.push({key: 'est', label: 'Estimated hybrid battery †', val: est});
+  return tipCard(RL[reg], rows, {foot: 'click to follow this region'}); }
+function repGW(reg){ if (reg !== 'US') return D.reported[reg]; return REG.reduce(function(s, r){ return s + D.reported[r]; }, 0); }
+function f1(x){ return x.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}); }
+function s1(){
+  var a = active(S.region), ranked = G.slice().sort(function(x, y){ return a.g[y].mw - a.g[x].mw; });
+  var lead = ranked[0], sec = ranked[1], solarish = (a.g.solar.mw + a.g.hybrid.mw + a.g.storage.mw) / a.mw, rep = repGW(S.region);
+  document.getElementById('s1-lead').innerHTML = (S.region === 'US' ? 'Across the U.S.' : 'In ' + RL[S.region] + ',') + ' <b>' + Math.round(rep).toLocaleString() + ' GW</b> of projects are waiting to connect (Berkeley Lab\'s headline figure, end of 2025). Going by the project data †, the biggest share is <b>' + GL[lead].toLowerCase() + '</b> (' + pct(a.g[lead].mw / a.mw) + '), then ' + GL[sec].toLowerCase() + ' (' + pct(a.g[sec].mw / a.mw) + '). Solar, storage and the two together make up <b>' + pct(solarish) + '</b> of it.';
+  var size = a.mw / a.n;
+  document.getElementById('s1-tiles').innerHTML =
+    '<div class="tile"><div class="k">Waiting</div><div class="v">' + Math.round(rep).toLocaleString() + ' GW</div><div class="s">of capacity in active requests, as reported by Berkeley Lab. ' + (rep - a.mw / 1000 >= 1 ? 'It includes about ' + Math.round(rep - a.mw / 1000) + ' GW estimated for hybrid batteries †.' : 'No hybrid-battery estimate was added for this region †.') + '</div></div>' +
+    '<div class="tile"><div class="k">Projects</div><div class="v">' + a.n.toLocaleString() + '</div><div class="s">active requests in the data file' + (S.region === 'US' ? ' (the report\'s text says 8,244; not reconciled, see sources)' : '') + '</div></div>' +
+    '<div class="tile"><div class="k">Typical size</div><div class="v">' + Math.round(size) + ' MW</div><div class="s">average request in this queue, from the project data</div></div>';
+  // from the report's headline to the by-year charts
+  var rows1 = a.mw / 1000, dated = active(S.region, true).mw / 1000, est = Math.max(0, rep - rows1), undated = rows1 - dated;
+  document.getElementById('s1-rec').innerHTML = '<table class="rec" aria-label="From the report headline to the charts">' +
+    '<tr><td>Berkeley Lab headline, ' + (S.region === 'US' ? 'all U.S.' : RL[S.region].split(' (')[0]) + '</td><td>' + f1(rep) + ' GW</td></tr>' +
+    '<tr><td class="neg">− estimated hybrid batteries (in the report, not in the project data) †</td><td class="neg">−' + f1(est) + '</td></tr>' +
+    '<tr class="sub"><td>= capacity listed in the project data</td><td>' + f1(rows1) + ' GW</td></tr>' +
+    '<tr><td class="neg">− requests with no request date (left out of the by-year charts)</td><td class="neg">−' + f1(undated) + '</td></tr>' +
+    '<tr class="sub"><td>= capacity in the charts below</td><td>' + f1(dated) + ' GW</td></tr></table>';
+  document.getElementById('legend-s1').innerHTML = G.map(legSpan).join('') + (S.view === 'bars' && S.measure === 'gw' ? '<span>' + swatch('url(#p-est)') + 'Estimated hybrid battery †</span>' : '');
+  document.getElementById('s1-capnote').textContent = S.view === 'map' ? 'Each bubble is a county; its size is the active ' + (S.measure === 'gw' ? 'gigawatts' : 'projects') + ' there and its color is the county\'s biggest type. Region shapes are approximate: each county takes the region with the most queue requests in it. The map shows the project data, so it leaves out the estimated hybrid batteries † and about 1% of capacity with no county.' : 'The hatched bars (gigawatts view) are Berkeley Lab\'s estimates for hybrid batteries, which the project data leaves out.';
+  document.getElementById('c-regions').hidden = S.view !== 'bars'; document.getElementById('c-map-wrap').hidden = S.view !== 'map';
+  var box = document.getElementById('c-regions'), W = Math.max(320, box.clientWidth), rowH = 30, L = W < 560 ? 92 : 150, R = 64, T = 22;
+  s1Map(a);
+  if (S.view !== 'bars') { return; }
+  var gwv = S.measure === 'gw', rows = REG.map(function(r){ var t = active(r); t.est = gwv ? Math.max(0, D.reported[r] - t.mw / 1000) : 0; return [r, t]; }).sort(function(x, y){ return v(y[1].n, y[1].mw) + y[1].est - v(x[1].n, x[1].mw) - x[1].est; });
+  var max = nice(Math.max.apply(null, rows.map(function(r){ return v(r[1].n, r[1].mw) + r[1].est; })) * 1.02), pw = W - L - R, H = T + rows.length * rowH + 8, s = '';
+  for (var i = 0; i <= 4; i++) { var xx = L + pw * i / 4; s += el('line', {x1: xx, x2: xx, y1: T - 4, y2: H - 8, class: i ? 'gridl' : 'base'}); s += el('text', {x: xx, y: T - 8, 'text-anchor': 'middle', class: 'ax'}, S.measure === 'gw' ? Math.round(max * i / 4) : Math.round(max * i / 4).toLocaleString()); }
+  rows.forEach(function(r, i){
+    var y = T + i * rowH, acc = 0, t = r[1], on = r[0] === S.region;
+    if (on) s += el('rect', {x: 0, y: y, width: W, height: rowH, class: 'row-sel'});
+    s += el('text', {x: L - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', class: on ? 'lab' : 'lab2'}, W < 560 ? r[0] : RL[r[0]].replace(' (non-ISO)', ''));
+    G.forEach(function(g){ var val = v(t.g[g].n, t.g[g].mw); if (!val) return; var w = pw * val / max;
+      s += el('rect', {x: L + pw * acc / max, y: y + 6, width: Math.max(w, .5), height: rowH - 12, class: 'seg-r', style: 'fill:' + FILL[g] + ''}); acc += val; });
+    if (t.est > 0.5) { s += el('rect', {x: L + pw * acc / max, y: y + 6, width: Math.max(pw * t.est / max, .5), height: rowH - 12, style: 'fill:url(#p-est);stroke:var(--fuel-battery);stroke-width:1' + ''}); acc += t.est; }
+    s += el('text', {x: L + pw * acc / max + 6, y: y + rowH / 2 + 4, class: on ? 'lab' : 'lab2'}, S.measure === 'gw' ? Math.round(acc) + ' GW' : acc.toLocaleString());
+    var tipTxt = regionTip(r[0], t);
+    s += el('rect', {x: 0, y: y, width: W, height: rowH, class: 'hit', 'data-tip': esc(tipTxt), 'data-reg': r[0], style: 'cursor:pointer'});
+  });
+  box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Active queue by region and type">' + s + '</svg>';
+  box.querySelectorAll('[data-reg]').forEach(function(n){ n.addEventListener('click', function(){ S.region = S.region === n.dataset.reg ? 'US' : n.dataset.reg; sel.value = S.region; render(); }); });
+}
+
+/* ---------- 1b. the map ---------- */
+var LBL = {CAISO:[24,452,'start'], NYISO:[770,92,'end'], 'ISO-NE':[868,34,'end']};
+function mapLabels(){ var s = '';
+  Object.keys(M.labels).forEach(function(r){ var l = M.labels[r], o = LBL[r];
+    if (o) { s += el('line', {x1: o[2] === 'end' ? o[0] + 4 : o[0] + 20, y1: o[1] - 4, x2: l[0], y2: l[1], class: 'lead-line'}); }
+    s += el('text', {x: o ? o[0] : l[0], y: o ? o[1] : l[1], 'text-anchor': o ? o[2] : 'middle', class: 'rglab'}, r); });
+  return s; }
+function mapKey(vb, k){ var s = '', kx = vb[0] + 12, ky = vb[1] + vb[3] - 16, keys = S.measure === 'gw' ? [[1, '1 GW'], [10, '10 GW']] : [[10, '10'], [100, '100']];
+  keys.forEach(function(kk){ var r = Math.sqrt(kk[0]) * k; s += el('circle', {cx: kx + r, cy: ky - r + 12, r: r.toFixed(1), style: 'fill:none;stroke:var(--ink-3);stroke-width:1'}); s += el('text', {x: kx + 2 * r + 5, y: ky + 12, class: 'ax'}, kk[1]); kx += 2 * r + 46; });
+  return s; }
+function mapScale(){ return S.measure === 'gw' ? 6.2 : 1.35; }
+function s1Map(a){
+  var vb = M.vb, box = document.getElementById('c-map'), s = '', tot = {};
+  REG.forEach(function(r){ tot[r] = active(r); });
+  var maxR = Math.max.apply(null, REG.map(function(r){ return v(tot[r].n, tot[r].mw); }));
+  Object.keys(M.regions).forEach(function(r){
+    var on = r === S.region, val = v(tot[r].n, tot[r].mw);
+    s += el('path', {d: M.regions[r], class: 'rg', 'data-reg': r, 'data-tip': esc(regionTip(r, tot[r])),
+      style: 'fill:var(--ink);fill-opacity:' + (.05 + .13 * val / maxR).toFixed(3) + (on ? ';stroke-width:3' : '')});
+  });
+  var bubs = M.counties.map(function(c){ var n = 0, mw = 0, top = null, tv = -1, byT = {};
+    Object.keys(c[6]).forEach(function(g){ var x = c[6][g], val = v(x[0], x[1]); byT[g] = val; n += x[0]; mw += Math.max(0, x[1]); if (val > tv) { tv = val; top = g; } });
+    return {c: c, val: v(n, mw), top: top, byT: byT}; }).filter(function(b){ return b.val > 0; }).sort(function(x, y){ return y.val - x.val; });
+  var k = mapScale();
+  bubs.forEach(function(b){ var c = b.c, on = S.region === 'US' || c[5] === S.region, r = Math.sqrt(b.val) * k;
+    var rows = G.map(function(g){ return {key: g, label: GL[g], val: b.byT[g] || 0}; }).sort(function(x, y){ return y.val - x.val; });
+    s += el('circle', {cx: c[3], cy: c[4], r: Math.max(r, 1.6).toFixed(1), class: 'bub', 'data-tip': esc(tipCard(c[1] + ' County, ' + c[2], rows, {sub: RL[c[5]]})),
+      style: 'fill:' + FILL[b.top] + ';fill-opacity:' + (on ? .85 : .25) }); });
+  s += mapLabels() + mapKey(vb, k);
+  box.innerHTML = '<svg viewBox="' + vb.join(' ') + '" role="img" aria-label="Map of active interconnection requests by county, grouped into grid regions">' + s + '</svg>';
+  box.querySelectorAll('[data-reg]').forEach(function(n){ n.addEventListener('click', function(){ S.region = S.region === n.dataset.reg ? 'US' : n.dataset.reg; sel.value = S.region; render(); }); });
+}
+
+/* ---------- 1c. advanced: the queue year by year ---------- */
+var AY = null, advLoading = false, advTimer = null;
+S.advYear = 2025; S.advMode = 'cum';
+function advLoad(){
+  if (AY || advLoading) return; advLoading = true;
+  document.getElementById('adv-map').innerHTML = '<p class="cap" style="padding:14px">Loading the year-by-year data…</p>';
+  fetch('data/ch7-map-years.json?v=' + DATA_V).then(function(r){ if (!r.ok) throw new Error('ch7-map-years.json ' + r.status); return r.json(); })
+    .then(function(j){ AY = j; sAdv(); })
+    .catch(function(e){ advLoading = false; document.getElementById('adv-map').innerHTML = '<p class="cap" style="padding:14px">The year-by-year data did not load (' + e.message + ').</p>'; });
+}
+function advStop(){ if (advTimer) { clearInterval(advTimer); advTimer = null; } var b = document.getElementById('adv-play'); b.setAttribute('aria-pressed', 'false'); b.innerHTML = '&#9654; Play'; }
+function sAdv(){
+  if (!document.getElementById('adv').open) return;
+  if (!AY) { advLoad(); return; }
+  var yr = S.advYear, cum = S.advMode === 'cum', byC = {}, byT = {}, totN = 0, totMW = 0;
+  G.forEach(function(g){ byT[g] = 0; });
+  AY.rows.forEach(function(r){ if (cum ? r[2] > yr : r[2] !== yr) return;
+    var c = byC[r[0]] || (byC[r[0]] = {val: 0, t: {}}), x = v(r[3], r[4]);
+    c.val += x; c.t[r[1]] = (c.t[r[1]] || 0) + x;
+    if (inReg(AY.counties[r[0]][5])) { byT[r[1]] += x; totN += r[3]; totMW += r[4]; } });
+  var s = '';
+  Object.keys(M.regions).forEach(function(r){ s += el('path', {d: M.regions[r], class: 'rg0'}); });
+  var k = mapScale(), bubs = Object.keys(byC).map(function(i){ return {c: AY.counties[i], b: byC[i]}; }).filter(function(o){ return o.b.val > 0; }).sort(function(p, q){ return q.b.val - p.b.val; });
+  bubs.forEach(function(o){ var c = o.c, top = null, tv = -1, on = S.region === 'US' || c[5] === S.region;
+    G.forEach(function(g){ var x = o.b.t[g] || 0; if (x > tv) { tv = x; top = g; } });
+    var rows = G.map(function(g){ return {key: g, label: GL[g], val: o.b.t[g] || 0}; }).sort(function(p, q){ return q.val - p.val; });
+    s += el('circle', {cx: c[3], cy: c[4], r: Math.max(Math.sqrt(o.b.val) * k, 1.6).toFixed(1), class: 'bub', 'data-tip': esc(tipCard(c[1] + ' County, ' + c[2], rows, {sub: RL[c[5]] + ' · ' + (cum ? 'requested through ' : 'requested in ') + yr})),
+      style: 'fill:' + FILL[top] + ';fill-opacity:' + (on ? .85 : .25) }); });
+  s += mapLabels() + mapKey(AY.vb, k);
+  document.getElementById('adv-map').innerHTML = '<svg viewBox="' + AY.vb.join(' ') + '" role="img" aria-label="Map of interconnection requests by county, ' + (cum ? 'through ' : 'in ') + yr + '">' + s + '</svg>';
+  // type mix for the selected scope: one stacked bar
+  var tot = G.reduce(function(a, g){ return a + byT[g]; }, 0), W = 600, x0 = 0, bar = '';
+  G.forEach(function(g){ if (!byT[g]) return; var w = W * byT[g] / tot;
+    bar += el('rect', {x: x0.toFixed(1), y: 2, width: w.toFixed(1), height: 22, style: 'fill:' + FILL[g], 'data-tip': esc(tipCard('Mix of requests ' + (cum ? 'through ' : 'in ') + yr, G.map(function(h){ return {key: h, label: GL[h], val: byT[h]}; }).sort(function(p, q){ return q.val - p.val; }), {sub: RL[S.region]}))});
+    x0 += w; });
+  document.getElementById('adv-mix').innerHTML = tot ? '<svg viewBox="0 0 ' + W + ' 26" role="img" aria-label="Share of requests by type">' + bar + '</svg>' : '';
+  document.getElementById('adv-year').textContent = yr;
+  document.getElementById('adv-unit').textContent = S.measure === 'gw' ? 'gigawatts' : 'number of projects';
+  document.getElementById('adv-readout').innerHTML = '<b>' + (cum ? 'Through ' + yr : 'In ' + yr) + '</b>, ' + (S.region === 'US' ? 'all U.S.' : RL[S.region]) + ': <b>' + Math.round(totMW / 1000).toLocaleString() + ' GW</b> across <b>' + totN.toLocaleString() + ' projects</b> requested' + (cum ? ' so far.' : '.');
+  document.getElementById('adv-legend').innerHTML = G.map(legSpan).join('');
+}
+document.getElementById('adv').addEventListener('toggle', function(){ if (this.open) sAdv(); else advStop(); });
+document.getElementById('adv-range').addEventListener('input', function(){ advStop(); S.advYear = +this.value; sAdv(); });
+document.querySelectorAll('#adv-mode button').forEach(function(b){
+  b.addEventListener('click', function(){ S.advMode = b.dataset.m; document.querySelectorAll('#adv-mode button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sAdv(); });
+});
+document.getElementById('adv-play').addEventListener('click', function(){
+  if (advTimer) { advStop(); return; }
+  if (!AY) { advLoad(); return; }
+  var rng = document.getElementById('adv-range');
+  if (S.advYear >= +rng.max) S.advYear = +rng.min;
+  this.setAttribute('aria-pressed', 'true'); this.innerHTML = '&#10074;&#10074; Pause';
+  rng.value = S.advYear; sAdv();
+  advTimer = setInterval(function(){
+    if (S.advYear >= +rng.max) { advStop(); return; }
+    S.advYear++; rng.value = S.advYear; sAdv();
+  }, 800);
+});
+
+/* ---------- 2. requests by year ---------- */
+var YRS = []; for (var y = 2005; y <= 2025; y++) YRS.push(y);
+function s2(){
+  var d = {}; YRS.forEach(function(y){ d[y] = {}; });
+  D.requests.forEach(function(r){ if (!inReg(r[0]) || !d[r[2]]) return; d[r[2]][r[1]] = (d[r[2]][r[1]] || 0) + v(r[4], r[5]); });
+  columns('c-requests', YRS, d, {aria: 'Requests by year and type'});
+  var mw = {}; YRS.forEach(function(y){ mw[y] = {t: 0}; G.forEach(function(g){ mw[y][g] = 0; }); });
+  D.requests.forEach(function(r){ if (!inReg(r[0]) || !mw[r[2]]) return; mw[r[2]][r[1]] += r[5]; mw[r[2]].t += r[5]; });
+  var peak = YRS.reduce(function(a, y){ return mw[y].t > mw[a].t ? y : a; }, 2005);
+  var gas21 = mw[2021].gas / mw[2021].t, gas25 = mw[2025].gas / mw[2025].t, st = function(y){ return (mw[y].storage + mw[y].hybrid) / mw[y].t; };
+  document.getElementById('s2-lead').innerHTML = 'New requests took off after 2019 and peaked in <b>' + peak + '</b> at <b>' + Math.round(mw[peak].t / 1000) + ' GW</b>. Two things changed in the mix. Storage, alone or paired with solar, went from ' + pct(st(2015)) + ' of requests in 2015 to <b>' + pct(st(2025)) + '</b> in 2025. And gas is back: <b>' + pct(gas25) + '</b> of 2025 requests, up from ' + pct(gas21) + ' in 2021, as grid operators look for power that runs on demand.';
+}
+
+/* ---------- 3. came online ---------- */
+var OY = []; for (var y2 = 2010; y2 <= 2025; y2++) OY.push(y2);
+function s3(){
+  var d = {}; OY.forEach(function(y){ d[y] = {}; });
+  D.online.forEach(function(r){ if (!inReg(r[0]) || !d[r[2]]) return; d[r[2]][r[1]] = (d[r[2]][r[1]] || 0) + v(r[3], r[4]); });
+  var line = null; if (S.region === 'US') { line = {}; OY.forEach(function(y){ line[y] = D.eia[y]; }); }
+  columns('c-online', OY, d, {aria: 'Capacity that came online by year and type', line: line, lineMax: !!line, lineLabel: 'EIA, transmission-connected plants', extraTip: function(y){ return line && S.measure === 'gw' ? '<br><span class="m">EIA count: ' + D.eia[y] + ' GW</span>' : ''; }});
+  var mw = {}; OY.forEach(function(y){ mw[y] = {t: 0}; G.forEach(function(g){ mw[y][g] = 0; }); });
+  D.online.forEach(function(r){ if (!inReg(r[0]) || !mw[r[2]]) return; mw[r[2]][r[1]] += r[4]; mw[r[2]].t += r[4]; });
+  var a = 0, b = {}; [2021, 2022, 2023, 2024].forEach(function(y){ a += mw[y].t; G.forEach(function(g){ b[g] = (b[g] || 0) + mw[y][g]; }); });
+  var top = G.slice().sort(function(x, y){ return b[y] - b[x]; });
+  var opN = 0, datedN = 0; D.requests.forEach(function(r){ if (inReg(r[0]) && r[3] === 'o') opN += r[4]; }); D.online.forEach(function(r){ if (inReg(r[0])) datedN += r[3]; });
+  document.getElementById('s3-lead').innerHTML = 'Compare this with section 2: what gets built is a thin slice of what is asked for. From 2021 to 2024, ' + (S.region === 'US' ? 'the U.S.' : RL[S.region]) + ' added about <b>' + Math.round(a / 4000) + ' GW a year</b> through the queue, led by <b>' + GL[top[0]].toLowerCase() + '</b> (' + pct(b[top[0]] / a) + ') and ' + GL[top[1]].toLowerCase() + ' (' + pct(b[top[1]] / a) + ').' + (S.region === 'US' ? ' The ink line is EIA\'s count of every new transmission-connected plant in the same area; the queue data runs short of it, most of all in 2025.' : '');
+  document.getElementById('s3-cap').textContent = 'By the year each built project started operating. Only ' + pct(datedN / Math.max(opN, 1)) + ' of built projects in this selection have an in-service date in the data, so these bars run low, and 2025 is still being filled in. ' + (S.region === 'US' ? 'EIA\'s count (ink line) is the better total; the bars show the mix. Storage and solar + storage are understated †.' : 'Pick All U.S. to compare with EIA\'s count.');
+}
+
+/* ---------- 4. outcomes ---------- */
+function s4(){
+  var d = {}, raw = {}; YRS.forEach(function(y){ d[y] = {o: 0, s: 0, a: 0, w: 0}; raw[y] = {o: 0, s: 0, a: 0, w: 0, t: 0}; });
+  D.requests.forEach(function(r){ if (!inReg(r[0]) || !d[r[2]]) return; var x = v(r[4], r[5]), k = r[3] === 's' ? 'a' : r[3]; raw[r[2]][k] += x; raw[r[2]].t += x; });
+  YRS.forEach(function(y){ ['o','s','a','w'].forEach(function(k){ d[y][k] = raw[y].t ? raw[y][k] / raw[y].t : 0; }); });
+  var fill = {}, label = {}; OUT.forEach(function(o){ fill[o[0]] = o[2]; label[o[0]] = o[1]; });
+  var byT = {}; YRS.forEach(function(y){ byT[y] = {}; });
+  D.requests.forEach(function(r){ if (!inReg(r[0]) || !byT[r[2]]) return; var o = byT[r[2]][r[1]] = byT[r[2]][r[1]] || {o: 0, t: 0}; var x = v(r[4], r[5]); o.t += x; if (r[3] === 'o') o.o += x; });
+  columns('c-outcome', YRS, d, {pct: true, keys: ['o','a','w'], fill: fill, label: label, shade: [2021], shadeLabel: 'TOO SOON TO JUDGE', aria: 'Outcome by request year',
+    extraTip: function(y){ var rr = raw[y], h = '<div class="tip-sub">' + fmt(rr.t) + ' requested: ' + fmt(rr.o) + ' built, ' + fmt(rr.w) + ' withdrew</div><div class="tip-sub">built, by type</div>';
+      G.slice().sort(function(a, b){ return ((byT[y][b] || {}).t || 0) - ((byT[y][a] || {}).t || 0); }).forEach(function(g){ var o = byT[y][g]; if (!o || o.t < (S.measure === 'gw' ? .05 : .5)) return;
+        h += '<div class="tip-row"><span class="tip-sw" style="background:' + SWCSS[g] + '"></span>' + GL[g] + '<span class="v">' + pct(o.o / o.t) + ' of ' + fmt(o.t) + '</span></div>'; }); return h; }});
+  var t = {o: 0, w: 0, a: 0, s: 0, t: 0}; D.requests.forEach(function(r){ if (!inReg(r[0]) || r[2] < 2000 || r[2] > 2020) return; var x = v(r[4], r[5]), k = r[3] === 's' ? 'a' : r[3]; t[k] += x; t.t += x; });
+  var us = {o: 0, t: 0}; D.requests.forEach(function(r){ if (r[2] < 2000 || r[2] > 2020) return; var x = v(r[4], r[5]); if (r[3] === 'o') us.o += x; us.t += x; });
+  var unit = S.measure === 'gw' ? 'capacity' : 'projects';
+  document.getElementById('s4-lead').innerHTML = 'Most requests never get built. Of the ' + unit + ' that entered ' + (S.region === 'US' ? 'U.S. queues' : RL[S.region] + '\'s queue') + ' from 2000 to 2020, only <b>' + pct(t.o / t.t) + '</b> had been built by the end of 2025. <b>' + pct(t.w / t.t) + '</b> withdrew and ' + pct(t.a / t.t) + ' is still waiting.' + (S.region === 'US' ? ' Entering is cheap and leaving is common, so developers file early and drop the projects that don\'t work out, like applying to many colleges.' : ' Across the U.S. the figure is ' + pct(us.o / us.t) + ', so ' + RL[S.region].split(' (')[0] + ' is ' + (t.o / t.t > us.o / us.t ? 'better' : 'worse') + ' than average.');
+}
+
+function render(){ s1(); s2(); s3(); s4(); sAdv(); }
+render();
+var rt; addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(render, 150); });
+}
+})();
+</script>
+</body>
+</html>
