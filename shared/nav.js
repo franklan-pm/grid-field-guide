@@ -10,7 +10,8 @@
     { dir: '03-der-microgrids',  short: 'DER & microgrids', title: 'DER & microgrids' },
     { dir: '04-grid-operations', short: 'Grid operations',  title: 'Grid operations' },
     { dir: '05-batteries',       short: 'Batteries',        title: 'Batteries' },
-    { dir: '06-vpp',             short: 'VPPs',             title: 'Virtual power plants' }
+    { dir: '06-vpp',             short: 'VPPs',             title: 'Virtual power plants' },
+    { dir: '07-interconnection', short: 'Interconnect',     title: 'Interconnection queues' }
   ];
 
   var path = location.pathname;
