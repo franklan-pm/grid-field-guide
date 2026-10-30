@@ -84,6 +84,7 @@ svg text{font-family:var(--f-mono);fill:var(--ink-3);font-size:11px;letter-spaci
 .zone:focus-visible .bg{stroke:var(--ink);stroke-width:2;stroke-dasharray:none}
 .zone .tag{font-size:10.5px;letter-spacing:.1em}
 .zone .name{fill:var(--ink);font:600 21px var(--f-display);letter-spacing:.03em}
+.band{pointer-events:none}
 .box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.2}
 .box.sys{stroke:var(--data)}
 .box.site{stroke:var(--v-secondary)}
@@ -349,12 +350,16 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="tag" x="70" y="232">CHAPTER 1</text>
           <text class="name" x="70" y="257">POWER MIX →</text>
           <rect class="box" x="79" y="282" width="167" height="43"/>
+          <rect class="band" x="79" y="282" width="6" height="43" fill="var(--fuel-gas)"/>
           <text class="lbl" x="91" y="308">Gas plant</text>
           <rect class="box" x="79" y="342" width="167" height="43"/>
+          <rect class="band" x="79" y="342" width="6" height="43" fill="var(--fuel-wind)"/>
           <text class="lbl" x="91" y="368">Wind</text>
           <rect class="box" x="79" y="402" width="167" height="43"/>
+          <rect class="band" x="79" y="402" width="6" height="43" fill="var(--fuel-solar)"/>
           <text class="lbl" x="91" y="428">Solar PV</text>
           <rect class="box" x="79" y="462" width="167" height="43"/>
+          <rect class="band" x="79" y="462" width="6" height="43" fill="var(--fuel-battery)"/>
           <text class="lbl" x="91" y="488">Battery</text>
           <path class="hv" d="M246 303 H302 M246 363 H302 M246 423 H302 M246 483 H302"/>
           <rect class="bus" x="300" y="286" width="5" height="215" fill="var(--v-hv)"/>
