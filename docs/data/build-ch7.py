@@ -38,6 +38,12 @@ op["y"] = op.on_date.dt.year.astype(int)
 oa = op.groupby(["region", "g", "y"]).agg(n=("mw", "size"), mw=("mw", "sum")).reset_index()
 online = [[r.region, r.g, int(r.y), int(r.n), round(float(r.mw), 1)] for r in oa.itertuples()]
 
+# B2. typical time from request to operation: median months between request date and in-service
+#     date, by the year the project came online (all regions; projects with both dates only)
+tt = op[op.q_date.notna()].copy()
+tt["m"] = (tt.on_date - tt.q_date).dt.days / 30.4375
+months = {int(y): [int(len(z)), round(float(z.m.median()), 1)] for y, z in tt.groupby("y") if y >= 2015}
+
 # C. EIA national online totals (tab 21), transmission-connected, LBNL footprint
 t21 = pd.read_excel(src, sheet_name="21. Operational Volume Trend", header=None)
 eia = {}
@@ -74,9 +80,10 @@ for reg in ["US"] + REGIONS:
 json.dump({"source": "LBNL / Interconnection.fyi, Queued Up 2026 data file (through end of 2025), tab 03; EIA totals from tab 21",
            "fields": {"requests": "region, group, request year, status (a active, o operational, w withdrawn, s suspended), projects, MW",
                       "online": "region, group, in-service year, projects, MW (operational projects with a date only)",
+                      "months": "in-service year -> [projects, median months from request to operation], all regions, 2015 on",
                       "reported": "region -> active GW as reported by Berkeley Lab (tab 10), incl. estimated hybrid batteries",
                       "rates": "region -> group -> [requests made 2000-2020, share built by count, share built by MW]"},
-           "requests": requests, "online": online, "eia": eia, "reported": reported, "rates": rates},
+           "requests": requests, "online": online, "months": months, "eia": eia, "reported": reported, "rates": rates},
           open(out, "w"), separators=(",", ":"))
 print("rows", len(requests), len(online), "bytes", len(open(out).read()))
 for k, v in rates.items(): print(k, v)
