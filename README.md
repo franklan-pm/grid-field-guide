@@ -12,6 +12,7 @@ Six interactive chapters that follow electricity from the power plant to the cus
 | 4 | Grid operations | How do the software systems run all of it? | `apps/04-grid-operations` |
 | 5 | Batteries | How do batteries move energy in time? | `apps/05-batteries` |
 | 6 | Virtual power plants | How do 20,000 homes act like one power plant? | `apps/06-vpp` |
+| 7 | Interconnection queues | Who is waiting to connect to the grid, and what gets built? | `apps/07-interconnection` |
 
 The guide is styled as an engineering drawing sheet: vellum (light, the default) and blueprint (dark). Every page is plain HTML with no build step. Open `index.html` in a browser, or serve the folder with any static server.
 
