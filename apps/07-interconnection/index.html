@@ -40,7 +40,8 @@
   .legend .has-tip{cursor:help;text-decoration:underline dotted;text-underline-offset:3px;}
 
   section.part{border:1px solid var(--ink);background:var(--sheet);padding:22px 22px 18px;margin:22px 0;}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:6px 0 16px;}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px;}
+  @media (max-width:760px){.tiles{grid-template-columns:1fr;}}
   .tile{border:1px solid var(--band);border-top:4px solid var(--ink);padding:9px 12px;background:var(--sheet);}
   .tile .k{font:400 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);}
   .tile .v{font:600 30px/1.15 var(--f-body);margin-top:2px;}
@@ -203,14 +204,14 @@
 
   <details class="sources">
     <summary>Sources and method</summary>
-    <p>Rand et al., <i>Queued Up: 2026 Edition</i> data file (Lawrence Berkeley National Laboratory and Interconnection.fyi, May 2026), data through the end of 2025: tab 3 (every request), and tab 21 for EIA's count of new transmission-connected capacity. Built from <code>docs/data/build-ch7.py</code>. Capacity is the sum of each project's listed parts (MW 1–3), so a hybrid's battery counts only where the queue gives its size (see note † in section 1). Headline and regional totals of active capacity (2,061 GW) are the report's own, from tab 10. The report counts 8,244 active projects and the data file lists 8,513 (the report text says 47 non-ISO balancing areas and the file says 50); this is not reconciled. ⚠ Types: Solar; Solar + storage (Solar+Battery); Storage (Battery, Other Storage); Wind (incl. offshore and Wind+Battery); Gas (incl. gas hybrids); Other (hydro, nuclear, geothermal, coal, oil and other mixes). Regions are the 7 ISOs/RTOs plus non-ISO West and Southeast.</p>
+    <p>Rand et al., <i>Queued Up: 2026 Edition</i> data file (Lawrence Berkeley National Laboratory and Interconnection.fyi, May 2026), data through the end of 2025: tab 3 (every request), and tab 21 for EIA's count of new transmission-connected capacity. Built from <code>docs/data/build-ch7.py</code>. "Gets built" is the share of capacity requested in 2000–2020 that was operating by the end of 2025. "Request to operation" is the median time between a project's request date and its in-service date, for projects that came online in 2024. Capacity is the sum of each project's listed parts (MW 1–3), so a hybrid's battery counts only where the queue gives its size (see note † in section 1). Headline and regional totals of active capacity (2,061 GW) are the report's own, from tab 10. The report counts 8,244 active projects and the data file lists 8,513 (the report text says 47 non-ISO balancing areas and the file says 50); this is not reconciled. ⚠ Types: Solar; Solar + storage (Solar+Battery); Storage (Battery, Other Storage); Wind (incl. offshore and Wind+Battery); Gas (incl. gas hybrids); Other (hydro, nuclear, geothermal, coal, oil and other mixes). Regions are the 7 ISOs/RTOs plus non-ISO West and Southeast.</p>
   </details>
 </div>
 <div id="tip" role="tooltip"></div>
 
 <script>
 (function(){
-var DATA_V = '3';
+var DATA_V = '4';
 Promise.all(['data/ch7-queue.json', 'data/ch7-map.json'].map(function(u){
   return fetch(u + '?v=' + DATA_V).then(function(r){ if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
 })).then(function(r){ init(r[0], r[1]); }).catch(function(e){
@@ -226,6 +227,7 @@ var RL = {US:'All U.S.',CAISO:'CAISO (California)',ERCOT:'ERCOT (Texas)','ISO-NE
 var S = {region:'US', measure:'gw', view:'map'};
 var SWCSS = {solar:'var(--fuel-solar)',hybrid:'repeating-linear-gradient(45deg,var(--fuel-solar) 0 3px,var(--fuel-battery) 3px 5px)',storage:'var(--fuel-battery)',wind:'var(--fuel-wind)',gas:'var(--fuel-gas)',other:'var(--band)',o:'var(--ink)',a:'repeating-linear-gradient(45deg,var(--sheet) 0 2px,var(--ink-3) 2px 3px)',w:'var(--dead)',est:'repeating-linear-gradient(-45deg,var(--sheet) 0 2px,var(--fuel-battery) 2px 3px)'};
 var NOW = 2026, LEAD = 5;
+var FLEET_GW = 1374;   // the whole U.S. power plant fleet today, GW (supplied by Frank; source to be added)
 
 /* ---------- helpers ---------- */
 function v(n, mw){ return S.measure === 'gw' ? mw / 1000 : n; }
@@ -328,8 +330,11 @@ function s1(){
   var lead = ranked[0], sec = ranked[1], solarish = (a.g.solar.mw + a.g.hybrid.mw + a.g.storage.mw) / a.mw, rep = repGW(S.region);
   document.getElementById('s1-lead').innerHTML = (S.region === 'US' ? 'Across the U.S.' : 'In ' + RL[S.region] + ',') + ' <b>' + Math.round(rep).toLocaleString() + ' GW</b> of projects are waiting to connect (Berkeley Lab\'s headline figure, end of 2025). Going by the project data †, the biggest share is <b>' + GL[lead].toLowerCase() + '</b> (' + pct(a.g[lead].mw / a.mw) + '), then ' + GL[sec].toLowerCase() + ' (' + pct(a.g[sec].mw / a.mw) + '). Solar, storage and the two together make up <b>' + pct(solarish) + '</b> of it.';
   var size = a.mw / a.n;
+  var built = D.rates.US.all[2], regR = S.region !== 'US' && D.rates[S.region] ? D.rates[S.region].all : null, mo = D.months['2024'];
   document.getElementById('s1-tiles').innerHTML =
-    '<div class="tile"><div class="k">Waiting</div><div class="v">' + Math.round(rep).toLocaleString() + ' GW</div><div class="s">of capacity in active requests, as reported by Berkeley Lab. ' + (rep - a.mw / 1000 >= 1 ? 'It includes about ' + Math.round(rep - a.mw / 1000) + ' GW estimated for hybrid batteries †.' : 'No hybrid-battery estimate was added for this region †.') + '</div></div>' +
+    '<div class="tile"><div class="k">Waiting</div><div class="v">' + Math.round(rep).toLocaleString() + ' GW</div><div class="s">of capacity in active requests, as reported by Berkeley Lab.' + (S.region === 'US' ? ' Versus the entire power plant fleet of ' + FLEET_GW.toLocaleString() + ' GW currently in the U.S.' : '') + '</div></div>' +
+    '<div class="tile"><div class="k">Gets built</div><div class="v">' + pct(built) + '</div><div class="s">of requested capacity gets built (U.S. requests made 2000–2020).' + (regR && regR[0] >= 100 ? ' In ' + RL[S.region].split(' (')[0] + ': ' + pct(regR[2]) + '.' : '') + '</div></div>' +
+    '<div class="tile"><div class="k">Request to operation</div><div class="v">' + Math.round(mo[1] / 12) + ' years</div><div class="s">(' + Math.round(mo[1]) + ' months, typical) from interconnection request to operation, for U.S. projects that came online in 2024.</div></div>' +
     '<div class="tile"><div class="k">Projects</div><div class="v">' + a.n.toLocaleString() + '</div><div class="s">active requests in the data file' + (S.region === 'US' ? ' (the report\'s text says 8,244; not reconciled, see sources)' : '') + '</div></div>' +
     '<div class="tile"><div class="k">Typical size</div><div class="v">' + Math.round(size) + ' MW</div><div class="s">average request in this queue, from the project data</div></div>';
   // from the report's headline to the by-year charts
