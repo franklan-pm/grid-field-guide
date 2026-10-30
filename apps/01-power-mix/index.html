@@ -81,6 +81,10 @@
   details.adv{margin:4px 0 14px;}
   details.adv summary{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--ink);padding:8px 12px;border:1px dashed var(--band);display:inline-block;}
   details.adv summary:hover{background:var(--hover-fill);}
+  details.socExplain{margin:10px 4px 0;}
+  details.socExplain .explain{margin-top:8px;padding:2px 12px;border-left:3px solid var(--band);font-size:14.5px;line-height:1.5;color:var(--ink-2);max-width:720px;}
+  details.socExplain .explain p{margin:8px 0;}
+  details.socExplain .explain strong{color:var(--ink);}
   .linkbtn{font:inherit;color:var(--ink);font-weight:600;background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
   @keyframes flash{0%,100%{outline:2px solid transparent;}30%{outline:2px solid var(--ink);}}
   .ctl.flash{animation:flash 1.2s ease-in-out 2;outline-offset:2px;}
@@ -227,8 +231,16 @@
       <svg class="chart" id="mainChart" viewBox="0 0 960 330"></svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-top"><h3>Battery state of charge</h3><span class="chk" id="socNote"></span></div>
+      <div class="chart-top"><h3>Battery state of charge</h3><span><span class="chk" id="socNote"></span> <button class="linkbtn" id="socHelp" aria-label="Explain the battery numbers" onclick="const d=$('socExplain'); d.open=!d.open;">?</button></span></div>
       <svg class="chart" id="socChart" viewBox="0 0 960 130"></svg>
+      <details class="adv socExplain" id="socExplain"><summary>What do these numbers mean?</summary>
+        <div class="explain">
+          <p><strong><span data-soc="mwh"></span> MWh</strong> is the energy capacity: the total amount the battery can store.</p>
+          <p><strong><span data-soc="mw"></span> MW</strong> is the power rating: the most it can charge or discharge at any moment. At that rate a full battery takes about <span data-soc="hours"></span> hours to empty (before losses).</p>
+          <p><strong>Usable window <span data-soc="lo"></span>–<span data-soc="hi"></span>%</strong> means the simulation never lets the battery fall below or rise above those levels, which are the two dashed lines on the chart. Real batteries are kept out of the extremes to protect their lifespan, so only the middle is used: <span data-soc="usable"></span> MWh, between <span data-soc="emin"></span> and <span data-soc="emax"></span> MWh. That is why the curve flattens at the top line when the battery is full and at the bottom line when it is empty.</p>
+          <p>The bars show charging and discharging power: hatched bars are charging, solid bars are discharging.</p>
+        </div>
+      </details>
     </div>
 
     <div class="group-title">Over the whole day</div>
@@ -601,6 +613,10 @@ function renderNow(){
   $('story').innerHTML = storyText(n, bs);
   $('story').classList.toggle('warn', n.uns > 0.05);
   $('socNote').textContent = S.bessMWh ? `usable window ${SOC_MIN*100}–${SOC_MAX*100}% · ${S.bessMWh} MWh · ${S.bessMW} MW` : 'no battery installed';
+  $('socExplain').hidden = $('socHelp').hidden = !S.bessMWh;
+  const socVals = { mwh:S.bessMWh, mw:S.bessMW, hours:S.bessMW > 0 ? f1(S.bessMWh / S.bessMW) : '—', lo:SOC_MIN*100, hi:SOC_MAX*100,
+    usable:f1((SOC_MAX - SOC_MIN) * S.bessMWh), emin:f1(SOC_MIN * S.bessMWh), emax:f1(SOC_MAX * S.bessMWh) };
+  document.querySelectorAll('[data-soc]').forEach(el => el.textContent = socVals[el.dataset.soc]);
 }
 
 function storyText(n, bs){
