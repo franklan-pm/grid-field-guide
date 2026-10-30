@@ -1,5 +1,6 @@
 // Builds docs/data/ch7-map.json for the chapter 7 map.
-//   node build-ch7-map.js ch7-county-input.json ch7-map.json
+//   node build-ch7-map.js ch7-county-input.json ch7-map.json [ch7-countyyear-input.json ch7-map-years.json]
+// The optional last two arguments also write the advanced year-by-year map data (see build-ch7-countyyear.py).
 // Needs: npm install us-atlas@3 topojson-client@3 topojson-simplify@3 d3-geo@3
 //
 // Region footprints are NOT official ISO boundaries. Each county takes the region that has the
@@ -106,3 +107,22 @@ const outObj = { vb: [vx, vy, W, H], regions, labels, counties,
 fs.writeFileSync(out, JSON.stringify(outObj));
 const unmapped = Object.values(input).filter(c => c.act && Object.keys(c.act).length).length - counties.length;
 console.log('regions', names.join(','), 'counties with active', counties.length, 'unmapped (AK/HI/territories)', unmapped, 'bytes', fs.statSync(out).size);
+
+// 6. optional: county x year x type data for the advanced map. Counties share the region and the
+//    centre used above; rows are [county index, type group, request year, projects, MW].
+if (process.argv[4] && process.argv[5]) {
+  const yin = JSON.parse(fs.readFileSync(process.argv[4]));
+  const ycounties = [], yrows = []; let ymin = 9999, ymax = 0;
+  idx.forEach(i => {
+    const c = yin[fips[i]]; if (!c) return;
+    const cen = path.centroid(topo.feature(t, geoms[i]));
+    if (!isFinite(cen[0])) return;
+    const ci = ycounties.length;
+    ycounties.push([fips[i], c.name, c.state, Math.round(cen[0] * 10) / 10, Math.round(cen[1] * 10) / 10, reg[i]]);
+    Object.keys(c.y).forEach(g => Object.keys(c.y[g]).forEach(yr => {
+      const v = c.y[g][yr]; yrows.push([ci, g, +yr, v[0], v[1]]); ymin = Math.min(ymin, +yr); ymax = Math.max(ymax, +yr);
+    }));
+  });
+  fs.writeFileSync(process.argv[5], JSON.stringify({ vb: [vx, vy, W, H], years: [ymin, ymax], counties: ycounties, rows: yrows }));
+  console.log('year map: counties', ycounties.length, 'rows', yrows.length, 'years', ymin + '-' + ymax, 'bytes', fs.statSync(process.argv[5]).size);
+}
