@@ -84,6 +84,7 @@
   #adv-year{font:600 30px/1 var(--f-display);color:var(--ink);letter-spacing:.02em;min-width:58px;}
   #adv-readout{font-size:15px;color:var(--ink-2);margin:0 0 10px;}
   #adv-readout b{color:var(--ink);}
+  #adv-readout .m{font:400 12px var(--f-mono);color:var(--ink-3);}
   #adv-mix svg{display:block;width:100%;height:auto;max-width:860px;margin:6px 0 4px;}
   .adv-body{padding-bottom:14px;}
   .tip-row{display:flex;align-items:center;gap:7px;margin-top:3px;}
@@ -149,18 +150,19 @@
     <details class="adv" id="adv">
       <summary>Advanced: watch the queue grow, year by year</summary>
       <div class="adv-body">
-        <p class="lead" style="margin-bottom:10px">Every request, placed on the map in the year it entered the queue. Press play to watch where projects were proposed and how the mix of types changed. The Region and Measure menus above apply here too.</p>
+        <p class="lead" style="margin-bottom:10px">Requests placed on the map in the year they entered the queue. Choose which ones to show: everything ever requested, only those still waiting today (what the map above shows), or those that were withdrawn. Two views are about projects that were built: <b>Built (by request year)</b> places them in the year they were requested, and <b>Came online</b> places them in the year they began operating. Press play to watch where projects were proposed and how the mix of types changed. The Region and Measure menus above apply here too.</p>
         <div class="adv-ctl">
           <span class="seg" id="adv-mode"><button type="button" data-m="cum" aria-pressed="true">Through this year</button><button type="button" data-m="one" aria-pressed="false">This year only</button></span>
+          <span class="seg" id="adv-status" aria-label="Which requests to show"><button type="button" data-s="all" aria-pressed="true">All requests</button><button type="button" data-s="a" aria-pressed="false">Still waiting</button><button type="button" data-s="w" aria-pressed="false">Withdrawn</button><button type="button" data-s="o" aria-pressed="false">Built (by request year)</button><button type="button" data-s="on" aria-pressed="false">Came online (by year online)</button></span>
           <span class="seg"><button type="button" id="adv-play" aria-pressed="false">&#9654; Play</button></span>
-          <input type="range" id="adv-range" min="2005" max="2025" step="1" value="2025" aria-label="Request year">
+          <input type="range" id="adv-range" min="2005" max="2025" step="1" value="2025" aria-label="Year">
           <span id="adv-year" aria-live="polite">2025</span>
         </div>
         <p id="adv-readout"></p>
         <div class="legend" id="adv-legend" style="margin:0 0 8px"></div>
         <div class="mapbox" id="adv-map"></div>
         <div id="adv-mix"></div>
-        <p class="cap">Each bubble is a county; its size is the <span id="adv-unit"></span> requested there and its color is the type with the most. The bubble scale is the same in every year, so years can be compared. All requests count, whatever happened to them later (built, withdrawn or still waiting). Requests with no county or no request date (about 6% of requests) are not shown.</p>
+        <p class="cap">Each bubble is a county; its size is the <span id="adv-unit"></span> <span id="adv-verb">requested</span> there and its color is the type with the most. The bubble scale is the same in every year, so years can be compared. <span id="adv-capnote"></span></p>
       </div>
     </details>
 
@@ -208,7 +210,7 @@
 
 <script>
 (function(){
-var DATA_V = '1';
+var DATA_V = '3';
 Promise.all(['data/ch7-queue.json', 'data/ch7-map.json'].map(function(u){
   return fetch(u + '?v=' + DATA_V).then(function(r){ if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
 })).then(function(r){ init(r[0], r[1]); }).catch(function(e){
@@ -397,7 +399,9 @@ function s1Map(a){
 
 /* ---------- 1c. advanced: the queue year by year ---------- */
 var AY = null, advLoading = false, advTimer = null;
-S.advYear = 2025; S.advMode = 'cum';
+S.advYear = 2025; S.advMode = 'cum'; S.advStatus = 'all';
+var ADV_ST = {all: 'All requests', a: 'Still waiting', o: 'Built, by request year', w: 'Withdrawn', on: 'Came online'};
+function advWhen(cum, yr){ return (S.advStatus === 'on' ? 'came online ' : 'requested ') + (cum ? 'through ' : 'in ') + yr; }
 function advLoad(){
   if (AY || advLoading) return; advLoading = true;
   document.getElementById('adv-map').innerHTML = '<p class="cap" style="padding:14px">Loading the year-by-year data…</p>';
@@ -411,32 +415,52 @@ function sAdv(){
   if (!AY) { advLoad(); return; }
   var yr = S.advYear, cum = S.advMode === 'cum', byC = {}, byT = {}, totN = 0, totMW = 0;
   G.forEach(function(g){ byT[g] = 0; });
-  AY.rows.forEach(function(r){ if (cum ? r[2] > yr : r[2] !== yr) return;
-    var c = byC[r[0]] || (byC[r[0]] = {val: 0, t: {}}), x = v(r[3], r[4]);
+  var online = S.advStatus === 'on', src = online ? AY.on : AY.rows, col = online ? 0 : 1;   // online rows have no status column
+  src.forEach(function(r){ if (cum ? r[2] > yr : r[2] !== yr) return;
+    if (!online && S.advStatus !== 'all' && r[3] !== S.advStatus) return;
+    var c = byC[r[0]] || (byC[r[0]] = {val: 0, t: {}}), n = r[3 + col], mw = r[4 + col], x = v(n, mw);
     c.val += x; c.t[r[1]] = (c.t[r[1]] || 0) + x;
-    if (inReg(AY.counties[r[0]][5])) { byT[r[1]] += x; totN += r[3]; totMW += r[4]; } });
+    if (inReg(AY.counties[r[0]][5])) { byT[r[1]] += x; totN += n; totMW += mw; } });
   var s = '';
   Object.keys(M.regions).forEach(function(r){ s += el('path', {d: M.regions[r], class: 'rg0'}); });
   var k = mapScale(), bubs = Object.keys(byC).map(function(i){ return {c: AY.counties[i], b: byC[i]}; }).filter(function(o){ return o.b.val > 0; }).sort(function(p, q){ return q.b.val - p.b.val; });
   bubs.forEach(function(o){ var c = o.c, top = null, tv = -1, on = S.region === 'US' || c[5] === S.region;
     G.forEach(function(g){ var x = o.b.t[g] || 0; if (x > tv) { tv = x; top = g; } });
     var rows = G.map(function(g){ return {key: g, label: GL[g], val: o.b.t[g] || 0}; }).sort(function(p, q){ return q.val - p.val; });
-    s += el('circle', {cx: c[3], cy: c[4], r: Math.max(Math.sqrt(o.b.val) * k, 1.6).toFixed(1), class: 'bub', 'data-tip': esc(tipCard(c[1] + ' County, ' + c[2], rows, {sub: RL[c[5]] + ' · ' + (cum ? 'requested through ' : 'requested in ') + yr})),
+    s += el('circle', {cx: c[3], cy: c[4], r: Math.max(Math.sqrt(o.b.val) * k, 1.6).toFixed(1), class: 'bub', 'data-tip': esc(tipCard(c[1] + ' County, ' + c[2], rows, {sub: RL[c[5]] + ' · ' + ADV_ST[S.advStatus] + ' · ' + advWhen(cum, yr)})),
       style: 'fill:' + FILL[top] + ';fill-opacity:' + (on ? .85 : .25) }); });
   s += mapLabels() + mapKey(AY.vb, k);
   document.getElementById('adv-map').innerHTML = '<svg viewBox="' + AY.vb.join(' ') + '" role="img" aria-label="Map of interconnection requests by county, ' + (cum ? 'through ' : 'in ') + yr + '">' + s + '</svg>';
   // type mix for the selected scope: one stacked bar
   var tot = G.reduce(function(a, g){ return a + byT[g]; }, 0), W = 600, x0 = 0, bar = '';
   G.forEach(function(g){ if (!byT[g]) return; var w = W * byT[g] / tot;
-    bar += el('rect', {x: x0.toFixed(1), y: 2, width: w.toFixed(1), height: 22, style: 'fill:' + FILL[g], 'data-tip': esc(tipCard('Mix of requests ' + (cum ? 'through ' : 'in ') + yr, G.map(function(h){ return {key: h, label: GL[h], val: byT[h]}; }).sort(function(p, q){ return q.val - p.val; }), {sub: RL[S.region]}))});
+    bar += el('rect', {x: x0.toFixed(1), y: 2, width: w.toFixed(1), height: 22, style: 'fill:' + FILL[g], 'data-tip': esc(tipCard((online ? 'Mix of projects ' : 'Mix of requests ') + (cum ? 'through ' : 'in ') + yr, G.map(function(h){ return {key: h, label: GL[h], val: byT[h]}; }).sort(function(p, q){ return q.val - p.val; }), {sub: RL[S.region] + ' · ' + ADV_ST[S.advStatus]}))});
     x0 += w; });
   document.getElementById('adv-mix').innerHTML = tot ? '<svg viewBox="0 0 ' + W + ' 26" role="img" aria-label="Share of requests by type">' + bar + '</svg>' : '';
   document.getElementById('adv-year').textContent = yr;
   document.getElementById('adv-unit').textContent = S.measure === 'gw' ? 'gigawatts' : 'number of projects';
-  document.getElementById('adv-readout').innerHTML = '<b>' + (cum ? 'Through ' + yr : 'In ' + yr) + '</b>, ' + (S.region === 'US' ? 'all U.S.' : RL[S.region]) + ': <b>' + Math.round(totMW / 1000).toLocaleString() + ' GW</b> across <b>' + totN.toLocaleString() + ' projects</b> requested' + (cum ? ' so far.' : '.');
+  document.getElementById('adv-verb').textContent = online ? 'that came online' : 'requested';
+  document.getElementById('adv-range').setAttribute('aria-label', online ? 'Year it came online' : 'Request year');
+  var scope = S.region === 'US' ? 'all U.S.' : RL[S.region], nums = '<b>' + Math.round(totMW / 1000).toLocaleString() + ' GW</b> across <b>' + totN.toLocaleString() + ' projects</b>';
+  document.getElementById('adv-readout').innerHTML = online
+    ? '<b>' + (cum ? 'Online through ' + yr : 'Came online in ' + yr) + '</b>, ' + scope + ': ' + nums + (cum ? ' so far' : '') + ' <span class="m">(built projects, by the year they began operating)</span>.'
+    : S.advStatus === 'o'
+    ? '<b>Requested ' + (cum ? 'through ' : 'in ') + yr + '</b>, ' + scope + ': ' + nums + ', <b>since built</b> <span class="m">(not the year they were built; see Came online for that)</span>.'
+    : '<b>' + (cum ? 'Through ' + yr : 'In ' + yr) + '</b>, ' + scope + ': ' + nums + ' requested' + (cum ? ' so far' : '') + ' <span class="m">(' + ADV_ST[S.advStatus].toLowerCase() + ')</span>.';
+  var tail = ' Requests with no county or no request date (about 6% of requests) are not shown.', m = AY.meta || {};
+  document.getElementById('adv-capnote').textContent = {
+    all: 'Showing all requests, whatever happened to them later: built, withdrawn, still waiting or suspended, so it is much larger than the map above, which shows only requests still waiting today.' + tail,
+    a: 'Showing only requests still waiting at the end of 2025, by the year they were made. At 2025 "through this year" this nearly matches the map above (requests with no date are not shown here).' + tail,
+    o: 'Showing only requests that were built (now operating), grouped by the year they were requested, not the year they were built. Projects take years to get built, so the most recent request years are nearly empty. To see when plants began operating, choose Came online.' + tail,
+    w: 'Showing only requests that were withdrawn, by the year they were made. Suspended requests (about 2%) appear only under All requests.' + tail,
+    on: 'Showing built projects by the year they began operating (their in-service date). Of ' + (m.builtTotal || 0).toLocaleString() + ' built projects, ' + (m.builtNoDate || 0).toLocaleString() + ' have no online date and ' + (m.builtNoCounty || 0).toLocaleString() + ' more have no county, so they are not shown.'
+  }[S.advStatus];
   document.getElementById('adv-legend').innerHTML = G.map(legSpan).join('');
 }
 document.getElementById('adv').addEventListener('toggle', function(){ if (this.open) sAdv(); else advStop(); });
+document.querySelectorAll('#adv-status button').forEach(function(b){
+  b.addEventListener('click', function(){ S.advStatus = b.dataset.s; document.querySelectorAll('#adv-status button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sAdv(); });
+});
 document.getElementById('adv-range').addEventListener('input', function(){ advStop(); S.advYear = +this.value; sAdv(); });
 document.querySelectorAll('#adv-mode button').forEach(function(b){
   b.addEventListener('click', function(){ S.advMode = b.dataset.m; document.querySelectorAll('#adv-mode button').forEach(function(x){ x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); sAdv(); });

@@ -109,20 +109,22 @@ const unmapped = Object.values(input).filter(c => c.act && Object.keys(c.act).le
 console.log('regions', names.join(','), 'counties with active', counties.length, 'unmapped (AK/HI/territories)', unmapped, 'bytes', fs.statSync(out).size);
 
 // 6. optional: county x year x type data for the advanced map. Counties share the region and the
-//    centre used above; rows are [county index, type group, request year, projects, MW].
+//    centre used above; rows are [county index, type group, request year, status, projects, MW];
+//    on are [county index, type group, year it came online, projects, MW] for built projects.
 if (process.argv[4] && process.argv[5]) {
   const yin = JSON.parse(fs.readFileSync(process.argv[4]));
-  const ycounties = [], yrows = []; let ymin = 9999, ymax = 0;
+  const ycounties = [], yrows = [], orows = []; let ymin = 9999, ymax = 0;
   idx.forEach(i => {
     const c = yin[fips[i]]; if (!c) return;
     const cen = path.centroid(topo.feature(t, geoms[i]));
     if (!isFinite(cen[0])) return;
     const ci = ycounties.length;
     ycounties.push([fips[i], c.name, c.state, Math.round(cen[0] * 10) / 10, Math.round(cen[1] * 10) / 10, reg[i]]);
-    Object.keys(c.y).forEach(g => Object.keys(c.y[g]).forEach(yr => {
-      const v = c.y[g][yr]; yrows.push([ci, g, +yr, v[0], v[1]]); ymin = Math.min(ymin, +yr); ymax = Math.max(ymax, +yr);
-    }));
+    Object.keys(c.y).forEach(g => Object.keys(c.y[g]).forEach(yr => Object.keys(c.y[g][yr]).forEach(st => {
+      const v = c.y[g][yr][st]; yrows.push([ci, g, +yr, st, v[0], v[1]]); ymin = Math.min(ymin, +yr); ymax = Math.max(ymax, +yr);
+    })));
+    Object.keys(c.on || {}).forEach(g => Object.keys(c.on[g]).forEach(yr => { const v = c.on[g][yr]; orows.push([ci, g, +yr, v[0], v[1]]); }));
   });
-  fs.writeFileSync(process.argv[5], JSON.stringify({ vb: [vx, vy, W, H], years: [ymin, ymax], counties: ycounties, rows: yrows }));
+  fs.writeFileSync(process.argv[5], JSON.stringify({ vb: [vx, vy, W, H], years: [ymin, ymax], counties: ycounties, rows: yrows, on: orows, meta: yin._meta }));
   console.log('year map: counties', ycounties.length, 'rows', yrows.length, 'years', ymin + '-' + ymax, 'bytes', fs.statSync(process.argv[5]).size);
 }
