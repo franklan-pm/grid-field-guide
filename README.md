@@ -44,3 +44,11 @@ Each chapter started as its own repo. They were imported here with their full co
 | [grid-mod-operations](https://github.com/franklan-pm/grid-mod-operations) | `apps/04-grid-operations` |
 
 These are learning tools, not engineering references. Values are simplified and typical.
+
+## License
+
+- **Code** (JavaScript, CSS, and the script and style blocks in the pages): [MIT](LICENSE)
+- **Content** (chapter text, quiz and glossary text, diagrams, images, `docs/`): [CC BY-NC-ND 4.0](LICENSE-CONTENT.md)
+- **Name and branding** ("Grid Field Guide", franklan.net, the drawing-sheet title block): not licensed for reuse, see [TRADEMARK.md](TRADEMARK.md)
+
+If you fork this project, use your own name, domain and content.

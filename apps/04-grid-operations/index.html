@@ -13,6 +13,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grid operations · Grid Field Guide</title>
+<meta name="description" content="How do the software systems run the grid? SCADA, ADMS, OMS, DERMS and more, with five real-life scenarios.">
+<link rel="canonical" href="https://franklan.net/apps/04-grid-operations/">
+<meta name="author" content="Frank Lan">
+<meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
+<meta property="og:site_name" content="Grid Field Guide">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Grid operations · Grid Field Guide">
+<meta property="og:description" content="How do the software systems run the grid? SCADA, ADMS, OMS, DERMS and more, with five real-life scenarios.">
+<meta property="og:url" content="https://franklan.net/apps/04-grid-operations/">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -201,7 +211,7 @@ svg{font-family:var(--f-mono)}
     </div>
     <p class="sub" data-show="explore">Moving dashes show direction; arrowheads at both ends mean a two-way exchange. Click any box (or the power strip at the bottom) to see what it does and what it talks to. Lower layers act faster: protection works in milliseconds, forecasting works over hours to days. Enterprise systems on the left are back-office tools and sit outside that timing scale.</p>
     <div data-show="scen" hidden>
-      <p class="sub">Pick a situation and step through it. Each step lights up only the parts of the model involved, so you can follow one story at a time. Use the buttons or your arrow keys. You can still click any box for its full description.</p>
+      <p class="sub">Pick a situation and step through it. Each step lights up only the parts of the model involved, so you can follow one story at a time. Use the buttons or your arrow keys. You can still click any box for its full description. Each story is told in the order the signals travel.</p>
       <div class="scen-pick" id="scenPick"></div>
     </div>
     <p class="sub" data-show="quiz" hidden>50 questions on how the systems fit together, written for people who know the equipment and want the bigger picture. After each answer, read the explanation, then use “Show this in the model” to see the parts involved. Pick a topic to practice one area. Your progress is saved in this browser.</p>
