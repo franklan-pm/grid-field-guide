@@ -112,6 +112,15 @@
     host.style.margin = '-' + cs.paddingTop + ' -' + cs.paddingRight + ' ' + cs.paddingTop + ' -' + cs.paddingLeft;
     document.body.insertBefore(host, document.body.firstChild);
     if (window.GFG && GFG.theme) GFG.theme.sync();
+    // Copyright notice at the foot of every chapter.
+    var c = document.createElement('p');
+    c.className = 'gfg-copyright';
+    c.style.cssText = 'margin:40px auto 0;max-width:1240px;padding:16px 0 0;border-top:1px solid var(--band,#5D7EA1);' +
+      'font:400 11.5px/1.5 ' + MONO + ';letter-spacing:.02em;color:var(--ink-3,#93AAC1);text-align:center';
+    c.innerHTML = '© 2026 Frank Lan · Grid Field Guide · <a href="https://franklan.net/" style="color:inherit">franklan.net</a>' +
+      ' · Content <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="license noopener" style="color:inherit">CC BY-NC-ND 4.0</a>' +
+      ' · Code MIT';
+    document.body.appendChild(c);
   }
   if (document.body) mount(); else document.addEventListener('DOMContentLoaded', mount);
 })();
