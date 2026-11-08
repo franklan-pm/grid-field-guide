@@ -241,7 +241,7 @@ var FLEET_GW = 1374;   // the whole U.S. power plant fleet today, GW (supplied b
 /* ---------- helpers ---------- */
 function v(n, mw){ return S.measure === 'gw' ? mw / 1000 : n; }
 function inReg(r){ return S.region === 'US' || r === S.region; }
-function fmt(x){ if (S.measure === 'gw') return (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(0) : x.toFixed(1)) + ' GW'; return Math.round(x).toLocaleString() + ' projects'; }
+function fmt(x){ if (S.measure === 'gw') return x < 1 ? Math.round(x * 1000).toLocaleString() + ' MW' : (x >= 100 ? Math.round(x) : x >= 10 ? x.toFixed(0) : x.toFixed(1)) + ' GW'; return Math.round(x).toLocaleString() + ' projects'; }
 function fmtN(x, unit){ return unit === 'gw' ? (x >= 10 ? Math.round(x) : x.toFixed(1)) + ' GW' : Math.round(x).toLocaleString(); }
 function pct(x){ return Math.round(x * 100) + '%'; }
 function el(tag, a, txt){ var s = '<' + tag; for (var k in a) s += ' ' + k + '="' + a[k] + '"'; return s + (txt != null ? '>' + txt + '</' + tag + '>' : '/>'); }
@@ -251,7 +251,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function tipCard(title, rows, o){ o = o || {};
   var tot = rows.reduce(function(s, r){ return s + r.val; }, 0);
   var h = '<b>' + title + '</b>' + (o.sub ? '<div class="m">' + o.sub + '</div>' : '');
-  var th = S.measure === 'gw' ? .05 : .5;
+  var th = S.measure === 'gw' ? .001 : .5;
   rows.filter(function(r){ return r.val > 0 && (o.pctMode || r.val >= th); }).forEach(function(r){
     h += '<div class="tip-row"><span class="tip-sw" style="background:' + SWCSS[r.key] + '"></span>' + r.label + '<span class="v">' + (r.text || fmt(r.val)) + (o.noShare || !tot ? '' : ' · ' + pct(r.val / tot)) + '</span></div>'; });
   if (o.total !== false) h += '<div class="tip-sub">' + (o.totalLabel || 'total') + ' ' + (o.totalText || fmt(tot)) + '</div>';
