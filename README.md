@@ -20,8 +20,6 @@ The guide is styled as an engineering drawing sheet: vellum (light, the default)
 - `shared/theme.css`: every color as a token named by meaning (vellum and blueprint values), the font stacks, and the shared components (tabs, buttons, pills, panels, cards, quiz). Chapters use these tokens instead of hex values.
 - `shared/theme.js`: light/dark switch. Opens in light unless the reader chose otherwise; saves the choice under `gfg-theme` for the whole guide. Load it in `<head>` before the stylesheet.
 - `shared/nav.js`: the chapter bar at the top of every chapter, with the theme toggle. The chapter list lives here.
-- `docs/colors.md`: the fixed color mapping (one meaning per color in every chapter), line styles, data kinds, chart colors and contrast notes
-- `docs/design/`: the home-page mockups for the drawing-sheet design
 - `assets/thumbs/`: 640×360 detail views of each chapter's region of the home-page sheet, one blueprint (dark) and one vellum (`-light`) per chapter. Not shown on the home page itself.
 
 Each chapter page starts with:
@@ -48,7 +46,7 @@ These are learning tools, not engineering references. Values are simplified and 
 ## License
 
 - **Code** (JavaScript, CSS, and the script and style blocks in the pages): [MIT](LICENSE)
-- **Content** (chapter text, quiz and glossary text, diagrams, images, `docs/`): [CC BY-NC-ND 4.0](LICENSE-CONTENT.md)
+- **Content** (chapter text, quiz and glossary text, diagrams, images): [CC BY-NC-ND 4.0](LICENSE-CONTENT.md)
 - **Name and branding** ("Grid Field Guide", franklan.net, the drawing-sheet title block): not licensed for reuse, see [TRADEMARK.md](TRADEMARK.md)
 
 If you fork this project, use your own name, domain and content.
