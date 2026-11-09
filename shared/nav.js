@@ -5,13 +5,13 @@
    Styles live in a shadow root so they never touch the chapter's own CSS. */
 (function () {
   var CHAPTERS = [
-    { dir: '01-power-mix',       short: 'Power mix',        title: 'Power mix' },
-    { dir: '02-distribution',    short: 'Distribution',     title: 'Distribution' },
-    { dir: '03-der-microgrids',  short: 'DER & microgrids', title: 'DER & microgrids' },
-    { dir: '04-grid-operations', short: 'Grid operations',  title: 'Grid operations' },
-    { dir: '05-batteries',       short: 'Batteries',        title: 'Batteries' },
-    { dir: '06-vpp',             short: 'VPPs',             title: 'Virtual power plants' },
-    { dir: '07-interconnection', short: 'Interconnect',     title: 'Interconnection queues' }
+    { dir: 'power-mix',       short: 'Power mix',        title: 'Power mix' },
+    { dir: 'interconnection', short: 'Interconnect',     title: 'Interconnection queues' },
+    { dir: 'distribution',    short: 'Distribution',     title: 'Distribution' },
+    { dir: 'der-microgrids',  short: 'DER & microgrids', title: 'DER & microgrids' },
+    { dir: 'batteries',       short: 'Batteries',        title: 'Batteries' },
+    { dir: 'vpp',             short: 'VPPs',             title: 'Virtual power plants' },
+    { dir: 'grid-operations', short: 'Grid operations',  title: 'Grid operations' }
   ];
 
   var path = location.pathname;

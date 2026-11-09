@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://franklan.net/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/01-power-mix/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/02-distribution/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/03-der-microgrids/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/04-grid-operations/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/05-batteries/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/06-vpp/</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://franklan.net/apps/07-interconnection/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/power-mix/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/interconnection/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/distribution/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/der-microgrids/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/batteries/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/vpp/</loc><lastmod>2026-11-06</lastmod></url>
+  <url><loc>https://franklan.net/apps/grid-operations/</loc><lastmod>2026-11-06</lastmod></url>
 </urlset>

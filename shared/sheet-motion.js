@@ -1,5 +1,5 @@
-/* Landing page sheet motion: chapter 4 telemetry and chapter 5 battery rack.
-   Chapters 1 to 3 are animated in CSS (.flow in index.html) and are not touched here.
+/* Landing page sheet motion: chapter 7 telemetry and chapter 5 battery rack.
+   Chapters 1, 3 and 4 are animated in CSS (.flow in index.html) and are not touched here.
    Rules: only brightness, opacity, motion and fill level change, never hue. One rAF loop,
    paused off-screen. With prefers-reduced-motion this file does nothing, so the sheet stays static. */
 (function(){
@@ -56,19 +56,19 @@
     if(id){halos[id]=h;glow[id]=0;}
     return h;
   }
-  var NODE_CH={scada:4,adms:4,derms:4,recloser:2,'switch':2,pcc:3,bess:3,bms:5,pcs:5};
+  var NODE_CH={scada:7,adms:7,derms:7,recloser:3,'switch':3,pcc:4,bess:4,bms:5,pcs:5};
   Object.keys(NODE_CH).forEach(function(id){halo(id,q('[data-node="'+id+'"]'),false,NODE_CH[id]);});
   [].forEach.call(q('#modules').querySelectorAll('rect'),function(r){modHalos.push(halo(null,r,true,5));});
 
-  /* ---------- faint breathing on the chapter 4 and 5 box borders ---------- */
+  /* ---------- faint breathing on the chapter 7 and 5 box borders ---------- */
   var boxes=['scada','adms','derms','bms','pcs','rack'].map(function(id){return q('[data-node="'+id+'"]');});
 
   /* ---------- idle data lines recede so packets read as light passing through ---------- */
-  [].forEach.call(svg.querySelectorAll('.zone[data-ch="4"] .data, .zone[data-ch="5"] .data, #data-field'),function(el){el.classList.add('fx-dim');});
+  [].forEach.call(svg.querySelectorAll('.zone[data-ch="7"] .data, .zone[data-ch="5"] .data, #data-field'),function(el){el.classList.add('fx-dim');});
 
   /* ---------- telemetry guide paths, all drawn field to control room ---------- */
-  /* the data lines belong to chapter 4 (the control room), the BMS lines to chapter 5 */
-  var ROUTE_CH={recloser:4,'switch':4,sa:4,ad:4,pcc:4,bms:5,bmspcs:5};
+  /* the data lines belong to chapter 7 (the control room), the BMS lines to chapter 5 */
+  var ROUTE_CH={recloser:7,'switch':7,sa:7,ad:7,pcc:7,bms:5,bmspcs:5};
   var routes={
     recloser:'M539 392 V132',
     'switch':'M638 392 V165 H606 V132',
@@ -94,9 +94,9 @@
     cellsByMod[m]=row;
   });
 
-  /* ---------- power flow: the same travelling highlight as chapters 1 to 3, but reversible ---------- */
+  /* ---------- power flow: the same travelling highlight as chapters 1, 3 and 4, but reversible ---------- */
   var flows=[
-    {d:'M1078 418 V458 H1178 V498',c:'var(--v-secondary)',ch:3},
+    {d:'M1078 418 V458 H1178 V498',c:'var(--v-secondary)',ch:4},
     {d:'M1242 519.5 H1298',c:'var(--v-secondary)',ch:5},
     {d:'M1398 519.5 H1428',c:'var(--v-secondary)',ch:5}
   ].map(function(f){

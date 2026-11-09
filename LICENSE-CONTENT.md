@@ -36,6 +36,6 @@ everything else is content.
 ## Data from other sources
 
 Some chapters present public data, for example the Lawrence Berkeley National
-Laboratory interconnection queue data in chapter 7. That data stays under its
+Laboratory interconnection queue data in chapter 2. That data stays under its
 publisher's terms. This license covers only Frank Lan's own selection, analysis,
 explanation and presentation of it.
