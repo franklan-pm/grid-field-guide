@@ -1,4 +1,4 @@
-/* Chapter 2 one-line diagram motion: power flows out from the substation, and SCADA telemetry
+/* Chapter 3 one-line diagram motion: power flows out from the substation, and SCADA telemetry
    and commands travel quietly along the existing monitoring and control lines.
    Same rules as the landing sheet: only brightness, opacity and motion change, never hue;
    one rAF loop, paused off-screen; does nothing under prefers-reduced-motion. */

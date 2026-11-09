@@ -14,14 +14,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Grid operations · Grid Field Guide</title>
 <meta name="description" content="How do the software systems run the grid? SCADA, ADMS, OMS, DERMS and more, with five real-life scenarios.">
-<link rel="canonical" href="https://franklan.net/apps/04-grid-operations/">
+<link rel="canonical" href="https://franklan.net/apps/grid-operations/">
 <meta name="author" content="Frank Lan">
 <meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
 <meta property="og:site_name" content="Grid Field Guide">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Grid operations · Grid Field Guide">
 <meta property="og:description" content="How do the software systems run the grid? SCADA, ADMS, OMS, DERMS and more, with five real-life scenarios.">
-<meta property="og:url" content="https://franklan.net/apps/04-grid-operations/">
+<meta property="og:url" content="https://franklan.net/apps/grid-operations/">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,7 +190,7 @@ svg{font-family:var(--f-mono)}
   <div class="panel">
     <div class="head">
       <div class="titlebar">
-        <div><div class="eyebrow">Chapter 4 of 7 · How do the software systems run all of it?</div>
+        <div><div class="eyebrow">Chapter 7 of 7 · How do the software systems run all of it?</div>
         <h1>Grid operations: how the layers work together</h1></div>
       </div>
       <div class="legend">
@@ -263,7 +263,7 @@ const NODES = [
         in:'Forecasts from Analytics, DER availability from DERMS, prices and dispatch from the ISO.',
         out:'Dispatch schedules down to DERMS; bids to the ISO.',
         rate:'Minutes to hours.',
-        look:{href:'../06-vpp/index.html#diagram', text:'Look inside → Chapter 6: Virtual power plants'}}},
+        look:{href:'../vpp/index.html#diagram', text:'Look inside → Chapter 6: Virtual power plants'}}},
   {id:'drms', x:1118, y:178, w:310, h:106, title:'DR Management (DRMS)', sub:'customer programs',
    lines:['Pays customers to cut or shift use','at peaks. Events go out through vendor','clouds, never through SCADA.'], chip:'OpenADR events',
    rel:['meters'],

@@ -13,14 +13,14 @@
 <meta charset="UTF-8">
 <title>Distribution · Grid Field Guide</title>
 <meta name="description" content="How does power get from the substation to the meter? A clickable one-line diagram of a feeder, with faults, reclosers and restoration.">
-<link rel="canonical" href="https://franklan.net/apps/02-distribution/">
+<link rel="canonical" href="https://franklan.net/apps/distribution/">
 <meta name="author" content="Frank Lan">
 <meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
 <meta property="og:site_name" content="Grid Field Guide">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Distribution · Grid Field Guide">
 <meta property="og:description" content="How does power get from the substation to the meter? A clickable one-line diagram of a feeder, with faults, reclosers and restoration.">
-<meta property="og:url" content="https://franklan.net/apps/02-distribution/">
+<meta property="og:url" content="https://franklan.net/apps/distribution/">
 <meta name="twitter:card" content="summary">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,7 @@
 <style>
   /* Tabs, panels, buttons, chips, cards and quiz options come from shared/theme.css;
      only chapter-specific layout lives here. Line colors follow docs/colors.md:
-     orange = primary, blue = secondary, red = faults only. SCADA data uses chapter 4's
+     orange = primary, blue = secondary, red = faults only. SCADA data uses chapter 7's
      data-kind colors: teal dotted = monitoring (telemetry), magenta dashed = control. */
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -230,7 +230,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Chapter 2 of 7 · How does power get from the substation to the meter?</div>
+  <div class="eyebrow">Chapter 3 of 7 · How does power get from the substation to the meter?</div>
   <h1>Distribution Grid Equipment</h1>
   <p class="sub">Click through the live one-line diagram, then drill the vocabulary with flashcards, a quiz, and a circuit-building game. Includes feeder ties, SCADA/automation, reliability metrics, and rough equipment costs — from the substation fence to the customer's meter. Every device along the route has a job to do on the worst day of the year.</p>
 
@@ -491,7 +491,7 @@ function buildDiagram(){
   const FY = 196; // feeder elevation
 
   // ---- SCADA control center + comms (drawn first so everything sits on top)
-  // monitoring (telemetry) to both devices; control only to the switch, with a filled arrowhead, as in chapter 4
+  // monitoring (telemetry) to both devices; control only to the switch, with a filled arrowhead, as in chapter 7
   parts.push(`<defs><marker id="d2-ctl" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0L8,4L0,8z" style="fill:var(--data-ctl)"/></marker></defs>`);
   parts.push(`<path d="M860,82 L860,118 L230,118 L230,184" fill="none" stroke="${TEL}" stroke-width="1.8" stroke-dasharray="2 4"/>`);
   parts.push(`<path d="M620,118 L620,184" fill="none" stroke="${TEL}" stroke-width="1.8" stroke-dasharray="2 4"/>`);

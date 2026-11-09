@@ -13,14 +13,14 @@
 <meta charset="UTF-8">
 <title>DER &amp; microgrids · Grid Field Guide</title>
 <meta name="description" content="What changes when a customer makes power too? A worked example of solar and battery storage interconnected to one feeder.">
-<link rel="canonical" href="https://franklan.net/apps/03-der-microgrids/">
+<link rel="canonical" href="https://franklan.net/apps/der-microgrids/">
 <meta name="author" content="Frank Lan">
 <meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
 <meta property="og:site_name" content="Grid Field Guide">
 <meta property="og:type" content="website">
 <meta property="og:title" content="DER &amp; microgrids · Grid Field Guide">
 <meta property="og:description" content="What changes when a customer makes power too? A worked example of solar and battery storage interconnected to one feeder.">
-<meta property="og:url" content="https://franklan.net/apps/03-der-microgrids/">
+<meta property="og:url" content="https://franklan.net/apps/der-microgrids/">
 <meta name="twitter:card" content="summary">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -240,7 +240,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Chapter 3 of 7 · What changes when a customer makes power too?</div>
+  <div class="eyebrow">Chapter 4 of 7 · What changes when a customer makes power too?</div>
   <h1>DER &amp; Microgrid Field Guide</h1>
   <p class="sub">A hands-on look at how <b>Distributed Energy Resources (DERs)</b> — solar, batteries, and the equipment that connects them — interconnect with the distribution grid. Worked example: a municipal site with <b>250 kW AC solar</b> + <b>750 kW AC battery storage</b> (an even <b>1,000 kW</b> total DER nameplate). Using the rule of thumb that 1 MW ≈ 500 average homes' worth of instantaneous demand, that's roughly 500 households' worth of capacity tying into one feeder.</p>
 
@@ -518,7 +518,7 @@ function buildDiagram(){
 
   // utility side, top to bottom: primary (orange) -> transformer -> secondary (blue) -> PCC
   mono(CX, 20, 'FROM SUBSTATION / FEEDER', 'var(--ink-3)');
-  wire(svg, CX, 30, CX, 48, PRI, null, W);      // utility primary (~12 kV), as in chapter 2
+  wire(svg, CX, 30, CX, 48, PRI, null, W);      // utility primary (~12 kV), as in chapter 3
   box('recloser', CX, 48, 'Recloser', 'pole-mounted', PRI, 'recloser');
   wire(svg, CX, 108, CX, 132, PRI, null, W);
   box('xfmr', CX, 132, '1 MVA Xfmr', 'steps ~12 kV down', INK, 'transformer', {iconColor:PRI, iconColor2:SEC});

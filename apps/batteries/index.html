@@ -13,14 +13,14 @@
 <meta charset="UTF-8">
 <title>Batteries · Grid Field Guide</title>
 <meta name="description" content="How do batteries move energy in time? From one lithium-ion cell to a grid container: sizing, wear, cost and safety.">
-<link rel="canonical" href="https://franklan.net/apps/05-batteries/">
+<link rel="canonical" href="https://franklan.net/apps/batteries/">
 <meta name="author" content="Frank Lan">
 <meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
 <meta property="og:site_name" content="Grid Field Guide">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Batteries · Grid Field Guide">
 <meta property="og:description" content="How do batteries move energy in time? From one lithium-ion cell to a grid container: sizing, wear, cost and safety.">
-<meta property="og:url" content="https://franklan.net/apps/05-batteries/">
+<meta property="og:url" content="https://franklan.net/apps/batteries/">
 <meta name="twitter:card" content="summary">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -535,7 +535,7 @@
       </ul>
     </div>
 
-    <div class="caveat"><b>How this squares with Chapter 3.</b> Chapter 3 prices its 750 kW / 1,500 kWh battery at $350–$500/kWh, above the ~$219/kWh US turnkey average shown here. They don't conflict: "turnkey" covers the battery, inverter, enclosure and integration, but not construction or the grid connection. Chapter 3's figure is an installed price for a small 2-hour project, which carries those extra costs over fewer kWh.</div>
+    <div class="caveat"><b>How this squares with Chapter 4.</b> Chapter 4 prices its 750 kW / 1,500 kWh battery at $350–$500/kWh, above the ~$219/kWh US turnkey average shown here. They don't conflict: "turnkey" covers the battery, inverter, enclosure and integration, but not construction or the grid connection. Chapter 4's figure is an installed price for a small 2-hour project, which carries those extra costs over fewer kWh.</div>
 
     <details class="sources">
       <summary>Sources for this chapter</summary>
@@ -567,7 +567,7 @@
         <h3>Layers of protection</h3>
         <p>Battery systems are protected in layers, fastest first. The <b>BMS</b> trips in milliseconds when one cell drifts out of range. <b>Thermal management</b> keeps cells in their comfortable range. <b>Gas and heat detection</b>, <b>explosion venting</b>, <b>suppression</b> and <b>spacing between units</b> are there so that if a cell does go into thermal runaway, the failure stays in one unit.</p>
         <p>The fire most people have heard of, at Moss Landing, California in January 2025, was in a large indoor facility of an older design. It's a big part of why outdoor, spaced, containerized LFP systems are now the norm. Industry groups point to the code framework and the improving record; community groups raise questions about siting, emergency response, and smoke and runoff. Both are part of how projects get approved.</p>
-        <div class="std"><b>Standards to know by name:</b> UL 9540 (system safety listing) · UL 9540A (thermal-runaway fire test) · NFPA 855 (installation code) · UL 1973 (stationary batteries) · IEEE 1547 (grid interconnection, from Chapter 3)</div>
+        <div class="std"><b>Standards to know by name:</b> UL 9540 (system safety listing) · UL 9540A (thermal-runaway fire test) · NFPA 855 (installation code) · UL 1973 (stationary batteries) · IEEE 1547 (grid interconnection, from Chapter 4)</div>
       </div>
       <div>
         <div class="trend">
@@ -626,19 +626,19 @@ const PARTS = {
     does: 'Modules stacked in a frame with busbars, fuses, a disconnect and a rack-level BMS. A home battery is roughly one small pack; a grid container holds a dozen or more racks side by side.',
     fails: 'Fuses and contactors open to isolate the rack. A site with many racks can keep running at reduced capacity while one is repaired.',
     cost: 'Cells, modules, rack and BMS together are "the pack": about $70/kWh in 2025.',
-    link: 'Chapter 6: 100,000 of these home packs together make a virtual power plant', href: '../06-vpp/index.html' },
+    link: 'Chapter 6: 100,000 of these home packs together make a virtual power plant', href: '../vpp/index.html' },
   bms: { title: 'Battery management system (BMS)', tag: 'Fastest protection · milliseconds',
     does: "Watches every cell's voltage, temperature and current. Balances cells so none is overcharged, and estimates state of charge (how full) and state of health (how worn).",
-    fails: 'When anything goes out of range it opens the contactors within milliseconds, before any software higher up has noticed. It is the fastest layer in the Chapter 4 stack: fast layers protect, slow layers plan.',
-    cost: 'A small share of the pack price, and the reason the rest can be trusted.', link: 'Chapter 4: BMS → PCS → site controller → SCADA' },
+    fails: 'When anything goes out of range it opens the contactors within milliseconds, before any software higher up has noticed. It is the fastest layer in the Chapter 7 stack: fast layers protect, slow layers plan.',
+    cost: 'A small share of the pack price, and the reason the rest can be trusted.', link: 'Chapter 7: BMS → PCS → site controller → SCADA' },
   pcs: { title: 'Power conversion system (PCS)', tag: 'DC ↔ AC · sets the kW',
     does: "A two-way inverter. It turns AC into DC to charge, and DC back into AC to discharge. It's the DC/AC box in Chapter 1. Its kW rating is the battery's power: the size of the pipe. It can be grid-following (syncs to the grid) or grid-forming (sets its own voltage and frequency, so it can hold up a microgrid).",
     fails: 'A PCS fault takes the battery offline even if every cell is healthy. IEEE 1547 settings make it ride through small grid disturbances and trip on large ones.',
-    cost: 'With the enclosure and integration, it is much of the gap between a ~$70/kWh pack and a ~$117/kWh turnkey system (BNEF 2025, global average).', link: 'Chapter 3: grid-forming inverters and islanding' },
+    cost: 'With the enclosure and integration, it is much of the gap between a ~$70/kWh pack and a ~$117/kWh turnkey system (BNEF 2025, global average).', link: 'Chapter 4: grid-forming inverters and islanding' },
   xfmr: { title: 'Transformer', tag: 'Site voltage → feeder voltage',
-    does: 'Steps the PCS output (often a few hundred volts) up to site or feeder voltage. Same symbol as in Chapters 1 to 3. A home or small shop uses the transformer that already serves it.',
+    does: 'Steps the PCS output (often a few hundred volts) up to site or feeder voltage. Same symbol as in Chapters 1, 3 and 4. A home or small shop uses the transformer that already serves it.',
     fails: "A failure cuts the battery off from the grid. The utility's protection isolates it so the rest of the feeder keeps running.",
-    cost: 'About $100,000 for the 1 MVA unit at Chapter 3\'s site. Nothing extra for a home.', link: 'Chapter 2: feeders and transformers' },
+    cost: 'About $100,000 for the 1 MVA unit at Chapter 4\'s site. Nothing extra for a home.', link: 'Chapter 3: feeders and transformers' },
   thermal: { title: 'Thermal management', tag: 'Safety layer',
     does: "Air conditioning or liquid cooling keeps cells near 20–30°C. In cold places like Spokane, heaters keep LFP cells warm enough to charge safely. The energy this uses is small compared with the battery life it protects.",
     fails: 'Running hot ages cells faster; around 45°C can cut LFP cycle life by roughly a fifth to a third. If cooling fails, the system first reduces power, then shuts down.',
@@ -655,10 +655,10 @@ const PARTS = {
     does: 'The brain of the site. It reads prices, load and forecasts and decides when to charge and discharge: shave a peak, shift solar into the evening, or hold energy back for an outage.',
     fails: "The hardware stays safe (the BMS and PCS protect themselves) but the money stops. A controller that misses the month's highest peak loses most of that month's demand-charge saving.",
     cost: 'Small next to the battery, but it decides most of the savings.', link: 'Chapter 1 used a perfect forecast; real controllers have to guess' },
-  utility: { title: 'Utility: DER gateway and SCADA', tag: 'Chapters 3 and 4',
+  utility: { title: 'Utility: DER gateway and SCADA', tag: 'Chapters 4 and 7',
     does: 'Larger batteries talk to the utility through a DER gateway and SCADA, so the control room can see them and send export limits or dispatch signals. Grid-scale batteries also bid into energy markets.',
     fails: 'If the link drops, the site falls back to a safe default, such as no export.',
-    cost: 'A gateway is a few thousand dollars (Chapter 3 lists about $3,000).', link: 'Chapter 4: the operations layers' }
+    cost: 'A gateway is a few thousand dollars (Chapter 4 lists about $3,000).', link: 'Chapter 7: the operations layers' }
 };
 
 /* ============================================================
@@ -974,7 +974,7 @@ function renderDiagram() {
   g += T(940, Y - 18, 'Utility feeder, 12 kV (Ch 2)', { anchor: 'middle', fill: 'var(--v-primary)', weight: 700 });
   [880, 1000].forEach(x => g += `<line x1="${x}" y1="${Y}" x2="${x}" y2="${Y + 40}" stroke="var(--ink-3)" stroke-width="3"/><line x1="${x - 12}" y1="${Y + 6}" x2="${x + 12}" y2="${Y + 6}" stroke="var(--ink-3)" stroke-width="2"/>`);
   g += T(940, Y + 34, 'customers on the same line', { anchor: 'middle', size: 11 });
-  // data lines: telemetry is teal dotted, control is magenta dashed with a filled arrowhead (as in chapters 2 and 4)
+  // data lines: telemetry is teal dotted, control is magenta dashed with a filled arrowhead (as in chapters 3 and 7)
   g += `<defs><marker id="d5-ctl" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0L8,4L0,8z" style="fill:var(--data-ctl)"/></marker>`
      + `<marker id="d5-tel" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M1,1L7,4L1,7" style="fill:none;stroke:var(--data-tel);stroke-width:1.4"/></marker></defs>`;
   g += `<path class="data-flow tel" d="M385 180 V72 H470" marker-end="url(#d5-tel)"/>` + T(392, 128, 'cell data', { size: 11, fill: 'var(--data-tel)' });
@@ -1479,7 +1479,7 @@ const EXAMPLES = [
     pay: 'Payback ≈ 4.7–9.7 years', lesson: 'About 3.3–6.8 years with the 30% credit. Keeping refrigeration running through a short outage protects the stock too.' },
   { site: 'factory', title: 'Small factory', who: 'Edge of town · industrial rate',
     rows: [['Goal', 'Cap a 600 kW peak at 450 kW: shave 150 kW for up to 2 h'], ['Size', '300 kWh usable ÷ (0.90 × 0.95) × 1.2 ≈ 420 kWh → 250 kW / 500 kWh'], ['Cost', '$140,000–$290,000 at $280–$580/kWh'], ['Saves', '150 kW × $15 × 12 = $27,000 a year']],
-    pay: 'Payback ≈ 5.2–10.7 years', lesson: 'About 3.6–7.5 years with the credit. A 250 kW battery on a 12 kV feeder needs an interconnection review like Chapter 3\'s site.' }
+    pay: 'Payback ≈ 5.2–10.7 years', lesson: 'About 3.6–7.5 years with the credit. A 250 kW battery on a 12 kV feeder needs an interconnection review like Chapter 4\'s site.' }
 ];
 function renderExamples() {
   $('exGrid').innerHTML = EXAMPLES.map(e => `<div class="ex"><h3>${e.title}</h3><div class="who">${e.who}</div>

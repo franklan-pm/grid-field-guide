@@ -1,4 +1,4 @@
-/* Landing page sheet motion: chapter 4 telemetry and chapter 5 battery rack.
+/* Landing page sheet motion: chapter 7 telemetry and chapter 5 battery rack.
    Chapters 1 to 3 are animated in CSS (.flow in index.html) and are not touched here.
    Rules: only brightness, opacity, motion and fill level change, never hue. One rAF loop,
    paused off-screen. With prefers-reduced-motion this file does nothing, so the sheet stays static. */
@@ -60,14 +60,14 @@
   Object.keys(NODE_CH).forEach(function(id){halo(id,q('[data-node="'+id+'"]'),false,NODE_CH[id]);});
   [].forEach.call(q('#modules').querySelectorAll('rect'),function(r){modHalos.push(halo(null,r,true,5));});
 
-  /* ---------- faint breathing on the chapter 4 and 5 box borders ---------- */
+  /* ---------- faint breathing on the chapter 7 and 5 box borders ---------- */
   var boxes=['scada','adms','derms','bms','pcs','rack'].map(function(id){return q('[data-node="'+id+'"]');});
 
   /* ---------- idle data lines recede so packets read as light passing through ---------- */
   [].forEach.call(svg.querySelectorAll('.zone[data-ch="4"] .data, .zone[data-ch="5"] .data, #data-field'),function(el){el.classList.add('fx-dim');});
 
   /* ---------- telemetry guide paths, all drawn field to control room ---------- */
-  /* the data lines belong to chapter 4 (the control room), the BMS lines to chapter 5 */
+  /* the data lines belong to chapter 7 (the control room), the BMS lines to chapter 5 */
   var ROUTE_CH={recloser:4,'switch':4,sa:4,ad:4,pcc:4,bms:5,bmspcs:5};
   var routes={
     recloser:'M539 392 V132',

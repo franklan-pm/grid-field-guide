@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Interconnection queues · Grid Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=B612+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="../../shared/theme.js"></script>
+<link rel="stylesheet" href="../../shared/theme.css">
+<script src="../../shared/nav.js" defer></script>
+
+<style>
+  /* Tabs, panels, buttons and chips come from shared/theme.css. Line colors follow docs/colors.md:
+     the bus and every transmission-voltage tie are ink, collector and site feeders are orange (the
+     nearest voltage class; a collector system is usually 34.5 kV), the DC side of the inverter is a
+     double blue line. Fuel tokens color the Texas generator bar and the plant's solar and battery
+     boxes only. Withdrawals are --dead (grey), not --fault, because leaving a queue is not a fault.
+     "Built" squares use --ok (a success state). The two queues are told apart by label and shape
+     (squares vs diamonds), not by color. */
+  :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--ground); color:var(--ink); font-family:var(--f-body); min-height:100vh; padding:28px 16px 60px; font-size:17px; }
+  .wrap{max-width:1240px;margin:0 auto;}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+
+  .eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;}
+  h1{font-family:var(--f-display);font-weight:700;font-size:clamp(32px,5vw,48px);line-height:1;text-transform:uppercase;margin:0 0 12px;letter-spacing:.01em;}
+  .sub{color:var(--ink-2);font-size:18px;max-width:780px;line-height:1.55;margin:0 0 22px;}
+  .sub b{color:var(--ink);}
+  .tabs{margin:26px 0 22px;}
+  .tab[aria-disabled="true"]{opacity:.55;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0 0 6px;}
+  h3{font-family:var(--f-display);font-weight:600;font-size:20px;margin:0 0 6px;}
+  p{line-height:1.55;}
+  .lead{font-size:18px;line-height:1.5;color:var(--ink-2);max-width:820px;margin:0 0 16px;}
+  .lead b{color:var(--ink);}
+  .sprite{position:absolute;width:0;height:0;overflow:hidden;}
+  .sec{margin-top:38px;}
+
+  /* ---- stat cards (as chapter 6) ---- */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:0 0 22px;}
+  .tile{border:1px solid var(--band);border-top:4px solid var(--ink);background:var(--sheet);padding:9px 12px;}
+  .tile .k{font:400 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);}
+  .tile .v{font:700 32px/1.1 var(--f-display);margin-top:2px;}
+  .tile .s{font-size:14px;color:var(--ink-2);line-height:1.4;}
+
+  /* ---- Texas side by side ---- */
+  .scale{border:1px solid var(--ink);background:var(--sheet);padding:16px 18px 14px;}
+  .scale h2{font-size:22px;}
+  .scale .intro{font-size:15px;color:var(--ink-2);margin:0 0 12px;max-width:760px;}
+  .srow{display:grid;grid-template-columns:190px 1fr;gap:6px 14px;align-items:center;margin:10px 0;}
+  .srow .nm{font:600 17px/1.15 var(--f-display);text-transform:uppercase;letter-spacing:.02em;}
+  .srow .nm small{display:block;font:400 11.5px var(--f-mono);color:var(--ink-3);text-transform:none;letter-spacing:0;margin-top:2px;}
+  .sbar{display:flex;height:34px;width:100%;}
+  .sbar > span{display:block;height:100%;min-width:2px;}
+  .sbar .tot{margin-left:10px;align-self:center;font:700 22px/1 var(--f-display);white-space:nowrap;padding-left:2px;}
+  .sbar-wrap{display:flex;align-items:center;min-width:0;}
+  .sbar-wrap .sbar{flex:none;}
+  .s-load{background:var(--ink);}
+  .s-peak{background:var(--ink-3);}
+  .f-bat{background:var(--fuel-battery);}
+  .f-hyb{background:repeating-linear-gradient(135deg,var(--fuel-solar) 0 6px,var(--fuel-battery) 6px 12px);}
+  .f-sol{background:var(--fuel-solar);}
+  .f-gas{background:var(--fuel-gas);}
+  .f-wnd{background:var(--fuel-wind);}
+  .f-oth{background:var(--ink-3);}
+  .flegend{display:flex;flex-wrap:wrap;gap:4px 16px;font:400 12px var(--f-mono);color:var(--ink-2);margin:2px 0 0 204px;}
+  .flegend span{display:inline-flex;align-items:center;gap:6px;}
+  .flegend i{display:inline-block;width:14px;height:14px;border:1px solid var(--ink);}
+  .seg-f{cursor:pointer;transition:opacity .15s;outline:none;}
+  .flegend span{cursor:pointer;padding:2px 4px;margin:-2px -4px;outline:none;}
+  .scale.hov .seg-f:not(.hi),.scale.hov .flegend span:not(.hi){opacity:.35;}
+  .seg-f:focus-visible,.flegend span:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .ftip{position:fixed;z-index:60;pointer-events:none;background:var(--sheet);border:1px solid var(--ink);padding:8px 11px;max-width:260px;display:none;}
+  .ftip .n{font:600 16px var(--f-display);text-transform:uppercase;letter-spacing:.03em;}
+  .ftip .v{font:700 24px/1.1 var(--f-display);}
+  .ftip .s{font-size:13px;color:var(--ink-2);line-height:1.35;margin-top:2px;}
+  .scale .src{font-size:13px;color:var(--ink-3);margin:10px 0 0;}
+
+  /* ---- 100-projects simulation ---- */
+  .sim{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:22px;border:1px solid var(--ink);background:var(--sheet);padding:16px 18px;margin:0 0 18px;}
+  .sim-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;align-self:start;}
+  .sq{aspect-ratio:1;border:1.5px solid var(--ink);background:color-mix(in srgb,var(--ink) 38%,var(--sheet));transition:background .45s,border-color .45s,transform .5s,opacity .5s;}
+  .sq.out{background:repeating-linear-gradient(45deg,var(--dead) 0 2px,transparent 2px 5px);border-color:var(--dead);opacity:.55;transform:translateY(5px) scale(.82);}
+  .sq.built{background:var(--ok);border-color:var(--ok);}
+  .sq.wait{background:transparent;border:1.5px dashed var(--ink);}
+  .sim-clock{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;}
+  .sim-clock .v{font:700 54px/1 var(--f-display);min-width:2ch;}
+  .sim-clock .k{font:400 12px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);}
+  .sim-msg{font-size:16px;line-height:1.45;color:var(--ink-2);min-height:70px;margin:0 0 12px;}
+  .sim-msg b{color:var(--ink);}
+  .sim-btns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;}
+  .sim-btns .btn.primary{font-size:16px;padding:12px 22px;position:relative;overflow:hidden;}
+  .sim-btns .btn.primary.nudge::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(105deg,transparent,color-mix(in srgb,var(--on-ink) 55%,transparent),transparent);transform:skewX(-20deg);animation:shine 3.2s ease-in-out infinite;}
+  @keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+  .sim-key{display:flex;flex-wrap:wrap;gap:6px 16px;font:400 12.5px var(--f-body);color:var(--ink-2);margin:0 0 12px;}
+  .sim-key span{display:inline-flex;align-items:center;gap:6px;}
+  .sim-key i{display:inline-block;width:14px;height:14px;border:1.5px solid var(--ink);}
+  .sim-key .k-built{background:var(--ok);border-color:var(--ok);}
+  .sim-key .k-out{background:repeating-linear-gradient(45deg,var(--dead) 0 2px,transparent 2px 5px);border-color:var(--dead);}
+  .sim-key .k-wait{border-style:dashed;}
+  .sim-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 10px;}
+  .sim-steps li{display:flex;justify-content:space-between;gap:8px;padding:5px 8px;border-left:3px solid transparent;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.02em;color:var(--ink-3);}
+  .sim-steps li span{font:700 13px var(--f-mono);}
+  .sim-steps li.done{color:var(--ink-2);}
+  .sim-steps li.on{color:var(--ink);border-left-color:var(--ink);background:var(--hover-fill);}
+  .sim-note{grid-column:1/-1;font-size:13.5px;color:var(--ink-3);margin:0;}
+
+  /* ---- controls ---- */
+  .ctrl-row{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;margin:4px 0 12px;font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);}
+  .seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--ink);}
+  .seg button{font:400 13px var(--f-mono);text-transform:none;letter-spacing:0;padding:8px 12px;border:0;background:transparent;color:var(--ink-2);cursor:pointer;}
+  .seg button + button{border-left:1px solid var(--ink);}
+  .seg button:hover{color:var(--ink);background:var(--hover-fill);}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink);font-weight:700;}
+  .ctrl-hint{font:400 14px var(--f-body);text-transform:none;letter-spacing:0;color:var(--ink-3);}
+
+  /* ---- one-line drawing (wide screens) ---- */
+  .svgbox{border:1px solid var(--band);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;}
+  svg.ol{display:block;width:100%;height:auto;}
+  .ol .t1{font:600 17px var(--f-display);fill:var(--ink);letter-spacing:.03em;text-transform:uppercase;}
+  .ol .mono{font:400 11.5px var(--f-mono);fill:var(--ink-3);}
+  .ol .monob{font:700 11.5px var(--f-mono);fill:var(--ink);letter-spacing:.04em;}
+  .ol .gut{font:700 10.5px var(--f-mono);fill:var(--ink-3);letter-spacing:.14em;}
+  .ol .box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.5;}
+  .ol .hv{fill:none;stroke:var(--v-hv);stroke-width:3;}
+  .ol .busbar{fill:var(--v-hv);}
+  .ol .prim{fill:none;stroke:var(--v-primary);stroke-width:3;}
+  .ol .dc1{fill:none;stroke:var(--v-secondary);stroke-width:6;}
+  .ol .dc2{fill:none;stroke:var(--ground);stroke-width:2;}
+  .ol .sym{fill:var(--sheet);stroke:var(--v-hv);stroke-width:2;}
+  .ol .winding-hv{fill:var(--sheet);stroke:var(--v-hv);stroke-width:2;}
+  .ol .winding-pr{fill:var(--sheet);fill-opacity:.6;stroke:var(--v-primary);stroke-width:2;}
+  .ol .poi{fill:var(--ink);stroke:var(--ink);}
+  .ol .newbox{fill:none;stroke:var(--ink-3);stroke-width:1.5;stroke-dasharray:5 4;transition:fill .3s,stroke .3s;}
+  .ol .band{fill:none;stroke:var(--band);stroke-width:1.5;stroke-dasharray:6 4;}
+  .ol .arrow{fill:var(--v-hv);}
+  .ol .tag{font:700 11.5px var(--f-mono);fill:var(--ink);paint-order:stroke;stroke:var(--sheet);stroke-width:4px;stroke-linejoin:round;opacity:0;transition:opacity .3s;}
+  .ol .tag.on{opacity:1;}
+  /* the guide's travelling highlight: a tint of the line's own color, never marching dashes */
+  .ol .hl{fill:none;stroke:color-mix(in srgb,var(--v-hv) 32%,var(--sheet));stroke-width:9;stroke-linecap:round;stroke-dasharray:90 4000;opacity:0;}
+  .ol .hl.on{opacity:1;animation:run 3.2s linear infinite;}
+  @keyframes run{from{stroke-dashoffset:90}to{stroke-dashoffset:-1500}}
+  @media (prefers-reduced-motion:reduce){ .ol .hl.on{animation:none;stroke-dasharray:none;opacity:.5;} .sim-btns .btn.primary.nudge::after{animation:none;} }
+  .node{cursor:pointer;outline:none;}
+  .node .hit{fill:transparent;stroke:none;}
+  .node:hover .hit,.node:focus-visible .hit{fill:var(--hover-fill);stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3;}
+  .node.sel .hit{fill:var(--hover-fill);stroke:var(--ink);stroke-width:2.5;}
+  .node.lit .newbox{stroke:var(--ink);stroke-width:2.5;stroke-dasharray:none;fill:color-mix(in srgb,var(--ink) 14%,transparent);}
+  .legend{display:flex;gap:6px 18px;flex-wrap:wrap;font:400 12px var(--f-mono);color:var(--ink-2);margin:10px 0 14px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend svg{flex:none;}
+
+  /* ---- narrow drawing (phones): a vertical version of the same one-line ---- */
+  .mdraw{display:none;}
+  .mnode{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;border:1px solid var(--ink);background:var(--sheet);padding:10px 12px;}
+  .mnode:hover{background:var(--hover-fill);}
+  .mnode:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .mnode.sel{border-width:3px;padding:8px 10px;}
+  .mtag{display:block;font:700 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+  .mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mdev{display:flex;align-items:center;gap:8px;border:1px solid var(--ink);background:var(--sheet);padding:6px 8px;font:600 15px var(--f-display);letter-spacing:.03em;text-transform:uppercase;position:relative;}
+  .mdev::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--bar);}
+  .mdev svg{flex:none;margin-left:4px;}
+  .mdev small{display:block;font:400 11px var(--f-mono);color:var(--ink-3);text-transform:none;letter-spacing:0;}
+  .mdc{display:block;width:8px;height:16px;margin:0 auto;background:var(--v-secondary);position:relative;}
+  .mdc::after{content:"";position:absolute;left:3px;top:0;bottom:0;width:2px;background:var(--ground);}
+  .mdcl{display:block;font:400 11px var(--f-mono);color:var(--ink-3);text-align:center;margin-bottom:4px;}
+  .mbox{display:block;border:1px solid var(--ink);padding:5px 8px;text-align:center;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;background:var(--sheet);}
+  .mpr{display:block;width:3px;height:14px;margin:0 auto;background:var(--v-primary);}
+  .mxf{display:flex;align-items:center;justify-content:center;gap:10px;font:400 11.5px var(--f-mono);color:var(--ink-3);margin:2px 0;}
+  .mnote{display:block;margin-top:8px;font:400 14px/1.4 var(--f-body);color:var(--ink-2);}
+  .mwire{position:relative;height:40px;}
+  .mwire::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--v-hv);}
+  .mwire i{position:absolute;left:50%;top:13px;width:14px;height:14px;margin-left:-7px;background:var(--ink);}
+  .mwire span{position:absolute;left:calc(50% + 16px);top:12px;font:700 11.5px var(--f-mono);}
+  .msub{border:1.5px dashed var(--band);padding:24px 10px 12px;position:relative;margin:0;}
+  .msub > .mtag{position:absolute;top:6px;left:10px;margin:0;color:var(--ink-3);}
+  .mbus{height:10px;background:var(--v-hv);margin:0 0 12px;}
+  .mups{display:grid;gap:8px;}
+  .mups .mnode{border-style:dashed;border-color:var(--ink-3);}
+  .mups .mnode.sel,.mups .mnode.lit{border-style:solid;border-color:var(--ink);}
+  .mups .mnode.lit{background:color-mix(in srgb,var(--ink) 12%,var(--sheet));}
+  .mups b{font:600 15px var(--f-display);text-transform:uppercase;letter-spacing:.03em;}
+  .mups small{display:block;font:400 13px/1.35 var(--f-body);color:var(--ink-2);margin-top:2px;}
+  .mups .mtagline{display:none;font:700 12px var(--f-mono);margin-top:4px;}
+  .mups .lit .mtagline{display:block;}
+  .mcust{border:1.5px dashed var(--band);padding:20px 8px 8px;position:relative;margin:4px 0 8px;}
+  .mcust > .mtag{position:absolute;top:5px;left:8px;margin:0;color:var(--ink-3);font-size:10px;}
+
+  /* ---- detail panels ---- */
+  .detail{border:1px solid var(--ink);background:var(--sheet);padding:14px 16px;margin:0 0 16px;}
+  .detail.after-drawing{margin-top:12px;}
+  .detail .kick{font:400 11.5px var(--f-mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;}
+  .detail h3{margin:2px 0 6px;font-size:22px;}
+  .detail .hint{color:var(--ink-3);font-size:15px;margin:0;}
+  .detail dl{margin:8px 0 0;font-size:15px;line-height:1.45;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 22px;}
+  .detail dt{font:700 11px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-top:8px;}
+  .detail dd{margin:2px 0 0;}
+  .detail .flag{font-size:14px;color:var(--ink-2);margin-top:10px;border-top:1px solid var(--band);padding-top:8px;line-height:1.45;}
+  .detail.inline{margin:8px 0 4px;}
+
+  /* ---- lanes ---- */
+  .lane{border:1px solid var(--ink);background:var(--sheet);margin:0 0 10px;}
+  .lane-in{padding:14px 16px 12px;}
+  .lane-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .lane-head h3{margin:0;font-size:21px;text-transform:uppercase;letter-spacing:.03em;}
+  .lane-head .note{font-size:14px;color:var(--ink-3);}
+  .cap{font-size:15px;color:var(--ink-2);margin:12px 0 0;line-height:1.45;}
+  .cap b{color:var(--ink);}
+  .glyph{display:inline-block;width:14px;height:14px;border:2px solid var(--ink);background:var(--ink);vertical-align:-2px;}
+  .glyph.dia{transform:rotate(45deg) scale(.82);}
+  .steps{display:grid;gap:22px;align-items:start;}
+  .steps.g{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .steps.l{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .col{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:8px;}
+  .col:not(:last-child)::after{content:"";position:absolute;top:34px;right:-18px;width:14px;height:2px;background:var(--ink);}
+  .col:not(:last-child)::before{content:"";position:absolute;top:29px;right:-19px;width:0;height:0;border-left:7px solid var(--ink);border-top:6px solid transparent;border-bottom:6px solid transparent;}
+  .col.two:not(:last-child)::after,.col.two:not(:last-child)::before{top:50%;}
+  .step{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;padding:8px 8px 9px;border:1px solid var(--ink);background:var(--sheet);min-height:68px;}
+  .step:hover{background:var(--hover-fill);}
+  .step:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .step.sel,.step.now{border-width:3px;padding:6px 6px 7px;}
+  .step.now{background:var(--hover-fill);}
+  .step.paused{border-style:dashed;}
+  .step .n{font:700 15px/1 var(--f-display);width:24px;height:24px;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .step.dia .n{transform:rotate(45deg) scale(.86);}
+  .step.dia .n span{transform:rotate(-45deg);}
+  .step b{display:block;font:600 16px/1.15 var(--f-display);letter-spacing:.02em;text-transform:uppercase;}
+  .step small{display:block;font:400 12px/1.3 var(--f-body);color:var(--ink-2);margin-top:3px;}
+  .pill{display:inline-block;font:700 10.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--ink);padding:1px 6px;margin-left:6px;vertical-align:1px;}
+  .exit{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:132px;}
+  .exit .bar{width:100%;background:var(--dead);height:calc(var(--p) * 3.4px);min-height:5px;}
+  .exit .pct{font:700 14px var(--f-mono);color:var(--ink);}
+  .exit .lbl{font:400 12px/1.3 var(--f-body);color:var(--ink-3);}
+  .exit.none .bar{background:none;border:1px dashed var(--dead);height:34px;}
+  .exit.none{min-height:0;}
+  .span-row{display:grid;gap:22px;margin:0 0 10px;grid-template-columns:repeat(6,minmax(0,1fr));}
+  .span{border-top:2px solid var(--ink);padding-top:4px;font:400 12.5px var(--f-body);color:var(--ink-2);position:relative;}
+  .span::before,.span::after{content:"";position:absolute;top:0;width:2px;height:7px;background:var(--ink);}
+  .span::before{left:0}.span::after{right:0}
+  .span b{color:var(--ink);}
+  .gw-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;align-items:end;margin-top:14px;border-bottom:2px solid var(--ink);min-height:178px;}
+  .gw{display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;gap:3px;min-height:178px;}
+  .gw.pair{flex-direction:row;gap:12px;align-items:flex-end;}
+  .gw.pair > div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;min-height:178px;}
+  .gw .bar{width:100%;background:var(--ink-3);height:calc(var(--p) * 3.4px);min-height:4px;}
+  .gw .bar.hatch{background:repeating-linear-gradient(45deg,var(--ink-3) 0 3px,transparent 3px 7px);}
+  .gw .bar.ok{background:var(--ok);}
+  .gw .v{font:700 20px/1.1 var(--f-display);}
+  .gw .lbl{font:400 12px/1.3 var(--f-body);color:var(--ink-3);}
+  .gw-cap{font:700 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:14px 0 0;}
+
+  /* ---- real-world cards (as chapter 6) ---- */
+  .rw{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px;}
+  .rw .card{background:var(--sheet);border:1px solid var(--band);border-left:8px solid var(--edge,var(--ink));padding:12px 14px;}
+  .rw .card{position:relative;}
+  .rw .card.split::before{content:"";position:absolute;left:-8px;bottom:-1px;width:8px;height:50%;background:var(--fuel-battery);}
+  .rw .k{font:400 11.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);}
+  .rw .v{font:700 30px/1.1 var(--f-display);margin:4px 0;}
+  .rw p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.45;}
+
+  /* ---- how to read ---- */
+  .how{margin-top:22px;border:1px solid var(--band);background:var(--sheet);padding:0 16px;}
+  .how summary{cursor:pointer;font:600 18px var(--f-display);text-transform:uppercase;letter-spacing:.04em;padding:12px 0;}
+  .how[open] summary{border-bottom:1px solid var(--band);}
+  .how p,.how li{font-size:15.5px;line-height:1.55;color:var(--ink-2);max-width:820px;}
+  .how b{color:var(--ink);}
+  .how ul{padding-left:22px;margin:8px 0 14px;}
+  .how h4{font:600 17px var(--f-display);text-transform:uppercase;letter-spacing:.03em;margin:14px 0 2px;}
+  .how .last{padding-bottom:12px;}
+
+  .caveat{margin-top:16px;padding:12px 14px;background:var(--sheet);border:1px solid var(--band);border-left:4px solid var(--ink);font-size:14.5px;color:var(--ink-2);line-height:1.5;}
+  .caveat b{color:var(--ink);}
+  .sources{font-size:14px;color:var(--ink-2);line-height:1.6;margin-top:22px;}
+  .sources summary{cursor:pointer;font-family:var(--f-mono);font-size:12.5px;color:var(--ink);}
+  .soon{max-width:640px;}
+  .ti{display:inline;}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+
+  /* ---- tablets: lanes scroll sideways only below this width ---- */
+  @media (max-width:1000px){ .lane{overflow-x:auto;} .lane-in{min-width:880px;} .sim{grid-template-columns:1fr;} .sim-grid{max-width:340px;} }
+
+  /* ---- phones: vertical drawing, stacked lanes, single-row tabs ---- */
+  @media (max-width:640px){
+    body{padding:20px 16px 48px;font-size:16px;}
+    .tabs{grid-template-columns:repeat(5,minmax(0,1fr));}
+    .tab,.tabs > button{padding:10px 2px!important;font-size:13px!important;letter-spacing:.02em!important;}
+    .ti{display:none;}
+    .svgbox,.legend.wide,.detail.after-drawing{display:none;}
+    .mdraw{display:block;margin:0 0 14px;}
+    .lane{overflow:visible;}
+    .lane-in{min-width:0;padding:12px;}
+    .steps.g,.steps.l{grid-template-columns:1fr;gap:14px;}
+    .col:not(:last-child)::before,.col:not(:last-child)::after{display:none;}
+    .span-row{display:block;}
+    .span{margin-bottom:8px;}
+    .exit{min-height:0;display:grid;grid-template-columns:1fr;gap:2px;}
+    .exit .bar{height:10px;width:calc(var(--p) * 2.4%);min-width:5px;}
+    .exit.none .bar{width:40%;height:10px;}
+    .gw-row{display:block;border-bottom:0;min-height:0;}
+    .gw,.gw.pair > div{min-height:0;margin:0 0 10px;flex-direction:column;}
+    .gw.pair{display:block;}
+    .gw .bar{height:10px;width:calc(var(--p) * 2.4%);}
+    .dd{display:none;}
+    .tiles{grid-template-columns:1fr;}
+    .srow{grid-template-columns:1fr;}
+    .flegend{margin-left:0;}
+    .sbar .tot{font-size:18px;}
+    .sim{padding:12px;}
+    .sim-clock .v{font-size:44px;}
+  }
+</style>
+</head>
+<body>
+<!-- symbols reused from chapters 5 and 6, drawn in the stroke color of whatever uses them -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-batt" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="1"/><path d="M19.5 10.5 h2 v3 h-2"/><path d="M12 8.5 L9 12.5 H12.5 L10.5 15.5"/></symbol>
+    <symbol id="i-solar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <div class="eyebrow">Chapter 7 of 7 · How does a new plant or data center get onto the grid?</div>
+  <h1>Interconnection Queue Field Guide</h1>
+  <p class="sub">To plug into the transmission grid, a power plant or a data center has to <b>join a queue</b>. The generator queue is long, public and mostly speculative: about <b>13%</b> of the capacity that enters gets built, and the median project takes <b>5 years</b>. The load queue is newer and mostly undocumented. In Texas, the one place it can be seen, it is several times the size of the grid it wants to join.</p>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Built</div><div class="v">13%</div><div class="s">of the capacity requested in 2000–2020 had reached operation by the end of 2025. 75% withdrew and about 11% is still waiting.</div></div>
+    <div class="tile"><div class="k">Median wait</div><div class="v">61 months</div><div class="s">from request to operation for projects built in 2025. Only projects that were built count here.</div></div>
+    <div class="tile"><div class="k">Texas load requests</div><div class="v">474.7 GW</div><div class="s">against a 2025 peak of 85.2 GW, as of June 2026 (⚠ secondary source).</div></div>
+  </div>
+
+  <!-- Texas side by side -->
+  <section class="scale" aria-label="Texas, side by side">
+    <h2>Texas, side by side</h2>
+    <p class="intro">Two queues, each several times the size of the grid they want to join. The generator queue is colored by fuel.</p>
+    <div class="srow"><div class="nm"><span>◆ Large-load requests</span><small>June 2026 · ⚠ secondary source</small></div>
+      <div class="sbar-wrap"><div class="sbar" style="width:calc((100% - 120px) * 1)"><span class="s-load" style="width:100%"></span></div><span class="tot" style="margin-left:10px;font:700 22px/1 var(--f-display)">474.7 GW</span></div></div>
+    <div class="srow"><div class="nm"><span>■ Generator queue</span><small>active, end of 2025</small></div>
+      <div class="sbar-wrap"><div class="sbar" style="width:calc((100% - 120px) * .8595)" title="ERCOT active generator queue, 408.0 GW">
+        <span class="seg-f f-bat" data-f="bat" tabindex="0" style="width:29.6%"></span>
+        <span class="seg-f f-hyb" data-f="hyb" tabindex="0" style="width:27.5%"></span>
+        <span class="seg-f f-sol" data-f="sol" tabindex="0" style="width:20.3%"></span>
+        <span class="seg-f f-gas" data-f="gas" tabindex="0" style="width:10.8%"></span>
+        <span class="seg-f f-wnd" data-f="wnd" tabindex="0" style="width:10.4%"></span>
+        <span class="seg-f f-oth" data-f="oth" tabindex="0" style="width:1.4%"></span></div><span class="tot" style="margin-left:10px;font:700 22px/1 var(--f-display)">408 GW</span></div></div>
+    <div class="flegend" aria-label="Generator queue by fuel, GW">
+      <span data-f="bat" tabindex="0"><i class="f-bat"></i>battery 121</span><span data-f="hyb" tabindex="0"><i class="f-hyb"></i>solar + battery 112</span><span data-f="sol" tabindex="0"><i class="f-sol"></i>solar 83</span><span data-f="gas" tabindex="0"><i class="f-gas"></i>gas 44</span><span data-f="wnd" tabindex="0"><i class="f-wnd"></i>wind 43</span><span data-f="oth" tabindex="0"><i class="f-oth"></i>other 5</span>
+    </div>
+    <div class="srow"><div class="nm"><span>2025 peak load</span><small>the grid they want to join</small></div>
+      <div class="sbar-wrap"><div class="sbar" style="width:calc((100% - 120px) * .1795)"><span class="s-peak" style="width:100%"></span></div><span class="tot" style="margin-left:10px;font:700 22px/1 var(--f-display)">85.2 GW</span></div></div>
+    <p class="src">Bars share one scale. Sources: ERCOT via POWER (load requests); Berkeley Lab, Queued Up 2026 and its data file (generator queue and peak).</p>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="diagram" role="tab" aria-selected="true"><span class="ti">◉ </span>Diagram</button>
+    <button class="tab" data-tab="explorer" role="tab" aria-disabled="true"><span class="ti">▦ </span>Explorer</button>
+    <button class="tab" data-tab="playground" role="tab" aria-disabled="true"><span class="ti">⚡&#xFE0E; </span>Playground</button>
+    <button class="tab" data-tab="glossary" role="tab" aria-disabled="true"><span class="ti">≡ </span>Glossary</button>
+    <button class="tab" data-tab="quiz" role="tab" aria-disabled="true"><span class="ti">? </span>Quiz</button>
+  </div>
+
+  <!-- ================= DIAGRAM ================= -->
+  <section class="panel active" id="panel-diagram">
+    <h2>Two queues into one substation</h2>
+    <p class="lead">A VPP squeezes more out of the wires we have. But what happens when someone needs a <b>new connection</b> to those wires? A solar-plus-battery plant and a data center can land on the same substation. Each has to ask permission first, in <b>its own queue</b>, and the grid operator studies what equipment would have to be added.</p>
+
+    <div class="ctrl-row"><span>Run the study for</span>
+      <div class="seg" role="group" aria-label="Which study to run">
+        <button type="button" data-mode="none" aria-pressed="true">Neither</button>
+        <button type="button" data-mode="plant" aria-pressed="false">■ The plant</button>
+        <button type="button" data-mode="dc" aria-pressed="false">◆ The data center</button>
+        <button type="button" data-mode="both" aria-pressed="false">Both</button>
+      </div>
+      <span class="ctrl-hint">Lit equipment is what that study would likely ask for (illustrative). Hover or tap anything to read more.</span>
+    </div>
+
+    <!-- wide drawing -->
+    <div class="svgbox">
+<svg class="ol" viewBox="0 0 1100 500" role="group" aria-label="One-line drawing of a transmission substation. A solar-plus-battery plant connects from above and a data center, through its own substation, from below. Three pieces of new equipment (a transformer, a breaker bay and a reconductored line) are marked as network upgrades.">
+
+  <!-- substation fence -->
+  <rect class="band" x="215" y="176" width="630" height="160"/>
+  <text class="gut" x="215" y="354">TRANSMISSION SUBSTATION</text>
+
+  <!-- bus, and the lines that leave the substation -->
+  <rect class="busbar" x="215" y="245" width="225" height="10"/>
+  <rect class="busbar" x="460" y="245" width="385" height="10"/>
+  <path class="hv" d="M62 250 H215"/><polygon class="arrow" points="46,250 62,241 62,259"/>
+  <path class="hv" d="M845 250 H1028"/><polygon class="arrow" points="1044,250 1028,241 1028,259"/>
+  <text class="mono" x="62" y="236">to the rest of the grid</text>
+  <text class="mono" x="1030" y="290" text-anchor="end">to the rest of the grid</text>
+
+  <!-- travelling highlights: the plant pushes power out along the bus, the data center pulls it in -->
+  <path class="hl" id="hl-plant" d="M270 170 V250 H1020"/>
+  <path class="hl" id="hl-dc" d="M70 250 H780 V355"/>
+
+  <!-- ===== plant (generator queue) ===== -->
+  <g class="node" data-stop="plant" tabindex="0" role="button" aria-label="Solar plus battery plant, a generator">
+    <rect class="hit" x="95" y="2" width="355" height="214"/>
+    <rect class="box" x="105" y="10" width="150" height="44"/>
+    <rect x="105" y="10" width="5" height="44" fill="var(--fuel-solar)"/>
+    <use href="#i-solar" x="117" y="22" width="20" height="20" style="stroke:var(--fuel-solar);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round"/>
+    <text class="t1" x="146" y="30">Solar</text><text class="mono" x="146" y="46">array</text>
+    <rect class="box" x="285" y="10" width="150" height="44"/>
+    <rect x="285" y="10" width="5" height="44" fill="var(--fuel-battery)"/>
+    <use href="#i-batt" x="297" y="22" width="20" height="20" style="stroke:var(--fuel-battery);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round"/>
+    <text class="t1" x="326" y="30">Battery</text><text class="mono" x="326" y="46">storage</text>
+    <path class="dc1" d="M180 54 V70 H245 V84"/><path class="dc2" d="M180 54 V70 H245 V84"/>
+    <path class="dc1" d="M360 54 V70 H295 V84"/><path class="dc2" d="M360 54 V70 H295 V84"/>
+    <text class="mono" x="188" y="66">DC</text><text class="mono" x="368" y="66">DC</text>
+    <rect class="box" x="215" y="84" width="110" height="28"/>
+    <text class="t1" x="270" y="104" text-anchor="middle">Inverter</text>
+    <path class="prim" d="M270 112 V127"/>
+    <circle class="winding-pr" cx="270" cy="138" r="11"/>
+    <circle class="winding-hv" cx="270" cy="156" r="11"/>
+    <text class="mono" x="290" y="142">step-up</text><text class="mono" x="290" y="158">transformer</text>
+    <path class="hv" d="M270 167 V197"/>
+    <rect class="sym" x="263" y="197" width="14" height="14"/>
+    <path class="hv" d="M270 211 V245"/>
+  </g>
+
+  <!-- ===== plant's point of interconnection ===== -->
+  <g class="node" data-stop="poi" tabindex="0" role="button" aria-label="Point of interconnection for the plant">
+    <rect class="hit" x="222" y="236" width="180" height="96"/>
+    <rect class="poi" x="263" y="243" width="14" height="14"/>
+    <text class="monob" x="232" y="280">■ POI</text>
+    <text class="mono" x="232" y="294">plant meets the grid</text>
+    <text class="mono" x="232" y="310">500 MW of equipment,</text>
+    <text class="mono" x="232" y="324">one 300 MW connection</text>
+  </g>
+
+  <!-- ===== network upgrade: new breaker bay ===== -->
+  <g class="node" id="up-bay" data-stop="bay" tabindex="0" role="button" aria-label="New breaker bay, a network upgrade">
+    <rect class="hit" x="408" y="184" width="84" height="92"/>
+    <text class="monob" x="450" y="208" text-anchor="middle">NEW</text>
+    <text class="mono" x="450" y="222" text-anchor="middle">breaker bay</text>
+    <rect class="newbox" x="426" y="232" width="48" height="40"/>
+    <path class="hv" d="M440 250 H443"/><path class="hv" d="M457 250 H460"/>
+    <rect class="sym" x="443" y="243" width="14" height="14"/>
+  </g>
+
+  <!-- ===== network upgrade: new transformer, tying the bus to a lower-voltage bus ===== -->
+  <g class="node" id="up-xf" data-stop="xf" tabindex="0" role="button" aria-label="New transformer, a network upgrade">
+    <rect class="hit" x="566" y="180" width="270" height="70"/>
+    <rect class="busbar" x="575" y="188" width="90" height="6"/>
+    <path class="hv" d="M620 194 V199"/>
+    <circle class="winding-hv" cx="620" cy="209" r="10"/>
+    <circle class="winding-hv" cx="620" cy="227" r="10"/>
+    <path class="hv" d="M620 237 V245"/>
+    <rect class="newbox" x="596" y="198" width="48" height="42"/>
+    <text class="mono" x="675" y="204">lower-voltage bus</text>
+    <text class="monob" x="675" y="222">NEW transformer</text>
+    <text class="tag" id="xf-tag" x="675" y="240">both studies need this</text>
+  </g>
+
+  <!-- ===== network upgrade: reconductored line, leaving the substation ===== -->
+  <g class="node" id="up-line" data-stop="line" tabindex="0" role="button" aria-label="Reconductored line, a network upgrade">
+    <rect class="hit" x="852" y="176" width="190" height="100"/>
+    <text class="monob" x="940" y="198" text-anchor="middle">NEW</text>
+    <text class="mono" x="940" y="212" text-anchor="middle">reconductored line</text>
+    <text class="mono" x="940" y="226" text-anchor="middle">same route, more capacity</text>
+    <rect class="newbox" x="875" y="236" width="130" height="28"/>
+  </g>
+
+  <!-- ===== data center: its own POI, then a transmission-voltage line to its own substation ===== -->
+  <g class="node" data-stop="poi" tabindex="0" role="button" aria-label="Point of interconnection for the data center">
+    <rect class="hit" x="640" y="256" width="160" height="68"/>
+    <rect class="poi" x="773" y="243" width="14" height="14"/>
+    <path class="hv" d="M780 257 V272"/>
+    <rect class="sym" x="773" y="272" width="14" height="14"/>
+    <text class="monob" x="766" y="280" text-anchor="end">POI ◆</text>
+    <text class="mono" x="766" y="294" text-anchor="end">data center meets</text>
+    <text class="mono" x="766" y="308" text-anchor="end">the grid</text>
+  </g>
+  <g class="node" data-stop="dc" tabindex="0" role="button" aria-label="Data center, a large load, with its own substation">
+    <rect class="hit" x="630" y="328" width="260" height="160"/>
+    <path class="hv" d="M780 286 V355"/>
+    <rect class="band" x="640" y="344" width="240" height="60"/>
+    <text class="gut" x="650" y="362">CUSTOMER</text><text class="gut" x="650" y="376">SUBSTATION</text>
+    <circle class="winding-hv" cx="780" cy="366" r="11"/>
+    <circle class="winding-pr" cx="780" cy="384" r="11"/>
+    <text class="mono" x="800" y="370">step-down</text><text class="mono" x="800" y="386">transformer</text>
+    <path class="prim" d="M780 395 V420"/>
+    <rect class="box" x="690" y="420" width="180" height="60"/>
+    <g fill="none" stroke="var(--ink)" stroke-width="1.5"><rect x="702" y="432" width="26" height="36"/><path d="M702 444h26M702 456h26"/></g>
+    <text class="t1" x="742" y="446">Data center</text><text class="mono" x="742" y="464">300 MW (example)</text>
+  </g>
+</svg>
+    </div>
+
+    <div class="legend wide" aria-label="Drawing key">
+      <span><svg width="26" height="8" aria-hidden="true"><rect y="2" width="26" height="4" fill="var(--v-hv)"/></svg> transmission voltage</span>
+      <span><svg width="26" height="8" aria-hidden="true"><rect y="2" width="26" height="4" fill="var(--v-primary)"/></svg> medium voltage (collector, site feeders)</span>
+      <span><svg width="26" height="10" aria-hidden="true"><rect y="1" width="26" height="6" fill="var(--v-secondary)"/><rect y="3" width="26" height="2" fill="var(--ground)"/></svg> DC side of the inverter</span>
+      <span><svg width="26" height="14" aria-hidden="true"><rect x="1" y="1" width="24" height="12" fill="none" stroke="var(--ink-3)" stroke-dasharray="4 3"/></svg> new equipment (a network upgrade)</span>
+      <span><svg width="12" height="12" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="var(--ink)"/></svg> generator queue</span>
+      <span><svg width="14" height="14" aria-hidden="true"><rect x="3" y="3" width="8" height="8" fill="var(--ink)" transform="rotate(45 7 7)"/></svg> load queue</span>
+    </div>
+
+    <!-- narrow drawing -->
+    <div class="mdraw" aria-label="Vertical drawing: plant, substation with three upgrades, data center">
+      <button type="button" class="mnode" data-stop="plant">
+        <span class="mtag">■ Generator queue</span>
+        <span class="mrow">
+          <span class="mdev" style="--bar:var(--fuel-solar)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--fuel-solar)" stroke-width="1.7" stroke-linecap="round"><use href="#i-solar"/></svg><span>Solar<small>array</small></span></span>
+          <span class="mdev" style="--bar:var(--fuel-battery)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--fuel-battery)" stroke-width="1.7" stroke-linecap="round"><use href="#i-batt"/></svg><span>Battery<small>storage</small></span></span>
+        </span>
+        <span class="mdc"></span><span class="mdcl">DC</span>
+        <span class="mbox">Inverter</span>
+        <span class="mpr"></span>
+        <span class="mxf"><svg width="24" height="34" viewBox="0 0 24 34" aria-hidden="true"><circle cx="12" cy="11" r="9" fill="var(--sheet)" fill-opacity=".6" stroke="var(--v-primary)" stroke-width="2"/><circle cx="12" cy="23" r="9" fill="var(--sheet)" stroke="var(--v-hv)" stroke-width="2"/></svg> step-up transformer</span>
+        <span class="mnote">500 MW of equipment, one 300 MW connection</span>
+      </button>
+      <div class="mwire"><i></i><span>■ POI</span></div>
+      <div class="msub">
+        <span class="mtag">Transmission substation</span>
+        <div class="mbus"></div>
+        <div class="mups">
+          <button type="button" class="mnode" data-stop="bay"><b>New breaker bay</b><small>network upgrade</small><span class="mtagline">lit by this study</span></button>
+          <button type="button" class="mnode" data-stop="xf"><b>New transformer</b><small>network upgrade · ties to a lower-voltage bus</small><span class="mtagline">both studies need this</span></button>
+          <button type="button" class="mnode" data-stop="line"><b>Reconductored line →</b><small>network upgrade · leaves the substation, same route, more capacity</small><span class="mtagline">lit by this study</span></button>
+        </div>
+      </div>
+      <div class="mwire"><i></i><span>◆ POI</span></div>
+      <button type="button" class="mnode" data-stop="dc">
+        <span class="mtag">◆ Load queue</span>
+        <span class="mcust"><span class="mtag">Customer substation</span>
+          <span class="mxf"><svg width="24" height="34" viewBox="0 0 24 34" aria-hidden="true"><circle cx="12" cy="11" r="9" fill="var(--sheet)" stroke="var(--v-hv)" stroke-width="2"/><circle cx="12" cy="23" r="9" fill="var(--sheet)" fill-opacity=".6" stroke="var(--v-primary)" stroke-width="2"/></svg> step-down transformer</span>
+        </span>
+        <span class="mpr"></span>
+        <span class="mbox">Data center · 300 MW (example)</span>
+      </button>
+    </div>
+
+    <div class="detail after-drawing dd" id="detail-a" aria-live="polite"><p class="hint">Pick the plant, the data center, a point of interconnection (POI) or one of the three dashed upgrades to see what it decides, who pays, and how long it takes.</p></div>
+
+    <!-- 100 requests -->
+    <h2 class="sec">What happens to 100 requests?</h2>
+    <p class="lead">File 100 requests with the generator queue and watch where they go. Each square is about 1% of the capacity requested in 2000–2020, so the ending is the real one: <b>13 built</b>.</p>
+
+    <div class="sim" id="sim">
+      <div class="sim-grid" id="sim-grid" role="img" aria-label="A grid of 100 squares, one per 1% of requested capacity. By the end 13 are built, 75 withdrew and 12 are still waiting."></div>
+      <div>
+        <div class="sim-clock"><span class="v" id="sim-month">0</span><span class="k">months, median for projects that get built</span></div>
+        <div class="sim-msg" id="sim-msg" aria-live="polite"></div>
+        <div class="sim-btns">
+          <button type="button" class="btn primary nudge" id="sim-go">File 100 requests</button>
+          <button type="button" class="btn" id="sim-step">Next step</button>
+          <button type="button" class="btn" id="sim-reset">Reset</button>
+        </div>
+        <div class="sim-key"><span><i></i> in the queue</span><span><i class="k-out"></i> withdrew</span><span><i class="k-built"></i> built</span><span><i class="k-wait"></i> still waiting</span></div>
+        <ol class="sim-steps" id="sim-steps"></ol>
+      </div>
+      <p class="sim-note">Illustrative. How many leave at each step follows the real shares of withdrawn projects by study phase; the 45- and 61-month marks are measured medians, the months in between are spaced evenly for the picture.</p>
+    </div>
+
+    <!-- generator lane -->
+    <div class="lane" aria-label="Generator queue">
+      <div class="lane-in">
+        <div class="lane-head"><span class="glyph" aria-hidden="true"></span><h3>Generator queue</h3><span class="note">Public queues, FERC process</span></div>
+        <div class="span-row">
+          <div class="span" style="grid-column:1 / 5"><b>about 45 months</b> from request to agreement</div>
+          <div class="span" style="grid-column:5 / 7"><b>about 31 months</b> from agreement to operation</div>
+        </div>
+        <div class="steps g" id="lane-g"></div>
+        <p class="cap">Grey bars show where withdrawn projects were when they left. By capacity, <b>13%</b> got built, <b>75%</b> withdrew and about <b>11%</b> is still waiting.</p>
+      </div>
+    </div>
+    <div class="detail dd" id="detail-g" aria-live="polite"><p class="hint">Pick a step in the generator queue. The exit shares are real counts from Berkeley Lab's data.</p></div>
+
+    <!-- load lane -->
+    <div class="lane" aria-label="Load queue, ERCOT">
+      <div class="lane-in">
+        <div class="lane-head"><span class="glyph dia" aria-hidden="true"></span><h3>Load queue · ERCOT</h3><span class="pill">Batch Zero paused</span><span class="note">Texas only. Most utilities don't publish a queue like this.</span></div>
+        <div class="steps l" id="lane-l"></div>
+        <div class="gw-cap">Gigawatts still in play at each stage · as of Oct 29, 2026</div>
+        <div class="gw-row" id="gw-row"></div>
+        <p class="cap">Only <b>1.4%</b> (6.6 GW of 474.7 GW) has cleared a stability assessment, and Batch Zero, the new batch study, hasn't run yet.</p>
+      </div>
+    </div>
+    <div class="detail dd" id="detail-l" aria-live="polite"><p class="hint">Pick a step in the load queue. The Texas numbers are dated and still being checked against ERCOT's own documents.</p></div>
+
+    <!-- real-world cards -->
+    <h2 class="sec">In the real world</h2>
+    <div class="rw">
+      <div class="card" style="--edge:var(--ink)"><div class="k">ERCOT · June 2026</div><div class="v">474.7 GW</div><p>of large-load requests, about 90% of them data centers. That is 5.6 times Texas's 2025 peak of 85.2 GW. ⚠ Secondary source; paused for an audit due Dec 10.</p></div>
+      <div class="card split" style="--edge:var(--fuel-solar)"><div class="k">CAISO · end of 2025</div><div class="v">91%</div><p>of active solar capacity in California's queue is hybrid: solar sharing one connection with a battery, the plant in the drawing above.</p></div>
+      <div class="card" style="--edge:var(--zone-sec)"><div class="k">FERC · June 18, 2026</div><div class="v">6 grid operators</div><p>reportedly ordered to show cause on large-load interconnection: study processes, colocation, behind-the-meter generation and a flexible-load service. Not a final rule, and ERCOT isn't under FERC's rules. ⚠ Not yet checked.</p></div>
+    </div>
+
+    <!-- how to read -->
+    <details class="how">
+      <summary>How to read this</summary>
+      <h4>The drawing</h4>
+      <ul>
+        <li>Solid lines are electricity. Ink is transmission voltage, orange is medium voltage (the plant's collector lines and the data center's site feeders), and the double blue line is the DC side of the inverter.</li>
+        <li>Dashed boxes are <b>network upgrades</b>: equipment the studies add so the grid can take the new connection. "Run the study" lights the upgrades each project would likely trigger. Which upgrades each triggers is illustrative; real studies decide that project by project.</li>
+        <li>Each project has its own point of interconnection (POI). Here both sit at the same substation. The data center, at 300 MW, is served at transmission voltage and steps the power down in its own customer substation.</li>
+      </ul>
+      <h4>The generator queue</h4>
+      <ul>
+        <li>The grey bars count <b>projects</b>, not gigawatts, and cover only the 47% of withdrawals whose study phase is recorded. About 11% of those were in a study the data doesn't name, so the five bars add up to 89%.</li>
+        <li>The 13 / 75 / 11 split is by <b>capacity</b>, for requests made in 2000–2020, with status at the end of 2025. Recent requests haven't resolved yet, which is why "still waiting" matters.</li>
+        <li>The two timing brackets are separate medians, and they <b>do not add up</b> to the 61-month median for the whole trip: they come from different samples. Only built projects have a time-to-build.</li>
+      </ul>
+      <h4>The load queue</h4>
+      <ul>
+        <li>The 6.6 GW that cleared a stability assessment went through the <b>older, case-by-case process</b>. Batch Zero, the new batch study for loads of 75 MW and up, has not run: it was paused on Aug 3, 2026 for an audit due Dec 10, with no new study date.</li>
+        <li>We have no data on where the rest of the load requests left, so there are no exit bars. The bars show how much is left in play.</li>
+        <li><b>Rules are being written now.</b> FERC reportedly sent show-cause orders to six grid operators on June 18, 2026. That is not a final rule, and ERCOT isn't under FERC's interconnection rules. ⚠ Not yet checked against FERC's documents.</li>
+      </ul>
+      <p class="last"><b>⚠</b> marks a number that is still waiting for a primary-source check. Every figure carries an "as of" date.</p>
+    </details>
+
+    <div class="caveat"><b>A teaching drawing, not a real substation.</b> Equipment, sizes and voltages are illustrative. The process shown follows FERC's pro-forma steps; names, order and timing differ by region.</div>
+
+    <details class="sources">
+      <summary>Sources and as-of dates</summary>
+      <p><b>Generators:</b> Rand et al., <i>Queued Up: 2026 Edition</i> (Lawrence Berkeley National Laboratory and Interconnection.fyi, June 2026), data through the end of 2025; and its data file (May 2026). Withdrawal shares by study phase come from the data file's "Withdrawn Ix. Phase" tab: counts of requests (not capacity) for the 47% of withdrawals whose phase is recorded. For the 100-square picture, the 11% of unnamed phases are spread across the named steps in proportion. The 45- and 31-month spans are 2025 medians. The report puts the median 200 MW-and-up project at 59 months from request to operation; the data file's tab gives about 58 for 2010–2025. The Texas generator queue by fuel comes from the data file's project rows (408.0 GW).</p>
+      <p><b>Large loads (ERCOT):</b> ERCOT's July 29, 2026 update to the Texas Senate Business &amp; Commerce Committee as reported by POWER; MGRID, Sept 5, 2026; ERCOT market notices of Aug 3, 2026. ⚠ These are secondary reports; primary ERCOT and PUCT documents are still to be cited. The audit results are due Dec 10, 2026, so this lane will change. <b>FERC:</b> June 18, 2026 show-cause orders to six RTOs, ⚠ not yet checked against FERC's documents.</p>
+    </details>
+  </section>
+
+  <!-- ================= PLACEHOLDERS ================= -->
+  <section class="panel" id="panel-explorer"><div class="soon"><h2>Explorer</h2><p class="lead">Coming next: a survival funnel and a wait-time chart you can filter by region and resource type, built from the Berkeley Lab data.</p></div></section>
+  <section class="panel" id="panel-playground"><div class="soon"><h2>Playground</h2><p class="lead">Coming next: site a 300 MW data center and see which queue it lands in.</p></div></section>
+  <section class="panel" id="panel-glossary"><div class="soon"><h2>Glossary</h2><p class="lead">Coming next: IR, IA, COD, cluster study, network upgrades, POI and more.</p></div></section>
+  <section class="panel" id="panel-quiz"><div class="soon"><h2>Quiz</h2><p class="lead">Coming next.</p></div></section>
+</div>
+
+<script>
+/* ---------- content for every hover stop ---------- */
+var STOPS = {
+  /* ---- the drawing ---- */
+  plant:{kick:'Generator queue · drawing',title:'Solar + battery plant (a hybrid)',
+    decides:'One request covers both, so they share a single connection. In this example, 500 MW of equipment asks for one 300 MW connection, sized for what the plant will actually send at one time. Adding a battery gets more value out of the same wire. About 49% of active solar and storage in the queues is hybrid, and 91% of active solar in CAISO.',
+    pays:'The developer pays study deposits and, in most regions, the network upgrades its connection causes. Refunds and credits vary by region.',
+    time:'About 45 months from request to agreement and about 31 more to operate (2025 medians). Projects of 200 MW or more take about 5 years.',
+    flag:'Berkeley Lab, Queued Up 2026, data through end of 2025. The 500 / 300 MW split is an illustration. Its study would likely ask for the new breaker bay and the new transformer (illustrative).'},
+  dc:{kick:'Load queue · drawing',title:'Data center (a large load)',
+    decides:'A load asks to draw power, not to inject it. A 300 MW load is served at transmission voltage and steps the power down in its own substation. The utility checks whether the grid can supply it without overloading equipment or hurting reliability for others, and what must be built first.',
+    pays:'Varies by utility and tariff. Rules are being written now: FERC reportedly sent show-cause orders to six grid operators on June 18, 2026 about large-load interconnection. It is not a final rule, and ERCOT is not under FERC’s interconnection rules.',
+    time:'No national data. In ERCOT, the one documented case, requests of 75 MW and above are studied together in a batch, and that study is paused.',
+    flag:'Bringing your own generation does not skip this queue. A data center with grid-connected generators has also joined the generator queue. Its study would likely ask for the new transformer and the reconductored line (illustrative). ⚠ FERC orders not yet checked against FERC’s documents.'},
+  poi:{kick:'Both queues · drawing',title:'Point of interconnection (POI)',
+    decides:'The exact place where a project meets the grid, usually a substation or a tap on a line. Each project has its own POI; here both are at the same substation. Studies test what happens to everything nearby when it connects: does a line overload, does voltage sag, does a breaker see too much fault current?',
+    pays:'Whatever the study finds to be overloaded becomes the project’s upgrade list.',
+    time:'The studies are the long part of the 45 months to an agreement.',
+    flag:'Chapter 3 covered the same idea at the edge of the grid (IEEE 1547). This is the transmission-scale version.'},
+  bay:{kick:'Network upgrade · drawing',title:'New breaker bay',
+    decides:'A breaker opens automatically to clear a fault. A new connection can raise the fault current past what the existing breakers can interrupt, or need a new bay so it can be isolated from the rest of the substation.',
+    pays:'Assigned to the project (or projects in the same cluster) whose connection causes the need.',
+    time:'Equipment and construction add to the 31 months from agreement to operation.',
+    flag:'Illustrative: lit by the plant’s study. Network upgrades are physical equipment: transformers, breakers, lines.'},
+  xf:{kick:'Network upgrade · drawing',title:'New transformer',
+    decides:'Power has to move between voltage levels. If the existing transformers would overload with the new plant or load, the study adds one that ties the bus to a lower-voltage bus. Large power transformers are custom-built and can take years to deliver.',
+    pays:'Assigned to the projects that need it. In a cluster study, the cost is shared among the projects in the batch.',
+    time:'Often the item that sets the in-service date.',
+    flag:'Illustrative: both the plant’s and the data center’s studies would ask for this. It is one reason a request can wait years even after its study is done: it waits for steel.'},
+  line:{kick:'Network upgrade · drawing',title:'Reconductored line',
+    decides:'Swapping the wire on an existing line for a higher-capacity conductor can raise how much power it carries without a new route or right-of-way, which is usually faster than building a new line.',
+    pays:'Assigned to the projects whose flows overload the line.',
+    time:'Typically quicker than a new line, but still planned, permitted and scheduled with outages.',
+    flag:'Illustrative: lit by the data center’s study. Part of why the wire, not the power plant, is the bottleneck.'},
+
+  /* ---- generator queue (withdrawal shares from workbook tab 26: counts of projects) ---- */
+  g1:{kick:'Generator queue · step 1',title:'Interconnection request (IR)',
+    decides:'The developer files a request with a site, a size and a deposit. Entering is cheap; that is why developers file early, like applying to many colleges.',
+    pays:'An application fee and a study deposit. FERC Order 2023 raised deposits and added withdrawal penalties.',
+    time:'Starts the clock. Median request to agreement is about 45 months.',
+    exit:'2% of withdrawn projects (with a recorded phase) left before any study had started.'},
+  g2:{kick:'Generator queue · step 2',title:'Early screening (feasibility)',
+    decides:'In the older, first-come-first-served process, an early check of whether the project looks workable. Many regions have folded this into the cluster study, so it fades out of newer data.',
+    pays:'The developer, through study deposits.',
+    time:'Months.',
+    exit:'26% of withdrawn projects were here when they left, the second largest exit.'},
+  g3:{kick:'Generator queue · step 3',title:'Cluster study',
+    decides:'FERC Order 2023 moved most regions to studying requests in batches ("clusters"), with higher deposits, withdrawal penalties and stricter readiness rules (site control, financial commitment). The study finds what the whole batch needs built.',
+    pays:'The developer; upgrade costs are shared among the cluster’s projects. Learning your share is often when projects decide to leave.',
+    time:'Studies take many months; the whole request-to-agreement span has grown to a median of 45 months.',
+    exit:'33% of withdrawn projects were here when they left, the largest exit.'},
+  g4:{kick:'Generator queue · step 4',title:'Facilities study',
+    decides:'A more detailed design and cost estimate for the equipment the earlier study said was needed: the transformer, breaker and line work in the drawing.',
+    pays:'The developer, who now sees a firm price.',
+    time:'Months.',
+    exit:'5% of withdrawn projects were here when they left. Not every queue records this phase separately, so the share may be understated.'},
+  g5:{kick:'Generator queue · step 5',title:'Interconnection agreement (IA)',
+    decides:'The signed contract that sets the connection, the upgrades and who pays. It feels like the finish line, but it isn’t: 41% of capacity that signed an IA from 2000 to 2022 later withdrew.',
+    pays:'The developer commits to the upgrade costs and milestones.',
+    time:'Median 45 months from request to this point (2025).',
+    exit:'23% of withdrawn projects left while the IA was drafted or already executed.'},
+  g6:{kick:'Generator queue · step 6',title:'Construction, upgrades and operation (COD)',
+    decides:'The plant is built and the network upgrades are finished. Commercial operation date (COD) is when it starts selling power.',
+    pays:'The developer builds the plant; upgrades are built by the grid owner, paid for by assigned projects.',
+    time:'About 31 months from agreement to operation (2025 median): permitting, procurement and waiting on transmission. The median request-to-operation for 2025 projects is 61 months. Only projects that got built appear in these medians.',
+    exit:'The phase data doesn’t track exits after the IA separately. 11% of the withdrawn projects with a recorded phase were in a study the data doesn’t name.'},
+
+  /* ---- load queue (ERCOT) ---- */
+  l1:{kick:'Load queue · ERCOT · step 1',title:'Large-load request',
+    decides:'A customer asks to connect a large load (75 MW and above is the line Texas Senate Bill 6 draws). SB 6 requires disclosure of duplicate requests, financial commitments and site control before ERCOT studies a project.',
+    pays:'Financial security is required before a project joins the batch.',
+    time:'About 474.7 GW requested as of June 2026, about 90% of it data centers. That is 5.6 times ERCOT’s 2025 peak of 85.2 GW and more than its 408 GW generator queue.',
+    flag:'⚠ Secondary source (ERCOT update to the Texas Senate, July 29, 2026, via POWER). Check for a newer figure.'},
+  l2:{kick:'Load queue · ERCOT · Batch Zero (paused)',title:'Batch Zero study',
+    decides:'Instead of studying one project at a time, the PUCT approved ERCOT’s framework on June 18, 2026 to study all loads of 75 MW and above together. About 205 GW was eligible in a preliminary count. This is the new process, and it has not run yet.',
+    pays:'Financial security of $50,000 per MW was due in July.',
+    time:'On Aug 3, 2026 the Governor ordered an audit and ERCOT delayed the batch. Results can’t land by the original April 9, 2027 date; no new date is set.',
+    flag:'⚠ The eligible count is preliminary and will change. Re-check after Dec 10.'},
+  l3:{kick:'Load queue · ERCOT · older process',title:'Case-by-case study and stability assessment',
+    decides:'Before Batch Zero, large loads were studied one at a time. A stability assessment asks whether the grid stays stable with this load on it, including when a large load suddenly trips offline, which data centers can do in a fraction of a second.',
+    pays:'Part of the study process.',
+    time:'17 large loads, mostly data centers, totaling about 6.6 GW have cleared this step through the older process: about 1.4% of the requests. They still face the audit and a community-impact review.',
+    flag:'⚠ Secondary source (MGRID, Sept 5, 2026). Check whether any have been energized since.'},
+  l4:{kick:'Load queue · ERCOT · step 3',title:'Audit and community review',
+    decides:'The Governor’s order is an audit of data centers in the queue, covering onsite power, water use and public financial help. Projects that fail it "must be denied." About 300 projects of 75 MW or more are under review. Cleared loads face it too.',
+    pays:'—',
+    time:'ERCOT plans to file the audit results by Dec 10, 2026.',
+    flag:'⚠ This step will change. Update this lane after Dec 10.'},
+  l5:{kick:'Load queue · ERCOT · step 4',title:'Energization',
+    decides:'The load is connected and starts drawing power, once the study, audit and any required upgrades are done.',
+    pays:'Varies; set by the utility’s terms.',
+    time:'No date. Whether any of the 17 loads that cleared stability have been energized has not been checked.',
+    flag:'⚠ Not checked against ERCOT primary documents.'}
+};
+
+/* ---------- build the two lanes ---------- */
+var GEN = [
+  ['g1','Request','IR filed',2],
+  ['g2','Early screen','feasibility',26],
+  ['g3','Cluster study','Order 2023',33],
+  ['g4','Facilities study','cost estimate',5],
+  ['g5','Agreement','IA signed',23],
+  ['g6','Build and operate','COD',null]
+];
+var gh = '';
+GEN.forEach(function(r, i){
+  var ex = r[3] != null
+    ? '<div class="exit" style="--p:' + r[3] + '"><div class="bar"></div><span class="pct">' + r[3] + '%</span><span class="lbl">of withdrawn projects were here</span></div>'
+    : '<div class="exit none"><div class="bar"></div><span class="lbl">not tracked after the IA</span></div>';
+  gh += '<div class="col"><button type="button" class="step" data-stop="' + r[0] + '"><span class="n"><span>' + (i + 1) + '</span></span><span><b>' + r[1] + '</b><small>' + r[2] + '</small></span></button>' + ex + '</div>';
+});
+document.getElementById('lane-g').innerHTML = gh;
+
+function stepBtn(id, n, title, sub, cls){
+  return '<button type="button" class="step dia' + (cls ? ' ' + cls : '') + '" data-stop="' + id + '"><span class="n"><span>' + n + '</span></span><span><b>' + title + '</b><small>' + sub + '</small></span></button>';
+}
+document.getElementById('lane-l').innerHTML =
+  '<div class="col">' + stepBtn('l1', 1, 'Request', '474.7 GW asked for') + '</div>' +
+  '<div class="col two">' + stepBtn('l2', 2, 'Batch Zero <span class="pill">paused</span>', 'new batch study, 75 MW and up', 'paused') +
+                           stepBtn('l3', '2′', 'Case-by-case study', 'older process, stability assessment') + '</div>' +
+  '<div class="col">' + stepBtn('l4', 3, 'Audit and review', 'results due Dec 10, 2026') + '</div>' +
+  '<div class="col">' + stepBtn('l5', 4, 'Energize', 'no date') + '</div>';
+
+/* shrinking bars on one scale: 474.7 GW is p = 38, so 205 GW is 16.4 and 6.6 GW is 0.5 */
+document.getElementById('gw-row').innerHTML =
+  '<div class="gw" style="--p:38"><span class="v">474.7 GW</span><span class="lbl">requested (June 2026)</span><div class="bar"></div></div>' +
+  '<div class="gw pair">' +
+    '<div style="--p:16.4"><span class="v">≈205 GW ⚠</span><span class="lbl">eligible for Batch Zero (preliminary)</span><div class="bar hatch"></div></div>' +
+    '<div style="--p:.5"><span class="v">6.6 GW</span><span class="lbl">cleared stability, 17 loads</span><div class="bar ok"></div></div>' +
+  '</div>' +
+  '<div class="gw" style="--p:0"><span class="v">—</span><span class="lbl">≈300 projects under audit ⚠; none cleared yet</span></div>' +
+  '<div class="gw" style="--p:0"><span class="v">—</span><span class="lbl">no energization date</span></div>';
+
+/* ---------- hover, focus and tap ---------- */
+var NARROW = window.matchMedia('(max-width:640px)');
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function body(s){
+  var h = '<div class="kick">' + esc(s.kick) + '</div><h3>' + esc(s.title) + '</h3><dl>' +
+    '<div><dt>What it decides</dt><dd>' + esc(s.decides) + '</dd></div>' +
+    '<div><dt>Who pays</dt><dd>' + esc(s.pays) + '</dd></div>' +
+    '<div><dt>How long</dt><dd>' + esc(s.time) + '</dd></div></dl>';
+  var note = s.exit || s.flag; if (note) h += '<div class="flag">' + esc(note) + '</div>';
+  return h;
+}
+function groupOf(el){ return el.closest('.svgbox') ? 'd' : el.closest('.mdraw') ? 'm' : el.closest('#lane-g') ? 'g' : 'l'; }
+function show(el){
+  var s = STOPS[el.getAttribute('data-stop')]; if (!s) return;
+  var grp = groupOf(el), inline = NARROW.matches && grp !== 'd';
+  document.querySelectorAll('.detail.inline').forEach(function(d){ d.remove(); });
+  if (inline) {
+    var d = document.createElement('div'); d.className = 'detail inline'; d.setAttribute('aria-live', 'polite'); d.innerHTML = body(s);
+    el.insertAdjacentElement('afterend', d);
+  } else {
+    var id = grp === 'd' || grp === 'm' ? 'detail-a' : grp === 'g' ? 'detail-g' : 'detail-l';
+    document.getElementById(id).innerHTML = body(s);
+  }
+  var sel = grp === 'd' ? '.node.sel' : grp === 'm' ? '.mnode.sel' : grp === 'g' ? '#lane-g .step.sel' : '#lane-l .step.sel';
+  document.querySelectorAll(sel).forEach(function(n){ n.classList.remove('sel'); });
+  el.classList.add('sel');
+}
+document.querySelectorAll('.node,.mnode,.step').forEach(function(el){
+  el.addEventListener('mouseenter', function(){ if (!NARROW.matches) show(el); });
+  el.addEventListener('focus', function(){ if (!NARROW.matches) show(el); });
+  el.addEventListener('click', function(){ show(el); var st = el.getAttribute('data-stop'); if (st === 'plant' || st === 'dc') setMode(st); });
+  el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(el); var st = el.getAttribute('data-stop'); if (st === 'plant' || st === 'dc') setMode(st); } });
+});
+
+/* ---------- Texas generator queue: hover, focus or tap a fuel for its number ---------- */
+(function(){
+  var F = {
+    bat:['Battery',120.9,'Standalone batteries.'],
+    hyb:['Solar + battery',112.1,'Hybrids: solar and a battery sharing one connection.'],
+    sol:['Solar',82.7,'Solar on its own.'],
+    gas:['Gas',44.2,'Gas plants.'],
+    wnd:['Wind',42.6,'Wind on its own.'],
+    oth:['Other',5.4,'Wind + battery hybrids, oil, hydrogen and other.']
+  };
+  var box = document.querySelector('.scale'), tip = document.createElement('div');
+  tip.className = 'ftip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip);
+  function on(el){
+    var k = el.getAttribute('data-f'), f = F[k]; if (!f) return;
+    tip.innerHTML = '<div class="n">' + f[0] + '</div><div class="v">' + f[1].toFixed(1) + ' GW</div><div class="s">' + Math.round(f[1] / 408 * 100) + '% of the 408 GW queue. ' + f[2] + '</div>';
+    tip.style.display = 'block';
+    var r = el.getBoundingClientRect(), w = tip.offsetWidth, x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8);
+    var y = r.top - tip.offsetHeight - 8; if (y < 8) y = r.bottom + 8;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    box.classList.add('hov');
+    box.querySelectorAll('[data-f]').forEach(function(n){ n.classList.toggle('hi', n.getAttribute('data-f') === k); });
+  }
+  function off(){ tip.style.display = 'none'; box.classList.remove('hov'); box.querySelectorAll('.hi').forEach(function(n){ n.classList.remove('hi'); }); }
+  box.querySelectorAll('[data-f]').forEach(function(el){
+    el.addEventListener('mouseenter', function(){ on(el); });
+    el.addEventListener('mouseleave', off);
+    el.addEventListener('focus', function(){ on(el); });
+    el.addEventListener('blur', off);
+    el.addEventListener('click', function(){ on(el); });
+  });
+  document.addEventListener('click', function(e){ if (!e.target.closest('[data-f]')) off(); });
+})();
+
+/* ---------- run the study: light the upgrades each project would likely trigger ---------- */
+var LIGHT = { none:[], plant:['bay','xf'], dc:['xf','line'], both:['bay','xf','line'] };
+function setMode(mode){
+  document.querySelectorAll('[data-mode]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-mode') === mode ? 'true' : 'false'); });
+  ['bay','xf','line'].forEach(function(k){
+    var on = LIGHT[mode].indexOf(k) !== -1;
+    document.querySelectorAll('[data-stop="' + k + '"]').forEach(function(n){ n.classList.toggle('lit', on); });
+  });
+  document.getElementById('xf-tag').classList.toggle('on', mode !== 'none');
+  document.getElementById('hl-plant').classList.toggle('on', mode === 'plant' || mode === 'both');
+  document.getElementById('hl-dc').classList.toggle('on', mode === 'dc' || mode === 'both');
+}
+document.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener('click', function(){ setMode(b.getAttribute('data-mode')); }); });
+
+/* ---------- 100 requests ---------- */
+(function(){
+  var NAMES = ['Request','Early screen','Cluster study','Facilities study','Agreement','Build and operate'];
+  var EXITS = [2,22,28,4,19];                  /* 75 withdrawals, by step; unnamed-phase exits spread in proportion */
+  var MONTHS = [0,3,12,24,34,45,61];            /* only 45 (agreement) and 61 (operation) are measured medians */
+  var grid = document.getElementById('sim-grid'), msg = document.getElementById('sim-msg'), mEl = document.getElementById('sim-month'), list = document.getElementById('sim-steps');
+  var go = document.getElementById('sim-go'), stepB = document.getElementById('sim-step'), rst = document.getElementById('sim-reset');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* fixed shuffle, so the squares that leave are scattered the same way every time */
+  var seed = 7; function rnd(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  var order = []; for (var i = 0; i < 100; i++) order.push(i);
+  for (var j = 99; j > 0; j--) { var k = Math.floor(rnd() * (j + 1)); var tmp = order[j]; order[j] = order[k]; order[k] = tmp; }
+  var exitAt = [], fin = [], p = 0;
+  EXITS.forEach(function(n, s){ for (var q = 0; q < n; q++) exitAt[order[p++]] = s + 1; });
+  for (var b = 0; b < 13; b++) fin[order[p++]] = 'built';
+  for (var w = 0; w < 12; w++) fin[order[p++]] = 'wait';
+  var cells = [];
+  for (var c = 0; c < 100; c++) { var d = document.createElement('div'); d.className = 'sq'; grid.appendChild(d); cells.push(d); }
+  list.innerHTML = NAMES.map(function(n, i){ return '<li data-i="' + i + '">' + n + '<span></span></li>'; }).join('');
+  var stage = 0, timer = null, shown = 0, raf = null;
+
+  function remaining(s){ var out = 0; for (var i = 0; i < 100; i++) if (exitAt[i] && exitAt[i] <= s) out++; return 100 - out; }
+  function tween(to){
+    if (raf) clearInterval(raf);
+    if (reduce) { shown = to; mEl.textContent = to; return; }
+    var from = shown, t0 = Date.now(), dur = 1100;
+    raf = setInterval(function(){ var t = Math.min(1, (Date.now() - t0) / dur); shown = Math.round(from + (to - from) * t); mEl.textContent = shown; if (t >= 1) { clearInterval(raf); raf = null; } }, 30);
+  }
+  function render(){
+    cells.forEach(function(el, i){
+      var cls = 'sq';
+      if (exitAt[i] && exitAt[i] <= stage) cls += ' out';
+      else if (stage === 6) cls += ' ' + fin[i];
+      el.className = cls;
+    });
+    var rem = remaining(stage);
+    Array.prototype.forEach.call(list.children, function(li, i){
+      li.className = stage === 0 ? '' : (i + 1 < stage ? 'done' : i + 1 === stage ? 'on' : '');
+      li.querySelector('span').textContent = i < 5 ? (stage > i ? '−' + EXITS[i] : '') : (stage === 6 ? '13 built' : '');
+    });
+    document.querySelectorAll('#lane-g .step').forEach(function(s, i){ s.classList.toggle('now', stage > 0 && i + 1 === stage); });
+    if (stage === 0) msg.innerHTML = 'Press <b>File 100 requests</b>. Each square is a project that wants to connect.';
+    else if (stage < 6) msg.innerHTML = '<b>Step ' + stage + ' · ' + NAMES[stage - 1] + '.</b> ' + EXITS[stage - 1] + ' withdrew here. <b>' + rem + '</b> are still in the queue.' + (stage === 5 ? ' Even a signed agreement is not a guarantee.' : '');
+    else msg.innerHTML = '<b>The result: 13 built.</b> 75 withdrew along the way, and 12 are still waiting or on hold. The median project that got built took 61 months.';
+    tween(MONTHS[stage]);
+    stepB.disabled = stage === 6;
+    go.textContent = timer ? 'Pause' : (stage === 0 ? 'File 100 requests' : stage === 6 ? 'Play again' : 'Resume');
+  }
+  function stop(){ if (timer) { clearInterval(timer); timer = null; } }
+  function next(){ if (stage < 6) { stage++; render(); } if (stage === 6) { stop(); render(); } }
+  go.addEventListener('click', function(){
+    go.classList.remove('nudge');
+    if (timer) { stop(); render(); return; }
+    if (stage === 6) { stage = 0; render(); }
+    next(); timer = setInterval(next, 1700); render();
+  });
+  stepB.addEventListener('click', function(){ go.classList.remove('nudge'); stop(); next(); render(); });
+  rst.addEventListener('click', function(){ stop(); stage = 0; render(); });
+  list.addEventListener('click', function(e){ var li = e.target.closest('li'); if (!li) return; stop(); stage = +li.getAttribute('data-i') + 1; render(); });
+  render();
+})();
+
+/* ---------- tabs (only Diagram is built so far) ---------- */
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(function(t){
+    var on = t.dataset.tab === name; t.classList.toggle('active', on); t.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', p.id === 'panel-' + name); });
+}
+document.querySelectorAll('.tab').forEach(function(t){ t.addEventListener('click', function(){ showTab(t.dataset.tab); }); });
+</script>
+</body>
+</html>

@@ -13,14 +13,14 @@
 <meta charset="UTF-8">
 <title>Virtual power plants · Grid Field Guide</title>
 <meta name="description" content="How do 20,000 homes act like one power plant? Thermostats, water heaters, EVs and batteries run as one fleet.">
-<link rel="canonical" href="https://franklan.net/apps/06-vpp/">
+<link rel="canonical" href="https://franklan.net/apps/vpp/">
 <meta name="author" content="Frank Lan">
 <meta name="copyright" content="© 2026 Frank Lan. Code: MIT. Content: CC BY-NC-ND 4.0.">
 <meta property="og:site_name" content="Grid Field Guide">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Virtual power plants · Grid Field Guide">
 <meta property="og:description" content="How do 20,000 homes act like one power plant? Thermostats, water heaters, EVs and batteries run as one fleet.">
-<meta property="og:url" content="https://franklan.net/apps/06-vpp/">
+<meta property="og:url" content="https://franklan.net/apps/vpp/">
 <meta name="twitter:card" content="summary">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,7 +32,7 @@
 
 <style>
   /* Tabs, panels, buttons, chips and quiz options come from shared/theme.css. Line colors follow
-     docs/colors.md and chapter 4: telemetry teal dotted, commands magenta long dash, bids / forecasts /
+     docs/colors.md and chapter 7: telemetry teal dotted, commands magenta long dash, bids / forecasts /
      limits violet dash-dot, enrollment / meter data / payment olive short dash. Power: 240 V blue,
      12 kV feeder orange. Device colors (--dev-hvac, --dev-water, --dev-ev, plus --fuel-battery and
      --fuel-solar) are fills, tints, icon strokes and chart bands only, never a line. */
@@ -362,7 +362,7 @@
         <li data-s="4" tabindex="0"><span class="n">4</span><span><b>The grid sees one power plant</b><span class="d">The power doesn't travel over the internet. It shows up on the wires the homes already use. The aggregator reports the total.</span></span></li>
       </ol>
       <div class="bx-foot"><div class="bx-btns"><button class="btn primary" id="bxPlay" type="button">▶ Send the call</button><button class="btn" id="bxReset" type="button">Reset</button></div>
-      <div class="bx-mix"><b>Common mix-up:</b> ecobee, Nest and Tesla aren't the VPP. They run <i>device clouds</i>. The VPP software (Uplight, EnergyHub, Everyday Electric…) sits on top of them, and the utility's DERMS (<a href="../04-grid-operations/index.html">chapter 4</a>) checks the wires.</div></div>
+      <div class="bx-mix"><b>Common mix-up:</b> ecobee, Nest and Tesla aren't the VPP. They run <i>device clouds</i>. The VPP software (Uplight, EnergyHub, Everyday Electric…) sits on top of them, and the utility's DERMS (<a href="../grid-operations/index.html">chapter 7</a>) checks the wires.</div></div>
     </div>
     <div class="svgbox"><svg class="bx" id="bxSvg" viewBox="0 0 1100 580" role="img" aria-labelledby="bxSvgT"><title id="bxSvgT">How a VPP works: the grid asks the VPP software for power, the software sends one request to each device maker's cloud, each cloud tells its devices in homes, and the homes' combined change shows up on the feeder as megawatts.</title></svg></div>
 
@@ -508,7 +508,7 @@
   <section class="panel" id="panel-diagram">
     <div class="eyebrow">Going deeper · after the Basics</div>
     <h2>Inside the VPP box</h2>
-    <p class="intro"><a href="../04-grid-operations/index.html">Chapter 4</a> drew the VPP as one box. Here it is opened up: four layers, from the grid operator down to the devices in the homes. Click any box.</p>
+    <p class="intro"><a href="../grid-operations/index.html">Chapter 7</a> drew the VPP as one box. Here it is opened up: four layers, from the grid operator down to the devices in the homes. Click any box.</p>
     <div class="ctrl-row">
       <span>Mode</span>
       <span class="seg" id="modeSeg" role="group" aria-label="Diagram mode"><button type="button" data-mode="idle" aria-pressed="true">Idle</button><button type="button" data-mode="event" aria-pressed="false">Event</button></span>
@@ -743,7 +743,7 @@ const DEV = {
 const ico = (k, size = 18) => `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true" style="color:${DEV[k].color}"><use href="#i-${k}"/></svg>`;
 /* icon inside an SVG drawing */
 function svgIco(k, x, y, size, parent, cls) { return el('use', { href: '#i-' + k, x, y, width: size, height: size, class: cls || 'house-ic', style: `stroke:${DEV[k].color}` }, parent); }
-const CH_DIR = { 1: '01-power-mix', 2: '02-distribution', 3: '03-der-microgrids', 4: '04-grid-operations', 5: '05-batteries' };
+const CH_DIR = { 1: 'power-mix', 3: 'distribution', 4: 'der-microgrids', 7: 'grid-operations', 5: 'batteries' };
 
 /* ============================================================
    THE MODEL — one simulation for the whole chapter.
@@ -997,26 +997,26 @@ const BASICS = (function () {
    INSIDE THE BOX — the four-layer diagram (also drawn on the Events tab)
    ============================================================ */
 const NODES = {
-  iso:    { x: 30, y: 38, w: 190, h: 54, t: 'ISO / RTO', s: 'CAISO · ERCOT', what: 'Runs the wholesale market and balances the bus (chapter 1). Asks the VPP for MW, like any power plant.', fail: 'The VPP gets no call and earns nothing that hour.', who: 'CAISO, ERCOT, PJM…', ch: [1, 4] },
-  ctrl:   { x: 290, y: 38, w: 260, h: 54, t: 'Utility control room', s: 'ADMS + DERMS', what: 'DERMS knows the feeder limits. It can cap or block a dispatch that would overload a transformer.', fail: 'The VPP could overload a feeder without anyone noticing.', who: 'The utility (PSE, PG&E, Oncor…)', ch: [4, 2] },
-  drms:   { x: 620, y: 38, w: 180, h: 54, t: 'DRMS', s: 'demand response', what: 'The utility’s demand-response program system. Sends program events, often over OpenADR.', fail: 'Program events go out late or by hand.', who: 'The utility', ch: [4] },
+  iso:    { x: 30, y: 38, w: 190, h: 54, t: 'ISO / RTO', s: 'CAISO · ERCOT', what: 'Runs the wholesale market and balances the bus (chapter 1). Asks the VPP for MW, like any power plant.', fail: 'The VPP gets no call and earns nothing that hour.', who: 'CAISO, ERCOT, PJM…', ch: [1, 7] },
+  ctrl:   { x: 290, y: 38, w: 260, h: 54, t: 'Utility control room', s: 'ADMS + DERMS', what: 'DERMS knows the feeder limits. It can cap or block a dispatch that would overload a transformer.', fail: 'The VPP could overload a feeder without anyone noticing.', who: 'The utility (PSE, PG&E, Oncor…)', ch: [7, 3] },
+  drms:   { x: 620, y: 38, w: 180, h: 54, t: 'DRMS', s: 'demand response', what: 'The utility’s demand-response program system. Sends program events, often over OpenADR.', fail: 'Program events go out late or by hand.', who: 'The utility', ch: [7] },
   enroll: { x: 20, y: 162, w: 150, h: 54, t: 'Enrollment', s: 'who, what device', what: 'Customer records: which homes signed up, which devices, which program rules.', fail: 'The optimizer counts devices that aren’t really there.', who: 'VPP platform (aggregator or utility)', ch: [] },
   fcst:   { x: 195, y: 162, w: 150, h: 54, t: 'Forecasting', s: 'weather · availability', what: 'Predicts how many devices will be online and how much each can give tomorrow. That’s why a VPP enrolls more than it promises.', fail: 'The VPP promises MW it can’t deliver.', who: 'VPP platform', ch: [] },
   opt:    { x: 370, y: 162, w: 150, h: 54, t: 'Optimizer', s: 'who to call, how much', what: 'Chooses which homes and devices to call, in what order, to hit the target shape: ramp, hold flat, recover.', fail: 'Calls everyone at once; output fades and rebounds hard.', who: 'VPP platform', ch: [] },
-  disp:   { x: 545, y: 162, w: 150, h: 54, t: 'Dispatch', s: 'sends commands', what: 'Turns the plan into commands for each device cloud, and watches the response come back.', fail: 'The event never reaches the homes.', who: 'VPP platform', ch: [4] },
-  mv:     { x: 720, y: 162, w: 170, h: 54, t: 'Measurement + pay', s: 'baseline · M&V', what: 'Compares metered use with an estimated baseline (what each home would have used), then works out payments.', fail: 'Customers aren’t paid correctly; trust drops.', who: 'VPP platform + utility billing', ch: [4] },
-  tcloud: { x: 40, y: 282, w: 180, h: 48, t: 'Thermostat cloud', s: 'ecobee · Nest', what: 'The maker’s cloud. Most thermostats are reached here, over the internet, not directly by the utility.', fail: 'Every thermostat of that brand drops out at once.', who: 'Device maker', ch: [4] },
+  disp:   { x: 545, y: 162, w: 150, h: 54, t: 'Dispatch', s: 'sends commands', what: 'Turns the plan into commands for each device cloud, and watches the response come back.', fail: 'The event never reaches the homes.', who: 'VPP platform', ch: [7] },
+  mv:     { x: 720, y: 162, w: 170, h: 54, t: 'Measurement + pay', s: 'baseline · M&V', what: 'Compares metered use with an estimated baseline (what each home would have used), then works out payments.', fail: 'Customers aren’t paid correctly; trust drops.', who: 'VPP platform + utility billing', ch: [7] },
+  tcloud: { x: 40, y: 282, w: 180, h: 48, t: 'Thermostat cloud', s: 'ecobee · Nest', what: 'The maker’s cloud. Most thermostats are reached here, over the internet, not directly by the utility.', fail: 'Every thermostat of that brand drops out at once.', who: 'Device maker', ch: [7] },
   wgate:  { x: 240, y: 282, w: 180, h: 48, t: 'Water heater gateway', s: 'CTA-2045 port', what: 'A plug-in module on the water heater that takes commands.', fail: 'Water heaters keep heating as normal.', who: 'Device maker or utility', ch: [] },
   evcloud:{ x: 440, y: 282, w: 180, h: 48, t: 'EV / charger cloud', s: 'carmaker · ChargePoint', what: 'Pauses or slows charging through the car or charger maker.', fail: 'Cars keep charging through the event.', who: 'Carmaker or charger company', ch: [] },
-  bcloud: { x: 640, y: 282, w: 220, h: 48, t: 'Battery / inverter cloud', s: 'IEEE 2030.5 · Tesla · Enphase', what: 'Tells batteries when and how hard to discharge, and reports their state of charge.', fail: 'The fastest, flattest part of the fleet goes dark.', who: 'Battery maker', ch: [3, 5] },
+  bcloud: { x: 640, y: 282, w: 220, h: 48, t: 'Battery / inverter cloud', s: 'IEEE 2030.5 · Tesla · Enphase', what: 'Tells batteries when and how hard to discharge, and reports their state of charge.', fail: 'The fastest, flattest part of the fleet goes dark.', who: 'Battery maker', ch: [4, 5] },
   hvac:   { x: 40, y: 400, w: 145, h: 46, dev: 'hvac', t: 'Thermostat + AC', s: '≈0.75 kW · minutes', what: 'Raises (summer) or lowers (winter) the setpoint 2–3°F. Fades as the house drifts, then rebounds when the event ends.', fail: 'Customer overrides: normal and allowed.', who: 'Homeowner', ch: [] },
   water:  { x: 200, y: 400, w: 145, h: 46, dev: 'water', t: 'Water heater', s: '≈0.4 kW · hours', what: 'The tank is a heat battery: heating can wait hours with almost no comfort cost.', fail: 'Small loss; few customers notice.', who: 'Homeowner', ch: [] },
   ev:     { x: 360, y: 400, w: 145, h: 46, dev: 'ev', t: 'EV + charger', s: '0 or ≈7 kW', what: 'Pauses charging. Only useful if the car is plugged in and charging at that hour.', fail: 'The car is ready a bit later.', who: 'Homeowner', ch: [] },
-  batt:   { x: 40, y: 470, w: 145, h: 46, dev: 'batt', t: 'Battery + inverter', s: '≈4 kW · under 1 s', what: 'Discharges into the home. Fast and flat, until it runs empty (about 3 hours). A battery VPP is chapter 5’s home battery multiplied by 100,000.', fail: 'Less backup left for an outage.', who: 'Homeowner or battery company', ch: [5, 3] },
-  solar:  { x: 200, y: 470, w: 145, h: 46, dev: 'solar', t: 'Rooftop solar', s: 'curtail only', what: 'Can be turned down when there’s too much power at midday, never turned up. At a 7 pm peak it’s already dark.', fail: 'Lost export credit.', who: 'Homeowner', ch: [3] },
-  meter:  { x: 360, y: 470, w: 145, h: 46, t: 'Smart meter', s: 'interval data', what: 'Measures what the home actually used, every 15 minutes. Feeds measurement and payment.', fail: 'Performance can’t be proven.', who: 'The utility', ch: [4] },
-  xfmr:   { x: 570, y: 380, w: 150, h: 42, t: 'Transformer', s: 'Feeder 3', what: 'Shared by many homes. Its limit is why location matters: DERMS watches it.', fail: 'Overloads if every EV on the street charges at once.', who: 'The utility', ch: [2] },
-  feeder: { x: 560, y: 450, w: 330, h: 170, t: 'The fleet on the feeder', s: '', what: 'The fleet. At fleet scale, each drawn house stands for about 500 real homes.', fail: 'No single home matters much; the fleet only fails if a whole device cloud or program does.', who: '20,000 customers', ch: [2] }
+  batt:   { x: 40, y: 470, w: 145, h: 46, dev: 'batt', t: 'Battery + inverter', s: '≈4 kW · under 1 s', what: 'Discharges into the home. Fast and flat, until it runs empty (about 3 hours). A battery VPP is chapter 5’s home battery multiplied by 100,000.', fail: 'Less backup left for an outage.', who: 'Homeowner or battery company', ch: [5, 4] },
+  solar:  { x: 200, y: 470, w: 145, h: 46, dev: 'solar', t: 'Rooftop solar', s: 'curtail only', what: 'Can be turned down when there’s too much power at midday, never turned up. At a 7 pm peak it’s already dark.', fail: 'Lost export credit.', who: 'Homeowner', ch: [4] },
+  meter:  { x: 360, y: 470, w: 145, h: 46, t: 'Smart meter', s: 'interval data', what: 'Measures what the home actually used, every 15 minutes. Feeds measurement and payment.', fail: 'Performance can’t be proven.', who: 'The utility', ch: [7] },
+  xfmr:   { x: 570, y: 380, w: 150, h: 42, t: 'Transformer', s: 'Feeder 3', what: 'Shared by many homes. Its limit is why location matters: DERMS watches it.', fail: 'Overloads if every EV on the street charges at once.', who: 'The utility', ch: [3] },
+  feeder: { x: 560, y: 450, w: 330, h: 170, t: 'The fleet on the feeder', s: '', what: 'The fleet. At fleet scale, each drawn house stands for about 500 real homes.', fail: 'No single home matters much; the fleet only fails if a whole device cloud or program does.', who: '20,000 customers', ch: [3] }
 };
 const FLOWS = [
   // [from, to, kind, label, offset, optional label position]
@@ -1193,7 +1193,7 @@ document.querySelectorAll('[data-huels]').forEach(cb => cb.addEventListener('cha
 applyDiaMode(); applyZoom();
 
 /* ============================================================
-   EVENTS — chapter 4's SCEN shape {when, title, nodes, flows, text}
+   EVENTS — chapter 7's SCEN shape {when, title, nodes, flows, text}
    ============================================================ */
 const CL = ['disp|tcloud', 'disp|wgate', 'disp|evcloud', 'disp|bcloud', 'tcloud|hvac', 'wgate|water', 'evcloud|ev', 'bcloud|batt'];
 const TL = ['hvac|tcloud', 'water|wgate', 'ev|evcloud', 'batt|bcloud', 'tcloud|disp', 'wgate|disp', 'evcloud|disp', 'bcloud|disp', 'disp|iso'];
@@ -1217,7 +1217,7 @@ const SCEN = {
     { when: 't = 2 min', title: 'Slower devices join', nodes: ['disp', 'evcloud', 'ev', 'wgate', 'water'], flows: ['disp|evcloud', 'evcloud|ev', 'disp|wgate', 'wgate|water'], mw: 12, h: 'respond', text: 'EV charging pauses and water heaters switch off, so the batteries can ease back.' },
     { when: 't = 10 min', title: 'Hand back', nodes: ['iso', 'opt', 'disp'], flows: ['iso|opt', 'opt|disp'], mw: 3, h: 'idle', text: 'Other plants have ramped up. The VPP is released and batteries will recharge later.' }
   ] },
-  feeder: { name: 'Feeder overload', tag: 'Location matters', anchor: 'Chapter 2: feeders and transformers have limits. 1 MW spread across a city doesn’t relieve one overloaded feeder.',
+  feeder: { name: 'Feeder overload', tag: 'Location matters', anchor: 'Chapter 3: feeders and transformers have limits. 1 MW spread across a city doesn’t relieve one overloaded feeder.',
     gauge: { unit: '%', max: 150, target: 100 }, steps: [
     { when: '10:30 pm', title: 'Cheap power at 11', nodes: ['opt', 'fcst'], flows: ['fcst|opt'], mw: 60, h: 'idle', text: 'Wholesale prices will drop at 11 pm. The optimizer plans to start charging every enrolled EV right then.' },
     { when: '10:45 pm', title: 'DERMS runs power flow', nodes: ['ctrl', 'xfmr', 'opt'], flows: ['xfmr|ctrl'], mw: 135, h: 'ev', text: 'If every EV on Feeder 3 starts at 11, its transformer would hit 135% of its rating.' },
@@ -1238,7 +1238,7 @@ const SCEN = {
     { when: 'Sign-up', title: 'Enroll', nodes: ['enroll'], flows: [], mw: 0, h: 'idle', text: 'A customer enrolls a battery. The platform records the device, its size and the program rules.' },
     { when: 'Before the event', title: 'Baseline', nodes: ['mv', 'meter'], flows: ['meter|mv'], mw: 0, h: 'idle', text: '“What would this home have used?” is never measured. It’s estimated, usually from similar recent days.' },
     { when: 'Event', title: 'Event happens', nodes: ['disp', 'bcloud', 'batt'], flows: ['disp|bcloud', 'bcloud|batt'], mw: 0, h: 'batt', text: 'The battery discharges 8 kWh over two hours.' },
-    { when: 'Next day', title: 'Meter data', nodes: ['meter', 'mv'], flows: ['meter|mv'], mw: 0, h: 'idle', text: '15-minute meter data arrives through the utility’s meter data system (MDMS, chapter 4).' },
+    { when: 'Next day', title: 'Meter data', nodes: ['meter', 'mv'], flows: ['meter|mv'], mw: 0, h: 'idle', text: '15-minute meter data arrives through the utility’s meter data system (MDMS, chapter 7).' },
     { when: 'Next week', title: 'Performance', nodes: ['mv'], flows: [], mw: 4, h: 'idle', text: 'Measured use vs. baseline: 8 kWh delivered. 8 × $0.50 = $4.' },
     { when: 'Next bill', title: 'Paid', nodes: ['mv', 'enroll'], flows: ['mv|enroll'], mw: 4, h: 'idle', text: 'A $4 bill credit appears.' }
   ] }
@@ -1520,7 +1520,7 @@ document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('clic
 const CATS = { basic: 'Basics', dev: 'How devices respond', soft: 'Software and signals', money: 'Markets and money' };
 const TERMS = [
   ['Virtual power plant (VPP)', 'basic', 'Many small devices in many homes, coordinated by software to act like one power plant.'],
-  ['DER', 'basic', 'Distributed energy resource: a small device that makes, stores or flexes power at a home or business (chapter 3).'],
+  ['DER', 'basic', 'Distributed energy resource: a small device that makes, stores or flexes power at a home or business (chapter 4).'],
   ['Aggregator', 'basic', 'A company that enrolls devices and sells their combined response. It may be the utility itself or a third party.'],
   ['Fleet', 'basic', 'All the devices a VPP can call on.'],
   ['Enrollment', 'basic', 'A customer signing a device up to a program.'],
@@ -1536,14 +1536,14 @@ const TERMS = [
   ['Managed charging', 'dev', 'Controlling when and how fast EVs charge.'],
   ['V2G / V2H', 'dev', 'Vehicle-to-grid / vehicle-to-home: an EV discharging its battery into the grid or the house.'],
   ['Curtailment', 'dev', 'Turning solar output down. It can’t be turned up.'],
-  ['DERMS', 'soft', 'Utility software that knows feeder limits and manages DERs. It can cap a VPP dispatch (chapter 4).'],
+  ['DERMS', 'soft', 'Utility software that knows feeder limits and manages DERs. It can cap a VPP dispatch (chapter 7).'],
   ['DRMS', 'soft', 'Utility software that runs demand-response programs.'],
   ['VPP platform / optimizer', 'soft', 'The aggregator’s software that forecasts, chooses devices and dispatches them.'],
   ['OEM cloud', 'soft', 'The device maker’s cloud (ecobee, Tesla, ChargePoint…). Most home devices are reached through it.'],
   ['Telemetry', 'soft', 'Status data coming back from devices. To look like a power plant, a VPP reports at least every 5 minutes.'],
   ['Setpoint', 'soft', 'The target value a device is told to hold, like 76°F.'],
   ['OpenADR', 'soft', 'A standard for sending demand-response events to device clouds.'],
-  ['IEEE 2030.5', 'soft', 'A standard for utilities talking to inverters and other DERs (chapter 3).'],
+  ['IEEE 2030.5', 'soft', 'A standard for utilities talking to inverters and other DERs (chapter 4).'],
   ['CTA-2045', 'soft', 'A plug-in port standard for water heaters and other appliances.'],
   ['Opt-out / override', 'soft', 'A customer declining an event or changing the setting back. Normal and allowed.'],
   ['Demand response', 'money', 'Paying customers to use less at certain times.'],
@@ -1559,7 +1559,7 @@ const TERMS = [
   ['Load flexibility (DALCU)', 'money', 'Washington’s 2024 law (ESHB 1589) requiring PSE to plan flexible load equal to 10% of its peak from 2030.']
 ];
 const MIXUPS = [
-  ['VPP vs. DERMS vs. DRMS vs. microgrid', 'A VPP aggregates devices to sell their response. DERMS is utility software that keeps feeders safe. DRMS runs demand-response programs. A microgrid is one site that can island (chapter 3).'],
+  ['VPP vs. DERMS vs. DRMS vs. microgrid', 'A VPP aggregates devices to sell their response. DERMS is utility software that keeps feeders safe. DRMS runs demand-response programs. A microgrid is one site that can island (chapter 4).'],
   ['DER vs. DERMS', 'A DER is a device. DERMS is utility software that manages them.'],
   ['Device cloud vs. VPP', 'ecobee, Nest and Tesla run device clouds. The VPP software sits on top of many of them.'],
   ['Behavioral DR vs. automated VPP', 'PSE has about 456,000 customers enrolled by default in behavioral event alerts, but its dependable MW come from the much smaller automated part.'],
@@ -1583,7 +1583,7 @@ const QUIZ = [
   { q: 'A VPP promises the grid operator 10 MW. Why does it enroll about 13 MW?', opts: ['To sell the extra 3 MW later', 'Some homes override, and some devices are offline or already idle', 'The law requires 30% extra', 'Batteries lose 30% to heat'], correct: 1, explain: 'Enrollment isn’t delivery: overrides, offline devices and devices that are already idle all cut into it.', go: ['diagram', 'fcst'] },
   { q: 'Which device can respond to a frequency dip in under a second?', opts: ['Smart thermostat', 'Water heater', 'Home battery (inverter)', 'An EV that isn’t plugged in'], correct: 2, explain: 'Battery inverters sense frequency locally and respond almost instantly.', go: ['events', 'frequency'] },
   { q: 'What usually happens in the hour after a thermostat event ends?', opts: ['Load stays low all evening', 'Rebound: many ACs or heat pumps start at once', 'Grid frequency rises', 'Batteries recharge immediately'], correct: 1, explain: 'Houses drifted warm (or cool), so they all try to catch up together. Staggering softens it.', go: ['diagram', 'hvac'] },
-  { q: 'What can stop a VPP dispatch that would overload a feeder?', opts: ['The ISO', 'The smart meter', 'The thermostat cloud', 'DERMS, using power-flow limits'], correct: 3, explain: 'DERMS knows feeder and transformer limits (chapter 4).', go: ['events', 'feeder'] },
+  { q: 'What can stop a VPP dispatch that would overload a feeder?', opts: ['The ISO', 'The smart meter', 'The thermostat cloud', 'DERMS, using power-flow limits'], correct: 3, explain: 'DERMS knows feeder and transformer limits (chapter 7).', go: ['events', 'feeder'] },
   { q: 'How do most home thermostats get the VPP’s signal?', opts: ['Through the maker’s cloud, over the internet', 'Over the power line', 'By radio from the substation', 'The utility phones the homeowner'], correct: 0, explain: 'Most home devices are reached through the maker’s (OEM) cloud, not directly by the utility.', go: ['diagram', 'tcloud'] },
   { q: 'In September 2026, about 140,000 California home batteries delivered about 580 MW. Roughly how much per battery?', opts: ['0.4 kW', '40 kW', '13.5 kW', 'About 4 kW'], correct: 3, explain: '580 MW ÷ 140,000 ≈ 4.1 kW.', go: ['diagram', 'batt'] },
   { q: 'Why does Puget Sound Energy run more winter events than summer ones?', opts: ['Its peak demand is in winter', 'Its solar is strongest in winter', 'Summer events aren’t allowed in Washington', 'Batteries work better in the cold'], correct: 0, explain: 'PSE’s winter peak was higher than its summer peak every year from 2019 to 2025.', go: ['events', 'winter'] },
