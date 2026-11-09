@@ -164,9 +164,16 @@
 </svg>
 
 <div class="wrap">
-  <div class="eyebrow">Chapter 2 · Part 1 of 3 · Power plants</div>
+  <div class="eyebrow">Chapter 2 of 7 · Power plants</div>
   <h1>Where will the new power come from?</h1>
-  <p class="sub">Demand is growing, so the grid needs new power plants. Every one of them has to <b>get in line</b> first: before a plant can connect to the transmission grid, it files a request and waits while the grid operator studies it. Those lines, called <b>interconnection queues</b>, are public. Imagine you're buying power for a utility or a data center. The queue is your shopping list. Here's what's on it, and how much of it you can count on. Reading it is like reading a waiting-room roster: many of the names will leave before they are called.</p>
+  <p class="sub">Demand is growing, so the grid needs new power plants. Every one of them has to <b>get in line</b> first: before a plant can connect to the transmission grid, it files a request and waits while the grid operator studies it. The grid operator is the organization that runs the transmission grid in a region, such as ERCOT in Texas or PJM in the mid-Atlantic. In some places a utility does that job instead. It studies each request to see what the new plant would do to the grid and what would have to be built to take it. <a href="../grid-operations/">Grid operations</a> covers what these organizations do all day. Those lines, called <b>interconnection queues</b>, are public. Imagine you're buying power for a utility or a data center. The queue is your shopping list. Here's what's on it, and how much of it you can count on. Reading it is like reading a waiting-room roster: many of the names will leave before they are called.</p>
+  <details class="fn" id="fn-terms" style="margin:0 0 18px;max-width:780px">
+    <summary><b>Terms used here:</b> POI, substation, network upgrades, ISO / RTO.</summary>
+    <p><b>Point of interconnection (POI)</b> is the exact spot, usually at a substation, where a new plant plugs into the grid.</p>
+    <p><b>Substation</b> is a fenced yard of transformers and switches where power lines meet and voltage steps up or down.</p>
+    <p><b>Network upgrades</b> are the lines, transformers and breakers the grid has to add or replace so the new plant doesn't overload what's there. The developer often pays some or all of the cost, and the rules vary by region.</p>
+    <p><b>ISO / RTO</b> is an independent system operator or regional transmission organization. This is the nonprofit that runs the grid and the wholesale power market for a region, such as ERCOT, PJM, MISO or CAISO. Outside these regions, such as the Southeast and much of the West, individual utilities run the queue.</p>
+  </details>
   <div class="note" id="load-err" hidden></div>
 
   <div class="filters" role="group" aria-label="Filters for every chart on this page">
@@ -210,7 +217,7 @@
     </details>
     <details class="fn" id="fn-hybrid">
       <summary><b>† Hybrid batteries:</b> the project data leaves out about 197 GW of battery capacity nationwide, so charts understate storage.</summary>
-      <p>Many grid operators list a solar-plus-battery plant as one request and don't give the battery's size: <b>1,389 of the 1,716</b> active solar + battery requests in the data file list no battery size. Berkeley Lab fills the gaps with an estimate, using the battery-to-solar ratio from hybrids that do list both (<i>Queued Up 2026</i>, slides 8, 16 and 30), and includes it in the report's headline totals. The published project data leaves those estimates out, so every chart built from it, including the rest of this page, <b>understates storage</b> and solar + storage. The report doesn't publish the ratios. The estimated part is <b>about 197 GW</b> of the 2,061 GW. CAISO lists almost every hybrid's battery, so it needs little estimating. For ERCOT the report's total (408 GW) equals the project rows, so no estimate was added there, and the data file lists no separate battery size for ERCOT's hybrids. ⚠ Whether those rows hold the solar size or the whole plant is not stated; to confirm with Berkeley Lab.</p>
+      <p>A hybrid is a solar plant built with a battery on the same site and the same grid connection (<a href="../batteries/">how batteries work</a>). Many grid operators list a solar-plus-battery plant as one request and don't give the battery's size: <b>1,389 of the 1,716</b> active solar + battery requests in the data file list no battery size. Berkeley Lab fills the gaps with an estimate, using the battery-to-solar ratio from hybrids that do list both (<i>Queued Up 2026</i>, slides 8, 16 and 30), and includes it in the report's headline totals. The published project data leaves those estimates out, so every chart built from it, including the rest of this page, <b>understates storage</b> and solar + storage. The report doesn't publish the ratios. The estimated part is <b>about 197 GW</b> of the 2,061 GW. CAISO lists almost every hybrid's battery, so it needs little estimating. For ERCOT the report's total (408 GW) equals the project rows, so no estimate was added there, and the data file lists no separate battery size for ERCOT's hybrids. ⚠ Whether those rows hold the solar size or the whole plant is not stated; to confirm with Berkeley Lab.</p>
     </details>
     <details class="fn" id="fn-service">
       <summary><b>ERIS vs. NRIS:</b> two levels of interconnection service, listed for many requests.</summary>
@@ -325,7 +332,8 @@ document.querySelectorAll('#f-measure button').forEach(function(b){
 function swatch(fill){ return '<svg width="14" height="14" aria-hidden="true"><rect x="0" y="0" width="14" height="14" style="fill:' + fill + '"/></svg>'; }
 var LEG = {solar:'Solar',hybrid:'Solar + storage †',storage:'Storage †',wind:'Wind',gas:'Gas',other:'Other'};
 var OTHER_TIP = esc('<b>Other includes</b><br>• Hydropower<br>• Geothermal<br>• Biomass/biofuel<br>• Landfill gas<br>• Solar thermal<br>• Oil/diesel');
-function legSpan(g){ return '<span' + (g === 'other' ? ' class="has-tip" data-tip="' + OTHER_TIP + '"' : '') + '>' + swatch(FILL[g]) + LEG[g] + '</span>'; }
+var HYBRID_TIP = esc('<b>Solar + storage</b><br>A solar plant with a battery on the same site and the same grid connection.');
+function legSpan(g){ var tip = g === 'other' ? OTHER_TIP : g === 'hybrid' ? HYBRID_TIP : ''; return '<span' + (tip ? ' class="has-tip" data-tip="' + tip + '"' : '') + '>' + swatch(FILL[g]) + LEG[g] + '</span>'; }
 document.getElementById('legend').innerHTML = G.map(legSpan).join('');
 var OUT = [['o','Built','var(--ink)'],['a','Still waiting (incl. suspended)','url(#p-wait)'],['w','Withdrew','var(--dead)']];
 document.getElementById('legend-out').innerHTML = OUT.map(function(o){ return '<span>' + swatch(o[2]) + o[1] + '</span>'; }).join('');
