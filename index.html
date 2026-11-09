@@ -862,14 +862,14 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(underlines);
 })();
 
-// Chapter 2 hover: one request walks the queue and connects. Plays once per page visit; leaving puts everything back.
+// Chapter 2 hover: one request walks the queue and connects. Plays on every hover or focus; leaving puts everything back.
 (function(){
   var zone=document.querySelector('.zone[data-ch="2"]'); if(!zone||!zone.animate) return;
   if(window.matchMedia&&(matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(hover: hover)').matches)) return;
-  var played=false, anims=[];
+  var anims=[];
   function go(el,frames,opt){opt.fill='forwards'; opt.easing=opt.easing||'ease-in-out'; anims.push(el.animate(frames,opt));}
   function play(){
-    if(played) return; played=true;
+    reset();   // start clean if it is already running
     var tiles=[].slice.call(document.querySelectorAll('#q-tiles .qt'));
     var sv=document.querySelector('#q-tiles .qt.sv'), stay=document.querySelector('#q-tiles .qt.stay');
     tiles.filter(function(t){return t!==sv&&t!==stay;}).forEach(function(t,i){   // nearest the gate first
