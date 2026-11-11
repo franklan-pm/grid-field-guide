@@ -399,7 +399,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
 
         <!-- Chapter 2: interconnection. A queue of waiting plants folded into switchbacks, joining the bus at the POI. -->
         <a class="zone" data-ch="2" href="apps/interconnection/index.html" aria-label="Chapter 2: Interconnection queues. Most waiting plants never get built.">
-          <rect class="bg" x="55" y="378" width="287" height="272"/>
+          <rect class="bg" x="55" y="378" width="287" height="352"/>
           <path class="qline" d="M300 402 H80 V476 H318 V550 H80"/>
           <path class="qline" stroke="url(#qfade)" d="M80 550 H12"/>
           <g id="q-tiles">
@@ -421,7 +421,7 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
           <text class="lbl" x="330" y="600" text-anchor="end">Median wait ≈ 5 yrs</text>
           <text class="dev" x="330" y="614" text-anchor="end">request to online</text>
           <!-- hover extras -->
-          <path class="ticks" d="M47 392 V370 H69 M350 392 V370 H328 M47 636 V658 H69 M350 636 V658 H328"/>
+          <path class="ticks" d="M47 392 V370 H69 M350 392 V370 H328 M47 716 V738 H69 M350 716 V738 H328"/>
           <g class="readout">
             <rect x="67" y="552" width="263" height="32"/>
             <text class="dev" x="79" y="564">TRY</text>
@@ -872,7 +872,8 @@ footer .about-text{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));ga
   var zone=document.querySelector('.zone[data-ch="2"]'); if(!zone||!zone.animate) return;
   if(window.matchMedia&&(matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(hover: hover)').matches)) return;
   var anims=[];
-  function go(el,frames,opt){opt.fill='forwards'; opt.easing=opt.easing||'ease-in-out'; anims.push(el.animate(frames,opt));}
+  var SPEED=1.25;   // 25% faster: every duration and delay is divided by this
+  function go(el,frames,opt){opt.duration/=SPEED; opt.delay=(opt.delay||0)/SPEED; opt.fill='forwards'; opt.easing=opt.easing||'ease-in-out'; anims.push(el.animate(frames,opt));}
   function play(){
     reset();   // start clean if it is already running
     var tiles=[].slice.call(document.querySelectorAll('#q-tiles .qt'));
